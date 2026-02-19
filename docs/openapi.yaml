@@ -397,14 +397,6 @@ components:
           items:
             type: string
       required: [id, title, overview, capabilities]
-    ReferenceLink:
-      type: object
-      properties:
-        name:
-          type: string
-        url:
-          type: string
-      required: [name, url]
     QuickLink:
       type: object
       properties:
@@ -452,10 +444,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SolutionArea"
-        benchmarkReferences:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReferenceLink"
         quickLinks:
           type: array
           items:
@@ -478,7 +466,6 @@ components:
         - products
         - partners
         - solutions
-        - benchmarkReferences
         - quickLinks
         - processSteps
         - ceoMessage

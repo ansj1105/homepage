@@ -1,5 +1,5 @@
-﻿export {
-  PublicLayout,
+﻿export { PublicLayout } from "./PublicLayout";
+export {
   CompanyCeoPage,
   CompanyLocationPage,
   CompanyVisionPage,
@@ -13,4 +13,4 @@
   ProductItemPage,
   QuoteInquiryPage,
   TestDemoPage
-} from "./public";
+} from "./PublicPages";

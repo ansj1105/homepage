@@ -44,11 +44,6 @@ const solutionSchema = z.object({
   capabilities: z.array(z.string().min(1))
 });
 
-const referenceSchema = z.object({
-  name: z.string().min(1),
-  url: z.string().url()
-});
-
 const quickLinkSchema = z.object({
   label: z.string().min(1),
   url: z.string().url()
@@ -69,7 +64,6 @@ export const siteContentSchema = z.object({
   products: z.array(productSchema).min(1),
   partners: z.array(partnerSchema).min(1),
   solutions: z.array(solutionSchema).min(1),
-  benchmarkReferences: z.array(referenceSchema),
   quickLinks: z.array(quickLinkSchema),
   processSteps: z.array(z.string().min(1)).min(1),
   ceoMessage: z.string().min(1),

@@ -1,7 +1,8 @@
-# SH Homepage Renewal Tech Spec
+﻿# SH Homepage Renewal Tech Spec
 
 ## 1. Stack
 - Frontend: React 18 + TypeScript + Vite
+- Routing: React Router DOM v6
 - Backend: Node.js + Express + TypeScript
 - Validation: Zod
 - Testing: Vitest
@@ -9,74 +10,69 @@
 - Migration: Flyway SQL migrations
 - Container runtime: Docker Compose
 
-## 2. Architecture
-- Single frontend app with route split
-- Public site: `/`
-- Admin page: `/admin`
-- Backend API server: `http://localhost:8787`
-- Vite dev proxy: `/api` -> backend server
-- Docker runtime ports
-- Frontend: `http://localhost:8080`
-- Backend: `http://localhost:8787`
-- PostgreSQL: `localhost:5432`
-- Production override
-- `docker-compose.prod.yml` enables Nginx TLS termination and 80 -> 443 redirect
-- Certificates mounted from `docker/certs`
+## 2. Runtime Architecture
+- SPA routes served by Nginx with fallback to `index.html`
+- Public site routes and admin route in one frontend app
+- Admin route: `/admin`
+- Backend API: `/api/*`
+- Vite dev proxy forwards `/api` -> `http://localhost:8787`
 
-## 3. Data Flow
-1. Public page loads `content/resources/notices` via API.
-2. Public inquiry form posts to `POST /api/inquiries`.
-3. Admin logs in and receives bearer token.
-4. Admin updates content/resources/notices/inquiry status via admin APIs.
-5. Backend reads/writes PostgreSQL tables.
-6. Schema changes are applied through Flyway migrations.
+## 3. Route Map
+- `/company/ceo`
+- `/company/vision`
+- `/company/location`
+- `/partner/core`
+- `/product`
+- `/product/:categorySlug`
+- `/product/:categorySlug/:itemSlug`
+- `/inquiry/quote`
+- `/inquiry/test-demo`
+- `/inquiry/library`
+- `/notice`
+- `/admin`
 
-## 4. API Contract
-- OpenAPI source of truth: `docs/openapi.yaml`
-- Main schema groups
-- `SiteContent`
-- `ResourceItem`
-- `NoticeItem`
-- `InquiryItem`
-- Backward compatibility strategy
-- Keep response shapes stable
-- Additive fields preferred
-- Breaking changes require OpenAPI version bump
+## 4. Data Flow
+1. Public layout loads `content/resources/notices` from API.
+2. Product pages read static taxonomy and cross-reference registered products.
+3. Quote form posts inquiry payload to `POST /api/inquiries`.
+4. Admin logs in and receives bearer token.
+5. Admin updates content/resources/notices/inquiry status.
+6. Backend persists data into PostgreSQL.
+7. Flyway applies schema migrations before app start.
 
 ## 5. Backend Modules
-- `server/src/app.ts`: route registration and middleware
-- `server/src/auth.ts`: token sign/verify
-- `server/src/validators.ts`: request and DB schema validation
-- `server/src/db.ts`: PostgreSQL query layer and seed logic
-- `server/src/index.ts`: server bootstrap
+- `server/src/app.ts`: routes + middleware
+- `server/src/auth.ts`: token create/verify
+- `server/src/validators.ts`: request validation
+- `server/src/db.ts`: query layer + seed logic
+- `server/src/index.ts`: bootstrap
 
 ## 6. Frontend Modules
-- `src/pages/PublicSite.tsx`: homepage UI + inquiry submit
-- `src/pages/AdminPage.tsx`: login + content/resource/notice/inquiry admin tools
-- `src/api/client.ts`: API client functions
-- `src/data/siteData.ts`: initial fallback/default content
+- `src/App.tsx`: router tree
+- `src/pages/PublicSite.tsx`: public layout + all page components
+- `src/pages/AdminPage.tsx`: admin UI and operations
+- `src/data/productTaxonomy.ts`: product category/subcategory tree
+- `src/i18n/*`: locale context and message catalogs
+- `src/api/client.ts`: API client
 
-## 7. Security (MVP)
-- Bearer token required on admin endpoints
-- Credentials from env vars
-- `ADMIN_USERNAME` (default: `admin`)
-- `ADMIN_PASSWORD` (default: `change-me`)
-- `ADMIN_TOKEN_SECRET` for token signing
-- CORS policy configurable with `CORS_ORIGIN`
-- DB connection via `DATABASE_URL` or `POSTGRES_*` vars
+## 7. Security and Config
+- Bearer token auth on admin APIs
+- Credentials and secrets from `.env`
+- CORS origin from `CORS_ORIGIN`
+- DB connection from `DATABASE_URL` or `POSTGRES_*`
 
-## 8. Test Strategy
-- Unit tests
-- Product filter utility
-- Auth token create/verify
-- Validator parsing and failure cases
-- OpenAPI contract path existence smoke check
+## 8. Deployment
+- Base compose: app + backend + db + flyway
+- Production compose override enables:
+- Nginx TLS termination (`443`)
+- HTTP to HTTPS redirect (`80 -> 443`)
+- Certificate mount from `docker/certs/fullchain.pem` and `docker/certs/privkey.pem`
+- Deployment scripts:
+- `scripts/deploy-prod.sh` (Ubuntu/Linux)
+- `scripts/deploy-prod.ps1` (Windows)
 
-## 9. Runtime Commands
-- Frontend dev: `npm run dev`
-- Backend dev: `npm run dev:server`
-- Tests: `npm run test`
-- Typecheck: `npm run typecheck`
-- Build: `npm run build`
-- Compose up: `npm run docker:up`
-- Compose down: `npm run docker:down`
+## 9. Verification Commands
+- `npm run typecheck`
+- `npm run test`
+- `npm run build`
+- `npm run deploy:prod:linux` (server)

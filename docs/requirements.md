@@ -1,48 +1,64 @@
-# SH Homepage Renewal Requirements
+﻿# SH Homepage Renewal Requirements
 
 ## 1. Scope
-- Source: `SH homepage proposal V2.pptx`
-- Goal: deliver public homepage + backend + admin page
-- Delivery mode: MVP for operational use
+- Source: `SH 홈페이지 기안서 V2.pptx`
+- Goal: public homepage + backend API + admin page
+- Delivery mode: production-ready MVP
 
-## 2. Public Homepage Requirements
-## 2.1 Main
-- Hero slider (3 slides)
-- CTA order: Partner -> Product -> Inquiry
-- Quick links: KakaoTalk, WeChat, LinkedIn
-- Product integrated search entry point
+## 2. Public Homepage Information Architecture
+## 2.1 Top Menu Tree
+- 회사소개
+- CEO 인사말: `/company/ceo`
+- 회사비전: `/company/vision`
+- 찾아오시는 길: `/company/location`
+- 파트너
+- CORE PARTNER: `/partner/core`
+- 제품
+- PRODUCT 카테고리: `/product`
+- 카테고리별 하위 페이지: `/product/{category}`
+- 하위 품목 페이지: `/product/{category}/{item}`
+- 제품문의
+- 견적요청: `/inquiry/quote`
+- TEST 및 DEMO: `/inquiry/test-demo`
+- 자료실(메뉴얼): `/inquiry/library`
+- 공지사항
+- 공지사항 목록: `/notice`
 
-## 2.2 Company
-- CEO message and vision in one page block
-- Partner brand grid with external links
-- Location map embed + address/contact
+## 2.2 Product Taxonomy (from planning)
+- Laser
+- Nanosecond
+- Picosecond/Femtosecond
+- CO2
+- Excimer
+- Diode laser
+- Optics
+- 모노클
+- ULO Optics
+- 그린광학
+- 옌옵틱
+- Laser scanner
+- Scanlab
+- Custom solution
+- Meopta
+- FEMTOPRINT
+- Laser measurement
+- Laser point
+- Metrolux
+- SHINHOTEK
+- Others
+- Others
+- Beam shaper
+- Adloptica
+- Power photonic
+- Silios
 
-## 2.3 Application
-- 6 categories
-- Semiconductor
-- Solar Cell
-- Medical & Bio
-- Automotive (Second battery, LiDAR)
-- OLED Display
-- AOI (new)
-- Each category includes summary, process, recommended product mapping
-
-## 2.4 Product
-- Integrated search and filter (keyword/category/manufacturer/spec)
-- Product card and detail panel
-- Datasheet/CAD download links
-- Direct quote CTA
-
-## 2.5 SH Solution
-- 3 areas: Optical Design, Mechanical Design, SW Design
-- Process steps: consulting -> design -> simulation -> build -> verification
-- Capability/portfolio guidance sections
-
-## 2.6 Inquiry / Resource / Notice
-- Quote form fields
-- Company, position, name, email, contact, requirements
-- Privacy consent required
-- Resource list and notice board
+## 2.3 Functional Requirements
+- Responsive UI for desktop/tablet/mobile
+- Favicon configured and served in build output
+- i18n support (ko/en language switch)
+- Quote inquiry form submission and success/failure feedback
+- Resource list and notice board read from API
+- Product pages expose category -> subcategory -> detail navigation
 
 ## 3. Backend API Requirements
 ## 3.1 Public APIs
@@ -75,17 +91,14 @@
 - `done`
 
 ## 5. Non-Functional Requirements
-- Responsive for desktop/tablet/mobile
-- Basic accessibility: semantic tags, labels, keyboard reachability
-- Data contract managed by OpenAPI (`docs/openapi.yaml`)
-- Test coverage for validator and core logic
-- Environment configuration through `.env`
-- Required environment keys documented in `.env.example`
-- PostgreSQL schema versioning with Flyway migrations
-- Docker Compose support for reproducible local/server startup
-- Production web tier with Nginx 80 -> 443 redirect and TLS termination
+- Environment variables managed by `.env`
+- Required keys documented in `.env.example` for `sdsaasddf1.com`
+- PostgreSQL schema versioning with Flyway
+- Docker Compose for reproducible deployment
+- Production Nginx HTTPS deployment with `80 -> 443` redirect
+- TLS certificate files mounted from `docker/certs`
 
 ## 6. Out of Current MVP
-- File storage integration (S3, etc.)
+- File upload/storage integration (S3 etc.)
 - Email/CRM webhook integration
 - Multi-role RBAC and audit trail

@@ -53,11 +53,6 @@ export interface NoticeItem {
   publishedAt: string;
 }
 
-export interface ReferenceLink {
-  name: string;
-  url: string;
-}
-
 export interface QuickLink {
   label: string;
   url: string;
@@ -78,7 +73,6 @@ export interface SiteContent {
   products: Product[];
   partners: PartnerBrand[];
   solutions: SolutionArea[];
-  benchmarkReferences: ReferenceLink[];
   quickLinks: QuickLink[];
   processSteps: string[];
   ceoMessage: string;

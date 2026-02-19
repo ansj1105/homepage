@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ApplicationCategory,
   NoticeItem,
   PartnerBrand,
@@ -187,14 +187,22 @@ const products: Product[] = [
 ];
 
 const partners: PartnerBrand[] = [
-  { id: "p-1", name: "TRUMPF", category: "Laser", url: "https://www.trumpf.com/" },
-  { id: "p-2", name: "Coherent", category: "Laser", url: "https://www.coherent.com/" },
-  { id: "p-3", name: "Altechna", category: "Optics", url: "https://www.altechna.com/" },
-  { id: "p-4", name: "Allied Vision", category: "Vision", url: "https://www.alliedvision.com/" },
-  { id: "p-5", name: "Jenoptik", category: "Measurement", url: "https://www.jenoptik.com/" },
-  { id: "p-6", name: "WizOptics", category: "Optics", url: "http://www.wizoptics.com/" },
-  { id: "p-7", name: "CoreRay", category: "Vision", url: "https://www.coreray.kr/" },
-  { id: "p-8", name: "BMLaser", category: "Laser", url: "https://bmlaser.co.kr/" }
+  { id: "p-1", name: "Uniotech", category: "Optics", url: "https://uniotech.kr/" },
+  { id: "p-2", name: "CoreRay", category: "Vision", url: "https://www.coreray.kr/" },
+  { id: "p-3", name: "MJLINC", category: "Optics", url: "https://www.mjlinc.com/" },
+  { id: "p-4", name: "SMTech", category: "Laser", url: "http://www.smtech.co.kr/" },
+  { id: "p-5", name: "Lasernet", category: "Laser", url: "http://www.lasernet.co.kr/shop/index.php" },
+  { id: "p-6", name: "Jinsung", category: "Measurement", url: "https://jinsunginst.com/" },
+  { id: "p-7", name: "BMLaser Solution", category: "Laser", url: "https://bmlaser.co.kr/" },
+  { id: "p-8", name: "Qbic Laser System", category: "Laser", url: "http://qbiclaser.com/" },
+  { id: "p-9", name: "WizOptics", category: "Optics", url: "http://www.wizoptics.com/" },
+  { id: "p-10", name: "DOMUN INC.", category: "Measurement", url: "https://www.domun.co.kr/" },
+  { id: "p-11", name: "Enclony", category: "Vision", url: "https://enclony.com/" },
+  { id: "p-12", name: "Altechna", category: "Optics", url: "https://www.altechna.com/" },
+  { id: "p-13", name: "TRUMPF", category: "Laser", url: "https://www.trumpf.com/" },
+  { id: "p-14", name: "Coherent", category: "Laser", url: "https://www.coherent.com/" },
+  { id: "p-15", name: "3SAE Technologies", category: "Optics", url: "https://3sae.com/" },
+  { id: "p-16", name: "Allied Vision", category: "Vision", url: "https://www.alliedvision.com/" }
 ];
 
 const solutions: SolutionArea[] = [
@@ -259,14 +267,6 @@ export const initialSiteContent: SiteContent = {
   products,
   partners,
   solutions,
-  benchmarkReferences: [
-    { name: "Uniotech", url: "https://uniotech.kr/" },
-    { name: "CoreRay", url: "https://www.coreray.kr/" },
-    { name: "MJLINC", url: "https://www.mjlinc.com/" },
-    { name: "Lasernet", url: "http://www.lasernet.co.kr/shop/index.php" },
-    { name: "Jinsung", url: "https://jinsunginst.com/" },
-    { name: "QbicLaser", url: "http://qbiclaser.com/" }
-  ],
   quickLinks: [
     { label: "KakaoTalk", url: "https://open.kakao.com/" },
     { label: "WeChat", url: "https://www.wechat.com/" },

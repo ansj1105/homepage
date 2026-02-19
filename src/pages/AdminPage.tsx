@@ -1,11 +1,14 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+﻿import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { initialSiteContent, notices as initialNotices, resources as initialResources } from "../data/siteData";
+import { useI18n } from "../i18n/I18nContext";
 import type { InquiryItem, NoticeItem, ResourceItem, SiteContent } from "../types";
 
 const tokenStorageKey = "sh_admin_token";
 
 const AdminPage = () => {
+  const { t } = useI18n();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(tokenStorageKey));
@@ -50,10 +53,10 @@ const AdminPage = () => {
       return;
     }
     loadAdminData(token).catch((error) => {
-      const text = error instanceof Error ? error.message : "Admin data load failed";
+      const text = error instanceof Error ? error.message : t("admin.msgLoadFail");
       setMessage(text);
     });
-  }, [token]);
+  }, [t, token]);
 
   const login = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,10 +66,10 @@ const AdminPage = () => {
       const result = await apiClient.adminLogin(username, password);
       localStorage.setItem(tokenStorageKey, result.token);
       setToken(result.token);
-      setMessage("Login successful.");
+      setMessage(t("admin.msgLoginOk"));
       setPassword("");
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Login failed";
+      const text = error instanceof Error ? error.message : t("admin.msgLoginFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -76,7 +79,7 @@ const AdminPage = () => {
   const logout = () => {
     localStorage.removeItem(tokenStorageKey);
     setToken(null);
-    setMessage("Logged out.");
+    setMessage(t("admin.msgLoggedOut"));
   };
 
   const saveContent = async () => {
@@ -88,9 +91,9 @@ const AdminPage = () => {
       const saved = await apiClient.adminSaveContent(parsed, token);
       setContent(saved);
       setContentJson(JSON.stringify(saved, null, 2));
-      setMessage("Content saved.");
+      setMessage(t("admin.msgSaveOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Content save failed";
+      const text = error instanceof Error ? error.message : t("admin.msgSaveFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -106,9 +109,9 @@ const AdminPage = () => {
       await apiClient.adminCreateResource({ title: resourceTitle, type: resourceType }, token);
       setResourceTitle("");
       await loadAdminData(token);
-      setMessage("Resource added.");
+      setMessage(t("admin.msgResourceAddOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Resource add failed";
+      const text = error instanceof Error ? error.message : t("admin.msgResourceAddFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -121,9 +124,9 @@ const AdminPage = () => {
     try {
       await apiClient.adminDeleteResource(id, token);
       setResources((prev) => prev.filter((item) => item.id !== id));
-      setMessage("Resource deleted.");
+      setMessage(t("admin.msgResourceDelOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Resource delete failed";
+      const text = error instanceof Error ? error.message : t("admin.msgResourceDelFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -138,9 +141,9 @@ const AdminPage = () => {
       await apiClient.adminCreateNotice({ title: noticeTitle, publishedAt: noticeDate }, token);
       setNoticeTitle("");
       await loadAdminData(token);
-      setMessage("Notice added.");
+      setMessage(t("admin.msgNoticeAddOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Notice add failed";
+      const text = error instanceof Error ? error.message : t("admin.msgNoticeAddFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -153,9 +156,9 @@ const AdminPage = () => {
     try {
       await apiClient.adminDeleteNotice(id, token);
       setNotices((prev) => prev.filter((item) => item.id !== id));
-      setMessage("Notice deleted.");
+      setMessage(t("admin.msgNoticeDelOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Notice delete failed";
+      const text = error instanceof Error ? error.message : t("admin.msgNoticeDelFail");
       setMessage(text);
     } finally {
       setBusy(false);
@@ -167,9 +170,9 @@ const AdminPage = () => {
     try {
       const updated = await apiClient.adminUpdateInquiryStatus(id, status, token);
       setInquiries((prev) => prev.map((item) => (item.id === id ? updated : item)));
-      setMessage("Inquiry status updated.");
+      setMessage(t("admin.msgInquiryStatusOk"));
     } catch (error) {
-      const text = error instanceof Error ? error.message : "Status update failed";
+      const text = error instanceof Error ? error.message : t("admin.msgInquiryStatusFail");
       setMessage(text);
     }
   };
@@ -178,14 +181,14 @@ const AdminPage = () => {
     return (
       <main className="admin-shell">
         <section className="admin-login">
-          <h1>SH Admin Login</h1>
+          <h1>{t("admin.loginTitle")}</h1>
           <form onSubmit={login}>
             <label>
-              Username
+              {t("admin.username")}
               <input value={username} onChange={(event) => setUsername(event.target.value)} />
             </label>
             <label>
-              Password
+              {t("admin.password")}
               <input
                 type="password"
                 value={password}
@@ -193,12 +196,12 @@ const AdminPage = () => {
               />
             </label>
             <button type="submit" disabled={busy}>
-              {busy ? "Signing in..." : "Sign in"}
+              {busy ? t("admin.signingIn") : t("admin.signIn")}
             </button>
           </form>
-          <p className="admin-hint">Default: admin / change-me</p>
+          <p className="admin-hint">{t("admin.defaultCred")}</p>
           {message ? <p className="admin-message">{message}</p> : null}
-          <a href="/">Back to site</a>
+          <Link to="/company/ceo">{t("admin.backToSite")}</Link>
         </section>
       </main>
     );
@@ -207,48 +210,48 @@ const AdminPage = () => {
   return (
     <main className="admin-shell">
       <header className="admin-top">
-        <h1>SH Homepage Admin</h1>
+        <h1>{t("admin.title")}</h1>
         <div>
           <button type="button" onClick={logout}>
-            Logout
+            {t("admin.logout")}
           </button>
-          <a href="/">Public Site</a>
+          <Link to="/company/ceo">{t("admin.publicSite")}</Link>
         </div>
       </header>
 
       {message ? <p className="admin-message">{message}</p> : null}
 
       <section className="admin-panel">
-        <h2>Content JSON Editor</h2>
-        <p>Update hero, company, applications, products, solutions, links in one payload.</p>
+        <h2>{t("admin.contentEditor")}</h2>
+        <p>{t("admin.contentDesc")}</p>
         <textarea
           value={contentJson}
           onChange={(event) => setContentJson(event.target.value)}
           rows={20}
-          aria-label="Content JSON editor"
+          aria-label={t("admin.contentAria")}
         />
         <div className="admin-actions">
           <button type="button" onClick={saveContent} disabled={busy}>
-            Save Content
+            {t("admin.saveContent")}
           </button>
           <button
             type="button"
             onClick={() => setContentJson(JSON.stringify(content, null, 2))}
             disabled={busy}
           >
-            Reset Editor
+            {t("admin.resetEditor")}
           </button>
         </div>
       </section>
 
       <section className="admin-grid">
         <article className="admin-panel">
-          <h2>Resources</h2>
+          <h2>{t("admin.resources")}</h2>
           <form onSubmit={createResource} className="admin-inline-form">
             <input
               value={resourceTitle}
               onChange={(event) => setResourceTitle(event.target.value)}
-              placeholder="Resource title"
+              placeholder={t("admin.resourcePlaceholder")}
               required
             />
             <select
@@ -261,7 +264,7 @@ const AdminPage = () => {
               <option value="Case Study">Case Study</option>
             </select>
             <button type="submit" disabled={busy}>
-              Add
+              {t("admin.add")}
             </button>
           </form>
           <ul className="admin-list">
@@ -272,7 +275,7 @@ const AdminPage = () => {
                   <span>{item.type}</span>
                 </div>
                 <button type="button" onClick={() => deleteResource(item.id)} disabled={busy}>
-                  Delete
+                  {t("admin.delete")}
                 </button>
               </li>
             ))}
@@ -280,12 +283,12 @@ const AdminPage = () => {
         </article>
 
         <article className="admin-panel">
-          <h2>Notices</h2>
+          <h2>{t("admin.notices")}</h2>
           <form onSubmit={createNotice} className="admin-inline-form">
             <input
               value={noticeTitle}
               onChange={(event) => setNoticeTitle(event.target.value)}
-              placeholder="Notice title"
+              placeholder={t("admin.noticePlaceholder")}
               required
             />
             <input
@@ -295,7 +298,7 @@ const AdminPage = () => {
               required
             />
             <button type="submit" disabled={busy}>
-              Add
+              {t("admin.add")}
             </button>
           </form>
           <ul className="admin-list">
@@ -306,7 +309,7 @@ const AdminPage = () => {
                   <span>{item.publishedAt}</span>
                 </div>
                 <button type="button" onClick={() => deleteNotice(item.id)} disabled={busy}>
-                  Delete
+                  {t("admin.delete")}
                 </button>
               </li>
             ))}
@@ -315,18 +318,18 @@ const AdminPage = () => {
       </section>
 
       <section className="admin-panel">
-        <h2>Inquiries</h2>
-        <p>Total: {sortedInquiries.length}</p>
+        <h2>{t("admin.inquiries")}</h2>
+        <p>{t("admin.inquiryTotal", { count: sortedInquiries.length })}</p>
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Created At</th>
-                <th>Company</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Requirements</th>
+                <th>{t("admin.tableCreatedAt")}</th>
+                <th>{t("admin.tableCompany")}</th>
+                <th>{t("admin.tableName")}</th>
+                <th>{t("admin.tableEmail")}</th>
+                <th>{t("admin.tableStatus")}</th>
+                <th>{t("admin.tableRequirements")}</th>
               </tr>
             </thead>
             <tbody>
@@ -343,9 +346,9 @@ const AdminPage = () => {
                         updateInquiryStatus(item.id, event.target.value as InquiryItem["status"])
                       }
                     >
-                      <option value="received">received</option>
-                      <option value="in-review">in-review</option>
-                      <option value="done">done</option>
+                      <option value="received">{t("admin.status.received")}</option>
+                      <option value="in-review">{t("admin.status.in-review")}</option>
+                      <option value="done">{t("admin.status.done")}</option>
                     </select>
                   </td>
                   <td>{item.requirements || "-"}</td>
