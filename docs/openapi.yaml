@@ -1,0 +1,578 @@
+openapi: 3.0.3
+info:
+  title: SH Homepage API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8787
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                required: [ok]
+  /api/auth/login:
+    post:
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/content:
+    get:
+      summary: Get public site content
+      responses:
+        "200":
+          description: Content payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+  /api/admin/content:
+    put:
+      summary: Replace public site content
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteContent"
+      responses:
+        "200":
+          description: Updated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/resources:
+    get:
+      summary: Get resource list
+      responses:
+        "200":
+          description: Resource list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResourceItem"
+  /api/admin/resources:
+    post:
+      summary: Create resource
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceUpsertRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceItem"
+  /api/admin/resources/{id}:
+    put:
+      summary: Update resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceUpsertRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceItem"
+    delete:
+      summary: Delete resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+  /api/notices:
+    get:
+      summary: Get notice list
+      responses:
+        "200":
+          description: Notice list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoticeItem"
+  /api/admin/notices:
+    post:
+      summary: Create notice
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoticeUpsertRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoticeItem"
+  /api/admin/notices/{id}:
+    put:
+      summary: Update notice
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoticeUpsertRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoticeItem"
+    delete:
+      summary: Delete notice
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+  /api/inquiries:
+    post:
+      summary: Create inquiry from public form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InquiryCreateRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InquiryItem"
+        "400":
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/admin/inquiries:
+    get:
+      summary: Get inquiry list
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Inquiry list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InquiryItem"
+  /api/admin/inquiries/{id}/status:
+    put:
+      summary: Update inquiry status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [received, in-review, done]
+              required: [status]
+      responses:
+        "200":
+          description: Updated inquiry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InquiryItem"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
+    HeroSlide:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        ctaLabel:
+          type: string
+        ctaTarget:
+          type: string
+      required: [id, title, subtitle, ctaLabel, ctaTarget]
+    ApplicationCategory:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        summary:
+          type: string
+        process:
+          type: string
+        recommendedProductCategory:
+          type: string
+      required: [id, name, summary, process, recommendedProductCategory]
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        manufacturer:
+          type: string
+        wavelengthNm:
+          type: string
+        powerW:
+          type: number
+        interface:
+          type: string
+        benefit:
+          type: string
+        datasheetUrl:
+          type: string
+        cadUrl:
+          type: string
+      required:
+        - id
+        - name
+        - category
+        - manufacturer
+        - wavelengthNm
+        - powerW
+        - interface
+        - benefit
+        - datasheetUrl
+        - cadUrl
+    PartnerBrand:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [Laser, Measurement, Optics, Vision]
+        url:
+          type: string
+      required: [id, name, category, url]
+    SolutionArea:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        overview:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+      required: [id, title, overview, capabilities]
+    ReferenceLink:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+      required: [name, url]
+    QuickLink:
+      type: object
+      properties:
+        label:
+          type: string
+        url:
+          type: string
+      required: [label, url]
+    SiteContact:
+      type: object
+      properties:
+        headquarter:
+          type: string
+        rdCenter:
+          type: string
+        tel:
+          type: string
+        fax:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+      required: [headquarter, rdCenter, tel, fax, email, website]
+    SiteContent:
+      type: object
+      properties:
+        heroSlides:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeroSlide"
+        applications:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationCategory"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        partners:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartnerBrand"
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SolutionArea"
+        benchmarkReferences:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceLink"
+        quickLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuickLink"
+        processSteps:
+          type: array
+          items:
+            type: string
+        ceoMessage:
+          type: string
+        visionItems:
+          type: array
+          items:
+            type: string
+        contact:
+          $ref: "#/components/schemas/SiteContact"
+      required:
+        - heroSlides
+        - applications
+        - products
+        - partners
+        - solutions
+        - benchmarkReferences
+        - quickLinks
+        - processSteps
+        - ceoMessage
+        - visionItems
+        - contact
+    ResourceItem:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [Catalog, White Paper, Certificate, Case Study]
+      required: [id, title, type]
+    ResourceUpsertRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [Catalog, White Paper, Certificate, Case Study]
+      required: [title, type]
+    NoticeItem:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        publishedAt:
+          type: string
+          format: date
+      required: [id, title, publishedAt]
+    NoticeUpsertRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        publishedAt:
+          type: string
+          format: date
+      required: [title, publishedAt]
+    InquiryCreateRequest:
+      type: object
+      properties:
+        company:
+          type: string
+        position:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        contactNumber:
+          type: string
+        requirements:
+          type: string
+        consent:
+          type: boolean
+      required: [company, name, email, consent]
+    InquiryItem:
+      type: object
+      properties:
+        id:
+          type: string
+        company:
+          type: string
+        position:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        contactNumber:
+          type: string
+        requirements:
+          type: string
+        status:
+          type: string
+          enum: [received, in-review, done]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - company
+        - position
+        - name
+        - email
+        - contactNumber
+        - requirements
+        - status
+        - createdAt

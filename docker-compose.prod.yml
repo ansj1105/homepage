@@ -1,0 +1,23 @@
+services:
+  backend:
+    environment:
+      CORS_ORIGIN: https://${NGINX_SERVER_NAME}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+  frontend:
+    profiles: ["dev"]
+
+  frontend_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.prod
+    container_name: sh_homepage_frontend
+    depends_on:
+      - backend
+    environment:
+      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME}
+    ports:
+      - "${FRONTEND_HTTP_PORT:-80}:80"
+      - "${FRONTEND_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./docker/certs:/etc/nginx/certs:ro
