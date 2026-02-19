@@ -15,7 +15,8 @@
     "docker:down": "docker compose down",
     "docker:up:prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build",
     "docker:down:prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml down",
-    "deploy:prod": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\deploy-prod.ps1"
+    "deploy:prod": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\deploy-prod.ps1",
+    "deploy:prod:linux": "bash ./scripts/deploy-prod.sh"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -72,6 +72,14 @@ Prerequisites:
 1. DNS `A` record for `sdsaasddf1.com` points to your server public IP.
 2. Inbound ports `80` and `443` are open in server firewall/security group.
 3. Docker is installed and running.
+4. Ubuntu server has `certbot` installed.
+
+Install certbot on Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y certbot
+```
 
 Issue certificate with Let's Encrypt (host command example):
 
@@ -88,6 +96,13 @@ sudo mkdir -p docker/certs
 sudo cp /etc/letsencrypt/live/sdsaasddf1.com/fullchain.pem docker/certs/fullchain.pem
 sudo cp /etc/letsencrypt/live/sdsaasddf1.com/privkey.pem docker/certs/privkey.pem
 sudo chmod 600 docker/certs/privkey.pem
+```
+
+Renewal note (Ubuntu):
+- `sudo systemctl status certbot.timer` should be `active`.
+- After renewal, copy refreshed cert files again to `docker/certs` and redeploy:
+```bash
+npm run deploy:prod:linux -- --no-build
 ```
 
 ### 4.2 Configure env
@@ -107,6 +122,13 @@ Behavior:
 - Port 443 serves frontend and proxies `/api` to backend.
 
 ### 4.4 One-command deployment script
+Ubuntu/Linux:
+```bash
+chmod +x scripts/deploy-prod.sh
+npm run deploy:prod:linux
+```
+
+Windows (PowerShell):
 ```powershell
 npm run deploy:prod
 ```
