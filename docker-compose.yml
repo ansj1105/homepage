@@ -40,11 +40,11 @@ services:
     env_file:
       - .env
     environment:
-      PORT: ${PORT:-8787}
+      PORT: ${PORT:-3000}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
-      - "${PORT:-8787}:8787"
+      - "${PORT:-3000}:3000"
     depends_on:
       db:
         condition: service_healthy
