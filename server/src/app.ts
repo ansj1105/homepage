@@ -27,6 +27,7 @@ import {
   updateNotice,
   updateResource
 } from "./db";
+import { getUploadMaxBytes, getUploadRoot, storeUploadFile } from "./uploads";
 import {
   parseCmsPageUpsert,
   parseInquiryCreate,
@@ -76,7 +77,10 @@ const requireAdmin = (req: Request, res: Response, next: NextFunction): void => 
 const corsMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const origin = process.env.CORS_ORIGIN ?? "*";
   res.header("Access-Control-Allow-Origin", origin);
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-File-Name, X-File-Type"
+  );
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if (req.method === "OPTIONS") {
     res.sendStatus(204);
@@ -96,6 +100,21 @@ const errorMiddleware = (
     return;
   }
   if (err instanceof Error) {
+    if ((err as Error & { name?: string }).name === "PayloadTooLargeError") {
+      res.status(413).json({ message: "Uploaded file is too large." });
+      return;
+    }
+    if (err.message.includes("File is too large")) {
+      res.status(413).json({ message: err.message });
+      return;
+    }
+    if (
+      err.message.includes("Unsupported file extension") ||
+      err.message.includes("File is empty")
+    ) {
+      res.status(400).json({ message: err.message });
+      return;
+    }
     res.status(500).json({ message: err.message });
     return;
   }
@@ -105,6 +124,7 @@ const errorMiddleware = (
 export const createApp = () => {
   const app = express();
   app.use(corsMiddleware);
+  app.use("/api/files", express.static(getUploadRoot()));
   app.use(express.json({ limit: "1mb" }));
 
   app.get("/api/health", (_req, res) => {
@@ -362,6 +382,39 @@ export const createApp = () => {
       next(error);
     }
   });
+
+  app.post(
+    "/api/uploads/inquiry",
+    express.raw({ type: "application/octet-stream", limit: getUploadMaxBytes("inquiry") }),
+    async (req, res, next) => {
+      try {
+        const fileBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+        const fileName = decodeURIComponent(req.header("x-file-name") ?? "inquiry_file");
+        const mimeType = req.header("x-file-type") ?? "application/octet-stream";
+        const stored = await storeUploadFile("inquiry", fileBuffer, fileName, mimeType);
+        res.status(201).json(stored);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    "/api/admin/uploads/resource",
+    requireAdmin,
+    express.raw({ type: "application/octet-stream", limit: getUploadMaxBytes("resource") }),
+    async (req, res, next) => {
+      try {
+        const fileBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+        const fileName = decodeURIComponent(req.header("x-file-name") ?? "resource_file");
+        const mimeType = req.header("x-file-type") ?? "application/octet-stream";
+        const stored = await storeUploadFile("resource", fileBuffer, fileName, mimeType);
+        res.status(201).json(stored);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   app.get("/api/admin/inquiries", requireAdmin, async (_req, res, next) => {
     try {

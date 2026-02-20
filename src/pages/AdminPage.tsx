@@ -71,6 +71,8 @@ const AdminPage = () => {
   const [resourceTitle, setResourceTitle] = useState("");
   const [resourceType, setResourceType] = useState<ResourceItem["type"]>("Catalog");
   const [resourceFileUrl, setResourceFileUrl] = useState("");
+  const [resourceUploadFile, setResourceUploadFile] = useState<File | null>(null);
+  const [resourceFileInputKey, setResourceFileInputKey] = useState(0);
   const [resourceMarkdown, setResourceMarkdown] = useState("");
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeDate, setNoticeDate] = useState(new Date().toISOString().slice(0, 10));
@@ -396,17 +398,24 @@ const AdminPage = () => {
     setBusy(true);
     setMessage("");
     try {
+      let resolvedFileUrl = resourceFileUrl.trim();
+      if (resourceUploadFile) {
+        const uploaded = await apiClient.adminUploadResourceFile(resourceUploadFile, token);
+        resolvedFileUrl = uploaded.url;
+      }
       await apiClient.adminCreateResource(
         {
           title: resourceTitle,
           type: resourceType,
-          fileUrl: resourceFileUrl,
+          fileUrl: resolvedFileUrl,
           markdown: resourceMarkdown
         },
         token
       );
       setResourceTitle("");
       setResourceFileUrl("");
+      setResourceUploadFile(null);
+      setResourceFileInputKey((prev) => prev + 1);
       setResourceMarkdown("");
       await loadAdminData(token);
       setMessage(t("admin.msgResourceAddOk"));
@@ -856,6 +865,12 @@ const AdminPage = () => {
           onChange={(event) => setResourceFileUrl(event.target.value)}
           placeholder="다운로드 파일 URL 또는 경로"
         />
+        <input
+          key={resourceFileInputKey}
+          type="file"
+          onChange={(event) => setResourceUploadFile(event.target.files?.[0] ?? null)}
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.zip,.hwp,.txt,.md"
+        />
         <textarea
           rows={4}
           value={resourceMarkdown}
@@ -1024,6 +1039,7 @@ const AdminPage = () => {
               <th>{t("admin.tableCompany")}</th>
               <th>{t("admin.tableName")}</th>
               <th>{t("admin.tableEmail")}</th>
+              <th>첨부파일</th>
               <th>{t("admin.tableStatus")}</th>
               <th>{t("admin.tableRequirements")}</th>
             </tr>
@@ -1036,6 +1052,15 @@ const AdminPage = () => {
                 <td>{item.company}</td>
                 <td>{item.name}</td>
                 <td>{item.email}</td>
+                <td>
+                  {item.attachmentUrl ? (
+                    <a href={item.attachmentUrl} target="_blank" rel="noreferrer">
+                      {item.attachmentName || "다운로드"}
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td>
                   <select
                     value={item.status}

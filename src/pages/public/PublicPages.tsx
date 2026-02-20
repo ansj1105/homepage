@@ -15,10 +15,39 @@ import { MarkdownBlock } from "./MarkdownBlock";
 import { SectionHeading } from "./SectionHeading";
 import { CompanySectionShell } from "./CompanySectionShell";
 
+const INQUIRY_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
+const INQUIRY_ALLOWED_EXTENSIONS = new Set([
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".zip"
+]);
+
+const getFileExtension = (filename: string) => {
+  const dotIndex = filename.lastIndexOf(".");
+  if (dotIndex < 0) return "";
+  return filename.slice(dotIndex).toLowerCase();
+};
+
 export const CompanyCeoPage = () => {
   const { t } = usePublicOutlet();
   const fallback = defaultCmsPages.find((item) => item.slug === "company-ceo")!;
   const [page, setPage] = useState<CmsPage>(fallback);
+  const ceoImageUrl = page.imageUrl?.includes("sub1_1_img02.png")
+    ? "/assets/legacy-sync/sub1_1_img01.jpg"
+    : page.imageUrl || fallback.imageUrl;
+  const markdownSource = page.markdown || fallback.markdown;
+  const hasMarkdownImage = /!\[[^\]]*]\(([^)]+)\)/.test(markdownSource);
+  const ceoMarkdown = hasMarkdownImage ? markdownSource : `![${t("company.ceo.visualAlt")}](${ceoImageUrl})\n\n${markdownSource}`;
 
   useEffect(() => {
     apiClient
@@ -31,16 +60,10 @@ export const CompanyCeoPage = () => {
 
   return (
     <CompanySectionShell title={page.title || t("company.ceo.pageTitle")}>
-      <div className="company-ceo-visual">
-        <img src={page.imageUrl || fallback.imageUrl} alt={t("company.ceo.visualAlt")} />
-      </div>
-
-      <div className="company-ceo-copy">
-        <MarkdownBlock markdown={page.markdown || fallback.markdown} />
-      </div>
-
-      <div className="company-ceo-sign">
-        <img src="/assets/legacy/images/sub1_1_img03.png" alt={t("company.ceo.signatureAlt")} />
+      <div className="sub1_1">
+        <div className="company-ceo-copy cont_sec">
+          <MarkdownBlock markdown={ceoMarkdown} />
+        </div>
       </div>
     </CompanySectionShell>
   );
@@ -62,7 +85,7 @@ export const CompanyVisionPage = () => {
 
   return (
     <CompanySectionShell title={page.title || t("company.title.vision")}>
-      <section className="company-vision">
+      <section className="company-vision sub1_2">
         <div className="company-vision-image-wrap">
           <img
             src={page.imageUrl || fallback.imageUrl}
@@ -141,7 +164,6 @@ export const PartnerCorePage = () => {
     >
       <div className="partner-core-content">
         <div className="sub2_1" />
-        <img src={page.imageUrl || fallback.imageUrl} alt={t("partner.core.imageAlt")} />
         <MarkdownBlock markdown={page.markdown || fallback.markdown} />
       </div>
     </CompanySectionShell>
@@ -327,6 +349,28 @@ export const QuoteInquiryPage = () => {
     const hp2 = String(formData.get("s_v2_hp2") ?? "");
     const hp3 = String(formData.get("s_v2_hp3") ?? "");
     const phone = [hp1, hp2, hp3].filter(Boolean).join("-");
+    const attachment = formData.get("s_v4");
+    let uploaded:
+      | {
+          url: string;
+          originalName: string;
+          size: number;
+          mimeType: string;
+        }
+      | undefined;
+
+    if (attachment instanceof File && attachment.size > 0) {
+      const extension = getFileExtension(attachment.name);
+      if (!INQUIRY_ALLOWED_EXTENSIONS.has(extension)) {
+        setSubmittedMessage(t("inquiry.form.fileErrorType"));
+        return;
+      }
+      if (attachment.size > INQUIRY_ATTACHMENT_MAX_BYTES) {
+        setSubmittedMessage(t("inquiry.form.fileErrorSize"));
+        return;
+      }
+      uploaded = await apiClient.uploadInquiryAttachment(attachment);
+    }
 
     const payload: InquiryCreateRequest = {
       inquiryType: "quote",
@@ -336,15 +380,19 @@ export const QuoteInquiryPage = () => {
       email: String(formData.get("s_v3") ?? ""),
       contactNumber: phone,
       requirements: String(formData.get("s_t1") ?? ""),
-      consent: true
+      consent: true,
+      attachmentUrl: uploaded?.url ?? "",
+      attachmentName: uploaded?.originalName ?? "",
+      attachmentSize: uploaded?.size ?? 0,
+      attachmentMimeType: uploaded?.mimeType ?? ""
     };
 
     try {
       await apiClient.submitInquiry(payload);
       setSubmittedMessage(t("inquiry.form.ok"));
       event.currentTarget.reset();
-    } catch {
-      setSubmittedMessage(t("inquiry.form.fail"));
+    } catch (error) {
+      setSubmittedMessage(error instanceof Error ? error.message : t("inquiry.form.fail"));
     }
   };
 
@@ -375,41 +423,87 @@ export const QuoteInquiryPage = () => {
             <tr>
               <th className="t_left">{t("inquiry.form.name")}</th>
               <td>
-                <input type="text" name="s_v1" id="s_v1" style={{ width: "100%" }} required />
+                <input
+                  type="text"
+                  name="s_v1"
+                  id="s_v1"
+                  style={{ width: "100%" }}
+                  placeholder={t("inquiry.form.placeholder.name")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.contact")}</th>
-              <td>
-                <select name="s_v2_hp1" style={{ width: 55 }} defaultValue="010" title="휴대전화 첫번째">
-                  <option value="">선택</option>
+              <td className="inquiry-contact-fields">
+                <select
+                  name="s_v2_hp1"
+                  className="inquiry-phone-prefix"
+                  defaultValue="010"
+                  title={t("inquiry.form.placeholder.phonePrefix")}
+                >
+                  <option value="">{t("inquiry.form.placeholder.phonePrefix")}</option>
                   <option value="010">010</option>
                   <option value="011">011</option>
                   <option value="016">016</option>
                   <option value="017">017</option>
                   <option value="018">018</option>
                   <option value="019">019</option>
-                </select>{" "}
-                - <input type="text" name="s_v2_hp2" size={4} maxLength={4} required /> -{" "}
-                <input type="text" name="s_v2_hp3" size={4} maxLength={4} required />
+                </select>
+                <span>-</span>
+                <input
+                  type="text"
+                  name="s_v2_hp2"
+                  size={4}
+                  maxLength={4}
+                  placeholder={t("inquiry.form.placeholder.phoneMiddle")}
+                  required
+                />
+                <span>-</span>
+                <input
+                  type="text"
+                  name="s_v2_hp3"
+                  size={4}
+                  maxLength={4}
+                  placeholder={t("inquiry.form.placeholder.phoneLast")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.email")}</th>
               <td>
-                <input type="email" name="s_v3" id="s_v3" required />
+                <input
+                  type="email"
+                  name="s_v3"
+                  id="s_v3"
+                  placeholder={t("inquiry.form.placeholder.email")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.requirements")}</th>
               <td>
-                <textarea name="s_t1" id="s_t1" style={{ width: "100%", height: 115 }} />
+                <textarea
+                  name="s_t1"
+                  id="s_t1"
+                  style={{ width: "100%", height: 115 }}
+                  placeholder={t("inquiry.form.placeholder.requirements")}
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.file")}</th>
               <td>
-                <input type="file" id="s_v4" name="s_v4" style={{ maxWidth: 200 }} />
+                <input
+                  type="file"
+                  id="s_v4"
+                  name="s_v4"
+                  className="inquiry-file-input"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.zip"
+                />
+                <p className="inquiry-file-hint">{t("inquiry.form.filePolicy")}</p>
               </td>
             </tr>
           </tbody>
@@ -434,6 +528,29 @@ export const TestDemoPage = () => {
 
     const productName = String(formData.get("s_v4") ?? "");
     const body = String(formData.get("s_t1") ?? "");
+    const attachment = formData.get("s_v5");
+    let uploaded:
+      | {
+          url: string;
+          originalName: string;
+          size: number;
+          mimeType: string;
+        }
+      | undefined;
+
+    if (attachment instanceof File && attachment.size > 0) {
+      const extension = getFileExtension(attachment.name);
+      if (!INQUIRY_ALLOWED_EXTENSIONS.has(extension)) {
+        setSubmittedMessage(t("inquiry.form.fileErrorType"));
+        return;
+      }
+      if (attachment.size > INQUIRY_ATTACHMENT_MAX_BYTES) {
+        setSubmittedMessage(t("inquiry.form.fileErrorSize"));
+        return;
+      }
+      uploaded = await apiClient.uploadInquiryAttachment(attachment);
+    }
+
     const payload: InquiryCreateRequest = {
       inquiryType: "test-demo",
       company: t("inquiry.form.companyFallback"),
@@ -442,15 +559,19 @@ export const TestDemoPage = () => {
       email: String(formData.get("s_v3") ?? ""),
       contactNumber: String(formData.get("s_v2") ?? ""),
       requirements: productName ? `[${t("inquiry.form.productName")}] ${productName}\n${body}` : body,
-      consent: true
+      consent: true,
+      attachmentUrl: uploaded?.url ?? "",
+      attachmentName: uploaded?.originalName ?? "",
+      attachmentSize: uploaded?.size ?? 0,
+      attachmentMimeType: uploaded?.mimeType ?? ""
     };
 
     try {
       await apiClient.submitInquiry(payload);
       setSubmittedMessage(t("inquiry.form.ok"));
       event.currentTarget.reset();
-    } catch {
-      setSubmittedMessage(t("inquiry.form.fail"));
+    } catch (error) {
+      setSubmittedMessage(error instanceof Error ? error.message : t("inquiry.form.fail"));
     }
   };
 
@@ -481,37 +602,77 @@ export const TestDemoPage = () => {
             <tr>
               <th className="t_left">{t("inquiry.form.productName")}</th>
               <td>
-                <input type="text" name="s_v4" id="s_v4" style={{ width: "100%" }} required />
+                <input
+                  type="text"
+                  name="s_v4"
+                  id="s_v4"
+                  style={{ width: "100%" }}
+                  placeholder={t("inquiry.form.placeholder.productName")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.applicant")}</th>
               <td>
-                <input type="text" name="s_v1" id="s_v1" style={{ width: "100%" }} required />
+                <input
+                  type="text"
+                  name="s_v1"
+                  id="s_v1"
+                  style={{ width: "100%" }}
+                  placeholder={t("inquiry.form.placeholder.name")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.contact")}</th>
               <td>
-                <input type="text" name="s_v2" id="s_v2" style={{ width: "100%" }} required />
+                <input
+                  type="text"
+                  name="s_v2"
+                  id="s_v2"
+                  style={{ width: "100%" }}
+                  placeholder={t("inquiry.form.placeholder.phoneFull")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.email")}</th>
               <td>
-                <input type="email" name="s_v3" id="s_v3" style={{ width: "100%" }} required />
+                <input
+                  type="email"
+                  name="s_v3"
+                  id="s_v3"
+                  style={{ width: "100%" }}
+                  placeholder={t("inquiry.form.placeholder.email")}
+                  required
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.requirements")}</th>
               <td>
-                <textarea name="s_t1" id="s_t1" style={{ width: "100%", height: 115 }} />
+                <textarea
+                  name="s_t1"
+                  id="s_t1"
+                  style={{ width: "100%", height: 115 }}
+                  placeholder={t("inquiry.form.placeholder.requirements")}
+                />
               </td>
             </tr>
             <tr>
               <th className="t_left">{t("inquiry.form.file")}</th>
               <td>
-                <input type="file" id="s_v5" name="s_v5" style={{ maxWidth: 200 }} />
+                <input
+                  type="file"
+                  id="s_v5"
+                  name="s_v5"
+                  className="inquiry-file-input"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.zip"
+                />
+                <p className="inquiry-file-hint">{t("inquiry.form.filePolicy")}</p>
               </td>
             </tr>
           </tbody>
@@ -564,7 +725,7 @@ export const InquiryLibraryPage = () => {
           {t("inquiry.library.totalSuffix")}
         </p>
         <div className="search_wrap">
-          <form style={{ margin: 0 }} onSubmit={(event) => event.preventDefault()}>
+          <form role="search" style={{ margin: 0 }} onSubmit={(event) => event.preventDefault()}>
             <select
               value={keyfield}
               onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
@@ -577,6 +738,7 @@ export const InquiryLibraryPage = () => {
               type="text"
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
+              placeholder={t("inquiry.library.search.placeholder")}
               aria-label={t("inquiry.library.search.placeholder")}
             />
             <input type="submit" className="search_btn" value={t("inquiry.library.search.submit")} />
@@ -742,41 +904,41 @@ export const NoticePage = () => {
       heroClassName="company-shell-hero notice-shell-hero"
       tabs={[{ label: t("notice.title"), to: "/notice" }]}
     >
-      <div className="library-toolbar">
-        <p className="library-total">
+      <div className="list_board">
+        <p className="total">
           {t("notice.totalPrefix")}
           <span>{filteredNotices.length}</span>
           {t("notice.totalSuffix")}
         </p>
-        <form className="library-search" role="search" onSubmit={(event) => event.preventDefault()}>
-          <select
-            value={keyfield}
-            onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
-            aria-label={t("notice.search.keyfield")}
-          >
-            <option value="title">{t("notice.search.title")}</option>
-            <option value="file">{t("notice.search.file")}</option>
-          </select>
-          <input
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder={t("notice.search.placeholder")}
-            aria-label={t("notice.search.placeholder")}
-          />
-          <button type="submit">{t("notice.search.submit")}</button>
-        </form>
-      </div>
+        <div className="search_wrap">
+          <form role="search" style={{ margin: 0 }} onSubmit={(event) => event.preventDefault()}>
+            <select
+              value={keyfield}
+              onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
+              aria-label={t("notice.search.keyfield")}
+            >
+              <option value="title">{t("notice.search.title")}</option>
+              <option value="file">{t("notice.search.file")}</option>
+            </select>
+            <input
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder={t("notice.search.placeholder")}
+              aria-label={t("notice.search.placeholder")}
+            />
+            <input type="submit" className="search_btn" value={t("notice.search.submit")} />
+          </form>
+        </div>
 
-      <div className="library-table-wrap">
-        <table className="library-table">
+        <table cellPadding={0} cellSpacing={0} border={0} className="list_board_table">
           <colgroup>
-            <col width="90" />
-            <col />
-            <col width="120" />
-            <col width="130" />
-            <col width="90" />
+            <col width="80" className="pc_display" />
+            <col width="*" />
+            <col width="80" className="pc_display" />
+            <col width="120" className="pc_display" />
+            <col width="100" className="pc_display" />
           </colgroup>
-          <thead>
+          <thead className="pc_display">
             <tr>
               <th scope="col">{t("notice.table.no")}</th>
               <th scope="col">{t("notice.table.title")}</th>
@@ -788,25 +950,30 @@ export const NoticePage = () => {
           <tbody>
             {filteredNotices.length === 0 ? (
               <tr>
-                <td colSpan={5} className="is-empty">
+                <td colSpan={5} className="farm-A-empty t_center">
                   {t("notice.empty")}
                 </td>
               </tr>
             ) : (
               filteredNotices.map((notice, index) => (
                 <tr key={notice.id}>
-                  <td>{filteredNotices.length - index}</td>
-                  <td className="is-title">
+                  <td className="pc_display">{filteredNotices.length - index}</td>
+                  <td>
                     <Link to={`/notice/${notice.id}`}>{notice.title}</Link>
                   </td>
-                  <td>-</td>
-                  <td>{new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}</td>
-                  <td>-</td>
+                  <td className="pc_display">-</td>
+                  <td className="pc_display">
+                    {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
+                  </td>
+                  <td className="pc_display">-</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        <div className="paginate t_center">
+          <div className="ui-pagenate" />
+        </div>
       </div>
     </CompanySectionShell>
   );

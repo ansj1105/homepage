@@ -92,6 +92,10 @@ export interface InquiryCreateRequest {
   contactNumber: string;
   requirements: string;
   consent: boolean;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentSize?: number;
+  attachmentMimeType?: string;
 }
 
 export interface InquiryItem extends InquiryCreateRequest {
@@ -99,6 +103,13 @@ export interface InquiryItem extends InquiryCreateRequest {
   status: "in-review" | "done";
   isRead: boolean;
   createdAt: string;
+}
+
+export interface UploadedFileResponse {
+  url: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
 }
 
 export interface MainPageSettings {

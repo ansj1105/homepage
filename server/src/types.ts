@@ -64,6 +64,10 @@ export interface InquiryRow {
   contact_number: string;
   requirements: string;
   consent: boolean;
+  attachment_url: string;
+  attachment_name: string;
+  attachment_size: string;
+  attachment_mime_type: string;
   status: InquiryItem["status"];
   is_read: boolean;
   created_at: string;

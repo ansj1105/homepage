@@ -105,6 +105,10 @@ export const inquirySchema = z.object({
   contactNumber: z.string(),
   requirements: z.string(),
   consent: z.boolean(),
+  attachmentUrl: z.string().default(""),
+  attachmentName: z.string().default(""),
+  attachmentSize: z.number().int().nonnegative().default(0),
+  attachmentMimeType: z.string().default(""),
   status: z.enum(["in-review", "done"]),
   isRead: z.boolean(),
   createdAt: z.string().datetime()
@@ -143,7 +147,11 @@ const inquiryCreateSchema = z.object({
   email: z.string().email(),
   contactNumber: z.string().default(""),
   requirements: z.string().default(""),
-  consent: z.literal(true)
+  consent: z.literal(true),
+  attachmentUrl: z.string().default(""),
+  attachmentName: z.string().default(""),
+  attachmentSize: z.number().int().nonnegative().default(0),
+  attachmentMimeType: z.string().default("")
 });
 
 const inquiryStatusSchema = z.object({

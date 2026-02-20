@@ -61,6 +61,10 @@ const mapInquiryRow = (row: InquiryRow): InquiryItem => ({
   contactNumber: row.contact_number,
   requirements: row.requirements,
   consent: row.consent,
+  attachmentUrl: row.attachment_url,
+  attachmentName: row.attachment_name,
+  attachmentSize: Number(row.attachment_size ?? "0"),
+  attachmentMimeType: row.attachment_mime_type,
   status: row.status,
   isRead: row.is_read,
   createdAt: row.created_at
@@ -554,9 +558,13 @@ export const deleteNotice = async (id: string): Promise<boolean> => {
 export const createInquiry = async (payload: InquiryCreatePayload): Promise<InquiryItem> => {
   const result = await pool.query<InquiryRow>(
     `INSERT INTO inquiries
-      (inquiry_type, company, position, name, email, contact_number, requirements, consent, status, is_read)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'in-review', FALSE)
-     RETURNING id, inquiry_type, company, position, name, email, contact_number, requirements, consent, status, is_read, created_at`,
+      (
+        inquiry_type, company, position, name, email, contact_number, requirements, consent,
+        attachment_url, attachment_name, attachment_size, attachment_mime_type, status, is_read
+      )
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'in-review', FALSE)
+     RETURNING id, inquiry_type, company, position, name, email, contact_number, requirements, consent,
+               attachment_url, attachment_name, attachment_size, attachment_mime_type, status, is_read, created_at`,
     [
       payload.inquiryType,
       payload.company,
@@ -565,7 +573,11 @@ export const createInquiry = async (payload: InquiryCreatePayload): Promise<Inqu
       payload.email,
       payload.contactNumber,
       payload.requirements,
-      payload.consent
+      payload.consent,
+      payload.attachmentUrl ?? "",
+      payload.attachmentName ?? "",
+      payload.attachmentSize ?? 0,
+      payload.attachmentMimeType ?? ""
     ]
   );
   return mapInquiryRow(result.rows[0]);
@@ -573,7 +585,8 @@ export const createInquiry = async (payload: InquiryCreatePayload): Promise<Inqu
 
 export const listInquiries = async (): Promise<InquiryItem[]> => {
   const result = await pool.query<InquiryRow>(
-    `SELECT id, inquiry_type, company, position, name, email, contact_number, requirements, consent, status, is_read, created_at
+    `SELECT id, inquiry_type, company, position, name, email, contact_number, requirements, consent,
+            attachment_url, attachment_name, attachment_size, attachment_mime_type, status, is_read, created_at
      FROM inquiries
      ORDER BY created_at DESC`
   );
@@ -588,7 +601,8 @@ export const updateInquiryStatus = async (
     `UPDATE inquiries
      SET status = $2, is_read = TRUE
      WHERE id = $1
-     RETURNING id, inquiry_type, company, position, name, email, contact_number, requirements, consent, status, is_read, created_at`,
+     RETURNING id, inquiry_type, company, position, name, email, contact_number, requirements, consent,
+               attachment_url, attachment_name, attachment_size, attachment_mime_type, status, is_read, created_at`,
     [id, status]
   );
   return result.rows[0] ? mapInquiryRow(result.rows[0]) : null;

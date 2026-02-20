@@ -6,7 +6,8 @@ import type {
   NoticeItem,
   PublicSiteSettings,
   ResourceItem,
-  SiteContent
+  SiteContent,
+  UploadedFileResponse
 } from "../types";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -57,6 +58,22 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  uploadInquiryAttachment: async (file: File) => {
+    const response = await fetch(`${apiBase}/api/uploads/inquiry`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "X-File-Name": encodeURIComponent(file.name),
+        "X-File-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message || `Upload failed: ${response.status}`);
+    }
+    return (await response.json()) as UploadedFileResponse;
+  },
   adminLogin: (username: string, password: string) =>
     request<{ token: string }>("/api/auth/login", {
       method: "POST",
@@ -121,6 +138,23 @@ export const apiClient = {
     ),
   adminDeleteCmsPage: (slug: string, token: string) =>
     request<void>(`/api/admin/cms-pages/${slug}`, { method: "DELETE" }, token),
+  adminUploadResourceFile: async (file: File, token: string) => {
+    const response = await fetch(`${apiBase}/api/admin/uploads/resource`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/octet-stream",
+        "X-File-Name": encodeURIComponent(file.name),
+        "X-File-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message || `Upload failed: ${response.status}`);
+    }
+    return (await response.json()) as UploadedFileResponse;
+  },
   adminCreateResource: (payload: Omit<ResourceItem, "id">, token: string) =>
     request<ResourceItem>(
       "/api/admin/resources",
