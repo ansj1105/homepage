@@ -1,12 +1,14 @@
-﻿import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import {
   CompanyCeoPage,
   CompanyLocationPage,
   CompanyVisionPage,
-  DefaultRedirect,
+  InquiryLibraryDetailPage,
   InquiryLibraryPage,
   NotFoundPage,
+  NoticeDetailPage,
   NoticePage,
   PartnerCorePage,
   ProductCategoryListPage,
@@ -20,12 +22,13 @@ import {
 const App = () => (
   <BrowserRouter>
     <Routes>
+      <Route path="/" element={<MainPage />} />
+      <Route path="/main" element={<MainPage />} />
       <Route path="/admin" element={<AdminPage />} />
 
       <Route path="/" element={<PublicLayout />}>
-        <Route index element={<DefaultRedirect />} />
-
         <Route path="company">
+          <Route index element={<Navigate to="ceo" replace />} />
           <Route path="ceo" element={<CompanyCeoPage />} />
           <Route path="vision" element={<CompanyVisionPage />} />
           <Route path="location" element={<CompanyLocationPage />} />
@@ -45,9 +48,11 @@ const App = () => (
           <Route path="quote" element={<QuoteInquiryPage />} />
           <Route path="test-demo" element={<TestDemoPage />} />
           <Route path="library" element={<InquiryLibraryPage />} />
+          <Route path="library/:resourceId" element={<InquiryLibraryDetailPage />} />
         </Route>
 
         <Route path="notice" element={<NoticePage />} />
+        <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

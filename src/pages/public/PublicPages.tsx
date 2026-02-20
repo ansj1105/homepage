@@ -1,4 +1,4 @@
-﻿import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { apiClient } from "../../api/client";
 import {
@@ -11,89 +11,139 @@ import type { InquiryCreateRequest, InquiryItem, ResourceItem } from "../../type
 import { usePublicOutlet } from "./context";
 import { findRelatedProducts, resourceTypeLabel } from "./helpers";
 import { SectionHeading } from "./SectionHeading";
+import { CompanySectionShell } from "./CompanySectionShell";
 
 export const CompanyCeoPage = () => {
-  const { content, t } = usePublicOutlet();
+  const { t } = usePublicOutlet();
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("company.title.ceo")} subtitle={t("section.company")} />
-      <article className="content-card">
-        <p>{content.ceoMessage || t("company.ceo.default")}</p>
-      </article>
-    </section>
+    <CompanySectionShell title={t("company.ceo.pageTitle")}>
+      <div className="company-ceo-visual">
+        <img src="/assets/legacy/images/sub1_1_img02.png" alt={t("company.ceo.visualAlt")} />
+      </div>
+
+      <dl className="company-ceo-copy">
+        <dt>{t("company.ceo.headline")}</dt>
+        <dd>{t("company.ceo.description")}</dd>
+      </dl>
+
+      <div className="company-ceo-sign">
+        <img src="/assets/legacy/images/sub1_1_img03.png" alt={t("company.ceo.signatureAlt")} />
+      </div>
+    </CompanySectionShell>
   );
 };
 
 export const CompanyVisionPage = () => {
-  const { content, t } = usePublicOutlet();
-  const items = content.visionItems.length > 0 ? content.visionItems : [t("company.vision.default")];
+  const { t } = usePublicOutlet();
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("company.title.vision")} subtitle={t("section.company")} />
-      <article className="content-card">
-        <ul className="bullet-list">
-          {items.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </article>
-    </section>
+    <CompanySectionShell title={t("company.title.vision")}>
+      <section className="company-vision">
+        <div className="company-vision-section-title">
+          <p>VISION</p>
+        </div>
+
+        <div className="company-vision-intro">
+          <p>
+            {t("company.vision.intro.prefix")}
+            <span className="is-blue">{t("company.vision.intro.blue")}</span>
+            <br />
+            {t("company.vision.intro.middle")}
+            <span className="is-green">{t("company.vision.intro.green")}</span>
+            <br />
+            {t("company.vision.intro.suffixPrefix")}
+            <span className="is-quote">{t("company.vision.intro.quote")}</span>
+            {t("company.vision.intro.suffix")}
+          </p>
+        </div>
+
+        <div className="company-vision-section-title">
+          <p>VISION 2030</p>
+        </div>
+        <div className="company-vision-image-wrap">
+          <img
+            src="/assets/legacy/images/sub1_2_img02_m.jpg"
+            alt={t("company.vision.vision2030AltMobile")}
+            className="mobile_img"
+          />
+          <img
+            src="/assets/legacy/images/sub1_2_img02.png"
+            alt={t("company.vision.vision2030AltDesktop")}
+            className="pc_img"
+          />
+        </div>
+
+        <div className="company-vision-section-title">
+          <p>Four W’s & One H</p>
+        </div>
+        <div className="company-vision-image-wrap">
+          <img
+            src="/assets/legacy/images/sub1_2_img03_m.jpg"
+            alt={t("company.vision.fourWAltMobile")}
+            className="mobile_img"
+          />
+          <img
+            src="/assets/legacy/images/sub1_2_img03.png"
+            alt={t("company.vision.fourWAltDesktop")}
+            className="pc_img"
+          />
+        </div>
+      </section>
+    </CompanySectionShell>
   );
 };
 
 export const CompanyLocationPage = () => {
-  const { content, t } = usePublicOutlet();
+  const { t } = usePublicOutlet();
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("company.title.location")} subtitle={t("section.company")} />
+    <CompanySectionShell title={t("company.title.location")}>
       <article className="content-card">
-        <p>{t("company.locationGuide")}</p>
+        <p>{t("company.locationGuideLegacy")}</p>
         <iframe
-          title="SHINHOTEK Headquarter Map"
+          title={t("company.location.mapTitle")}
           src="https://maps.google.com/maps?q=19%20Gasan%20digital%201-ro%2C%20Geumcheon-gu%2C%20Seoul&t=&z=14&ie=UTF8&iwloc=&output=embed"
           loading="lazy"
           className="location-map"
         />
         <dl className="info-grid">
           <div>
-            <dt>{t("company.address")}</dt>
-            <dd>{content.contact.headquarter}</dd>
+            <dt>{t("company.location.addLabel")}</dt>
+            <dd>{t("company.location.addValue")}</dd>
           </div>
           <div>
             <dt>{t("company.contact")}</dt>
             <dd>
-              Tel. {content.contact.tel}
+              Tel. {t("company.location.telValue")}
               <br />
-              Fax. {content.contact.fax}
-              <br />
-              {content.contact.email}
+              Fax. {t("company.location.faxValue")}
             </dd>
           </div>
         </dl>
       </article>
-    </section>
+    </CompanySectionShell>
   );
 };
 
 export const PartnerCorePage = () => {
-  const { content, t } = usePublicOutlet();
+  const { t } = usePublicOutlet();
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("partner.title")} subtitle={t("section.partner")} />
-      <p className="section-description">{t("partner.description")}</p>
-      <div className="partner-grid">
-        {content.partners.map((partner) => (
-          <a key={partner.id} href={partner.url} target="_blank" rel="noreferrer">
-            <strong>{partner.name}</strong>
-            <span>{partner.category}</span>
-          </a>
-        ))}
+    <CompanySectionShell
+      title={t("partner.title")}
+      sectionTitle={t("section.partner")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("partner.shell.subtitle")}
+      heroAriaLabel={t("partner.shell.heroAria")}
+      asideAriaLabel={t("partner.shell.asideAria")}
+      heroClassName="company-shell-hero partner-shell-hero"
+      tabs={[{ label: t("nav.partner.core"), to: "/partner/core" }]}
+    >
+      <div className="partner-core-content">
+        <img src="/assets/legacy/images/seul-ra-i-deu11573621207.jpg" alt={t("partner.core.imageAlt")} />
       </div>
-    </section>
+    </CompanySectionShell>
   );
 };
 
@@ -272,12 +322,17 @@ export const QuoteInquiryPage = () => {
   const submitInquiry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const hp1 = String(formData.get("contactPart1") ?? "");
+    const hp2 = String(formData.get("contactPart2") ?? "");
+    const hp3 = String(formData.get("contactPart3") ?? "");
+    const phone = [hp1, hp2, hp3].filter(Boolean).join("-");
+
     const payload: InquiryCreateRequest = {
-      company: String(formData.get("company") ?? ""),
-      position: String(formData.get("position") ?? ""),
+      company: String(formData.get("company") ?? t("inquiry.form.companyFallback")),
+      position: "",
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
-      contactNumber: String(formData.get("contactNumber") ?? ""),
+      contactNumber: phone,
       requirements: String(formData.get("requirements") ?? ""),
       consent: formData.get("consent") === "on"
     };
@@ -292,35 +347,67 @@ export const QuoteInquiryPage = () => {
   };
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("inquiry.quote.title")} subtitle={t("section.inquiry")} />
+    <CompanySectionShell
+      title={t("inquiry.quote.title")}
+      sectionTitle={t("section.inquiry")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("inquiry.shell.subtitle")}
+      heroAriaLabel={t("inquiry.shell.heroAria")}
+      asideAriaLabel={t("inquiry.shell.asideAria")}
+      heroClassName="company-shell-hero inquiry-shell-hero"
+      tabs={[
+        { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
+        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
+        { label: t("nav.inquiry.library"), to: "/inquiry/library" }
+      ]}
+    >
       <p className="section-description">{t("inquiry.quote.description")}</p>
 
-      <form className="inquiry-form" onSubmit={submitInquiry}>
-        <label htmlFor="company">
-          {t("inquiry.form.company")} *
-          <input id="company" name="company" required />
-        </label>
-        <label htmlFor="position">
-          {t("inquiry.form.position")}
-          <input id="position" name="position" />
-        </label>
-        <label htmlFor="name">
+      <form className="inquiry-form inquiry-form-legacy" onSubmit={submitInquiry}>
+        <label htmlFor="quote-name">
           {t("inquiry.form.name")} *
-          <input id="name" name="name" required />
+          <input id="quote-name" name="name" required />
         </label>
-        <label htmlFor="email">
+
+        <label htmlFor="quote-company">
+          {t("inquiry.form.company")}
+          <input id="quote-company" name="company" />
+        </label>
+
+        <label htmlFor="contact-part-1">
+          {t("inquiry.form.contact")} *
+          <div className="inquiry-contact-row">
+            <select id="contact-part-1" name="contactPart1" required defaultValue="010">
+              <option value="010">010</option>
+              <option value="011">011</option>
+              <option value="016">016</option>
+              <option value="017">017</option>
+              <option value="018">018</option>
+              <option value="019">019</option>
+            </select>
+            <span>-</span>
+            <input name="contactPart2" maxLength={4} inputMode="numeric" required />
+            <span>-</span>
+            <input name="contactPart3" maxLength={4} inputMode="numeric" required />
+          </div>
+        </label>
+
+        <label htmlFor="quote-email">
           {t("inquiry.form.email")} *
-          <input id="email" name="email" type="email" required />
+          <input id="quote-email" name="email" type="email" required />
         </label>
-        <label htmlFor="contact-number">
-          {t("inquiry.form.contact")}
-          <input id="contact-number" name="contactNumber" />
-        </label>
-        <label htmlFor="requirements">
+
+        <label htmlFor="quote-requirements">
           {t("inquiry.form.requirements")}
-          <textarea id="requirements" name="requirements" rows={5} />
+          <textarea id="quote-requirements" name="requirements" rows={6} />
         </label>
+
+        <label htmlFor="quote-file">
+          {t("inquiry.form.file")}
+          <input id="quote-file" name="attachment" type="file" />
+          <small>{t("inquiry.form.fileHint")}</small>
+        </label>
+
         <label className="consent-row">
           <input type="checkbox" name="consent" required />
           {t("inquiry.form.consent")}
@@ -331,51 +418,267 @@ export const QuoteInquiryPage = () => {
       </form>
 
       {submittedMessage ? <p className="status-banner success">{submittedMessage}</p> : null}
-    </section>
+    </CompanySectionShell>
   );
 };
 
 export const TestDemoPage = () => {
   const { t } = usePublicOutlet();
+  const [submittedMessage, setSubmittedMessage] = useState("");
+
+  const submitTestDemo = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const productName = String(formData.get("productName") ?? "");
+    const body = String(formData.get("requirements") ?? "");
+    const payload: InquiryCreateRequest = {
+      company: t("inquiry.form.companyFallback"),
+      position: "",
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      contactNumber: String(formData.get("contact") ?? ""),
+      requirements: productName ? `[${t("inquiry.form.productName")}] ${productName}\n${body}` : body,
+      consent: formData.get("consent") === "on"
+    };
+
+    try {
+      await apiClient.submitInquiry(payload);
+      setSubmittedMessage(t("inquiry.form.ok"));
+      event.currentTarget.reset();
+    } catch {
+      setSubmittedMessage(t("inquiry.form.fail"));
+    }
+  };
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("inquiry.testDemo.title")} subtitle={t("section.inquiry")} />
-      <article className="content-card">
-        <p>{t("inquiry.testDemo.description")}</p>
-        <Link className="primary-link" to="/inquiry/quote">
-          {t("inquiry.testDemo.cta")}
-        </Link>
-      </article>
-    </section>
+    <CompanySectionShell
+      title={t("inquiry.testDemo.title")}
+      sectionTitle={t("section.inquiry")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("inquiry.shell.subtitle")}
+      heroAriaLabel={t("inquiry.shell.heroAria")}
+      asideAriaLabel={t("inquiry.shell.asideAria")}
+      heroClassName="company-shell-hero inquiry-shell-hero"
+      tabs={[
+        { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
+        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
+        { label: t("nav.inquiry.library"), to: "/inquiry/library" }
+      ]}
+    >
+      <p className="section-description">{t("inquiry.testDemo.description")}</p>
+
+      <form className="inquiry-form inquiry-form-legacy" onSubmit={submitTestDemo}>
+        <label htmlFor="testdemo-product-name">
+          {t("inquiry.form.productName")} *
+          <input id="testdemo-product-name" name="productName" required />
+        </label>
+
+        <label htmlFor="testdemo-name">
+          {t("inquiry.form.name")} *
+          <input id="testdemo-name" name="name" required />
+        </label>
+
+        <label htmlFor="testdemo-contact">
+          {t("inquiry.form.contact")} *
+          <input id="testdemo-contact" name="contact" required />
+        </label>
+
+        <label htmlFor="testdemo-email">
+          {t("inquiry.form.email")} *
+          <input id="testdemo-email" name="email" type="email" required />
+        </label>
+
+        <label htmlFor="testdemo-requirements">
+          {t("inquiry.form.requirements")}
+          <textarea id="testdemo-requirements" name="requirements" rows={6} />
+        </label>
+
+        <label htmlFor="testdemo-file">
+          {t("inquiry.form.file")}
+          <input id="testdemo-file" name="attachment" type="file" />
+          <small>{t("inquiry.form.fileHint")}</small>
+        </label>
+
+        <label className="consent-row">
+          <input type="checkbox" name="consent" required />
+          {t("inquiry.form.consent")}
+        </label>
+        <button className="primary-link" type="submit">
+          {t("inquiry.form.submit")}
+        </button>
+      </form>
+
+      {submittedMessage ? <p className="status-banner success">{submittedMessage}</p> : null}
+    </CompanySectionShell>
   );
 };
 
 export const InquiryLibraryPage = () => {
   const { resources, locale, t } = usePublicOutlet();
+  const [keyfield, setKeyfield] = useState<"title" | "file">("title");
+  const [keyword, setKeyword] = useState("");
+
+  const filteredResources = useMemo(() => {
+    const query = keyword.trim().toLowerCase();
+    if (!query) return resources;
+    return resources.filter((resource) => {
+      if (keyfield === "file") {
+        return resourceTypeLabel(resource.type, locale).toLowerCase().includes(query);
+      }
+      return resource.title.toLowerCase().includes(query);
+    });
+  }, [resources, keyword, keyfield, locale]);
 
   return (
-    <section className="page-section">
-      <SectionHeading title={t("inquiry.library.title")} subtitle={t("section.inquiry")} />
-      {resources.length === 0 ? (
-        <p className="section-description">{t("inquiry.library.empty")}</p>
-      ) : (
-        <ul className="resource-list">
-          {resources.map((resource: ResourceItem) => (
-            <li key={resource.id}>
-              <span>{resourceTypeLabel(resource.type, locale)}</span>
-              <strong>{resource.title}</strong>
-              <a href="#">{t("inquiry.library.download")}</a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <CompanySectionShell
+      title={t("inquiry.library.title")}
+      sectionTitle={t("section.inquiry")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("inquiry.shell.subtitle")}
+      heroAriaLabel={t("inquiry.shell.heroAria")}
+      asideAriaLabel={t("inquiry.shell.asideAria")}
+      heroClassName="company-shell-hero inquiry-shell-hero"
+      tabs={[
+        { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
+        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
+        { label: t("nav.inquiry.library"), to: "/inquiry/library" }
+      ]}
+    >
+      <div className="library-toolbar">
+        <p className="library-total">
+          {t("inquiry.library.totalPrefix")}
+          <span>{filteredResources.length}</span>
+          {t("inquiry.library.totalSuffix")}
+        </p>
+
+        <form className="library-search" role="search" onSubmit={(event) => event.preventDefault()}>
+          <select
+            value={keyfield}
+            onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
+            aria-label={t("inquiry.library.search.keyfield")}
+          >
+            <option value="title">{t("inquiry.library.search.title")}</option>
+            <option value="file">{t("inquiry.library.search.file")}</option>
+          </select>
+          <input
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder={t("inquiry.library.search.placeholder")}
+            aria-label={t("inquiry.library.search.placeholder")}
+          />
+          <button type="submit">{t("inquiry.library.search.submit")}</button>
+        </form>
+      </div>
+
+      <div className="library-table-wrap">
+        <table className="library-table">
+          <colgroup>
+            <col width="90" />
+            <col />
+            <col width="120" />
+            <col width="130" />
+            <col width="90" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">{t("inquiry.library.table.no")}</th>
+              <th scope="col">{t("inquiry.library.table.title")}</th>
+              <th scope="col">{t("inquiry.library.table.file")}</th>
+              <th scope="col">{t("inquiry.library.table.date")}</th>
+              <th scope="col">{t("inquiry.library.table.views")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredResources.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="is-empty">
+                  {t("inquiry.library.empty")}
+                </td>
+              </tr>
+            ) : (
+              filteredResources.map((resource: ResourceItem, index) => (
+                <tr key={resource.id}>
+                  <td>{filteredResources.length - index}</td>
+                  <td className="is-title">
+                    <Link to={`/inquiry/library/${resource.id}`}>{resource.title}</Link>
+                  </td>
+                  <td>{resourceTypeLabel(resource.type, locale)}</td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </CompanySectionShell>
+  );
+};
+
+export const InquiryLibraryDetailPage = () => {
+  const { resources, locale, t } = usePublicOutlet();
+  const { resourceId } = useParams();
+  const resource = resources.find((item) => item.id === resourceId);
+
+  if (!resource) {
+    return (
+      <CompanySectionShell
+        title={t("inquiry.library.title")}
+        sectionTitle={t("section.inquiry")}
+        sectionSlogan={t("company.shell.slogan")}
+        asideSubtitle={t("inquiry.shell.subtitle")}
+        heroAriaLabel={t("inquiry.shell.heroAria")}
+        asideAriaLabel={t("inquiry.shell.asideAria")}
+        heroClassName="company-shell-hero inquiry-shell-hero"
+        tabs={[
+          { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
+          { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
+          { label: t("nav.inquiry.library"), to: "/inquiry/library" }
+        ]}
+      >
+        <p className="section-description">{t("inquiry.library.detail.notFound")}</p>
+        <Link className="text-link" to="/inquiry/library">
+          {t("inquiry.library.detail.backToList")}
+        </Link>
+      </CompanySectionShell>
+    );
+  }
+
+  return (
+    <CompanySectionShell
+      title={t("inquiry.library.title")}
+      sectionTitle={t("section.inquiry")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("inquiry.shell.subtitle")}
+      heroAriaLabel={t("inquiry.shell.heroAria")}
+      asideAriaLabel={t("inquiry.shell.asideAria")}
+      heroClassName="company-shell-hero inquiry-shell-hero"
+      tabs={[
+        { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
+        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
+        { label: t("nav.inquiry.library"), to: "/inquiry/library" }
+      ]}
+    >
+      <article className="library-detail">
+        <header>
+          <p className="library-detail-type">{resourceTypeLabel(resource.type, locale)}</p>
+          <h2>{resource.title}</h2>
+        </header>
+        <p>{t("inquiry.library.detail.description")}</p>
+        <div className="library-detail-actions">
+          <Link className="primary-link" to="/inquiry/library">
+            {t("inquiry.library.detail.backToList")}
+          </Link>
+        </div>
+      </article>
+    </CompanySectionShell>
   );
 };
 
 export const NoticePage = () => {
   const { notices, locale, t } = usePublicOutlet();
+  const [keyword, setKeyword] = useState("");
 
   const sortedNotices = useMemo(
     () =>
@@ -387,24 +690,134 @@ export const NoticePage = () => {
     [notices]
   );
 
+  const filteredNotices = useMemo(() => {
+    const query = keyword.trim().toLowerCase();
+    if (!query) return sortedNotices;
+    return sortedNotices.filter((notice) => notice.title.toLowerCase().includes(query));
+  }, [sortedNotices, keyword]);
+
   return (
-    <section className="page-section">
-      <SectionHeading title={t("notice.title")} subtitle={t("section.notice")} />
-      {sortedNotices.length === 0 ? (
-        <p className="section-description">{t("notice.empty")}</p>
-      ) : (
-        <ul className="notice-list">
-          {sortedNotices.map((notice) => (
-            <li key={notice.id}>
-              <strong>{notice.title}</strong>
-              <time dateTime={notice.publishedAt}>
-                {t("notice.date")}: {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
-              </time>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <CompanySectionShell
+      title={t("notice.heading")}
+      sectionTitle={t("section.notice")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("notice.shell.subtitle")}
+      heroAriaLabel={t("notice.shell.heroAria")}
+      asideAriaLabel={t("notice.shell.asideAria")}
+      heroClassName="company-shell-hero notice-shell-hero"
+      tabs={[{ label: t("notice.title"), to: "/notice" }]}
+    >
+      <div className="library-toolbar">
+        <p className="library-total">
+          {t("notice.totalPrefix")}
+          <span>{filteredNotices.length}</span>
+          {t("notice.totalSuffix")}
+        </p>
+        <form className="library-search" role="search" onSubmit={(event) => event.preventDefault()}>
+          <input
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder={t("notice.search.placeholder")}
+            aria-label={t("notice.search.placeholder")}
+          />
+          <button type="submit">{t("notice.search.submit")}</button>
+        </form>
+      </div>
+
+      <div className="library-table-wrap">
+        <table className="library-table">
+          <colgroup>
+            <col width="90" />
+            <col />
+            <col width="130" />
+            <col width="90" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">{t("notice.table.no")}</th>
+              <th scope="col">{t("notice.table.title")}</th>
+              <th scope="col">{t("notice.table.date")}</th>
+              <th scope="col">{t("notice.table.views")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredNotices.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="is-empty">
+                  {t("notice.empty")}
+                </td>
+              </tr>
+            ) : (
+              filteredNotices.map((notice, index) => (
+                <tr key={notice.id}>
+                  <td>{filteredNotices.length - index}</td>
+                  <td className="is-title">
+                    <Link to={`/notice/${notice.id}`}>{notice.title}</Link>
+                  </td>
+                  <td>{new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}</td>
+                  <td>-</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </CompanySectionShell>
+  );
+};
+
+export const NoticeDetailPage = () => {
+  const { notices, locale, t } = usePublicOutlet();
+  const { noticeId } = useParams();
+  const notice = notices.find((item) => item.id === noticeId);
+
+  if (!notice) {
+    return (
+      <CompanySectionShell
+        title={t("notice.heading")}
+        sectionTitle={t("section.notice")}
+        sectionSlogan={t("company.shell.slogan")}
+        asideSubtitle={t("notice.shell.subtitle")}
+        heroAriaLabel={t("notice.shell.heroAria")}
+        asideAriaLabel={t("notice.shell.asideAria")}
+        heroClassName="company-shell-hero notice-shell-hero"
+        tabs={[{ label: t("notice.title"), to: "/notice" }]}
+      >
+        <p className="section-description">{t("notice.detail.notFound")}</p>
+        <Link className="text-link" to="/notice">
+          {t("notice.detail.backToList")}
+        </Link>
+      </CompanySectionShell>
+    );
+  }
+
+  return (
+    <CompanySectionShell
+      title={t("notice.heading")}
+      sectionTitle={t("section.notice")}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("notice.shell.subtitle")}
+      heroAriaLabel={t("notice.shell.heroAria")}
+      asideAriaLabel={t("notice.shell.asideAria")}
+      heroClassName="company-shell-hero notice-shell-hero"
+      tabs={[{ label: t("notice.title"), to: "/notice" }]}
+    >
+      <article className="library-detail">
+        <header>
+          <p className="library-detail-type">{t("notice.title")}</p>
+          <h2>{notice.title}</h2>
+        </header>
+        <p>
+          {t("notice.date")}:{" "}
+          {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
+        </p>
+        <div className="library-detail-actions">
+          <Link className="primary-link" to="/notice">
+            {t("notice.detail.backToList")}
+          </Link>
+        </div>
+      </article>
+    </CompanySectionShell>
   );
 };
 
