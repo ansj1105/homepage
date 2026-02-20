@@ -839,6 +839,8 @@ dl::after {
   border-color: rgba(255, 255, 255, 0.14);
   color: #eff6ff;
   font-weight: 700;
+  min-height: 42px;
+  padding: 10px 12px;
 }
 
 .admin-nav-group button:hover {
@@ -868,10 +870,14 @@ dl::after {
   background: rgba(8, 19, 32, 0.82);
   border-color: rgba(141, 181, 224, 0.2);
   color: #b7cce3;
-  font-size: 13px;
-  padding: 7px 10px;
+  font-size: 12px;
+  width: calc(100% - 10px);
+  margin-left: 10px;
+  border-radius: 8px;
+  padding: 6px 10px;
   justify-content: flex-start;
   font-weight: 600;
+  min-height: 34px;
 }
 
 .admin-subdepth button.admin-depth2-btn:hover {
