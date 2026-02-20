@@ -1,4 +1,5 @@
 export type AdminSectionId =
+  | "dashboard"
   | "main"
   | "public-settings"
   | "cms-pages"
@@ -30,6 +31,11 @@ export const mainEditorTabs: Array<{ id: MainEditorTab; label: string }> = [
 
 export const adminNavGroups: AdminNavGroup[] = [
   {
+    id: "overview",
+    label: "운영 대시보드",
+    items: [{ id: "dashboard", label: "대시보드" }]
+  },
+  {
     id: "site",
     label: "사이트 관리",
     items: [
@@ -54,6 +60,7 @@ export const adminNavGroups: AdminNavGroup[] = [
 ];
 
 export const getSectionLabel = (section: AdminSectionId, tab?: MainEditorTab): string => {
+  if (section === "dashboard") return "대시보드";
   if (section === "main") {
     const sub = mainEditorTabs.find((item) => item.id === tab);
     return sub ? `메인 페이지 · ${sub.label}` : "메인 페이지";

@@ -47,6 +47,8 @@ export interface ResourceItem {
   type: "Catalog" | "White Paper" | "Certificate" | "Case Study";
   fileUrl: string;
   markdown: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface NoticeItem {
@@ -54,6 +56,8 @@ export interface NoticeItem {
   title: string;
   publishedAt: string;
   markdown: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface QuickLink {

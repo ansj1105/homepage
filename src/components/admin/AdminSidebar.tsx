@@ -1,9 +1,7 @@
 import {
   type AdminNavGroup,
   type AdminSectionId,
-  type MainEditorTab,
-  type RecentTarget,
-  getSectionLabel
+  type MainEditorTab
 } from "./adminNavigation";
 
 type AdminSidebarProps = {
@@ -12,8 +10,6 @@ type AdminSidebarProps = {
   mainEditorTab: MainEditorTab;
   expandedGroupId: string;
   unreadInquiryCount: number;
-  recentTargets: RecentTarget[];
-  onClearRecent: () => void;
   onToggleGroup: (groupId: string) => void;
   onNavigate: (section: AdminSectionId, tab?: MainEditorTab) => void;
 };
@@ -24,37 +20,11 @@ export const AdminSidebar = ({
   mainEditorTab,
   expandedGroupId,
   unreadInquiryCount,
-  recentTargets,
-  onClearRecent,
   onToggleGroup,
   onNavigate
 }: AdminSidebarProps) => {
   return (
     <aside className="admin-sidebar" aria-label="관리자 메뉴">
-      <div className="admin-quick-access">
-        <div className="admin-quick-access-head">
-          <p>최근 접근</p>
-          {recentTargets.length > 0 ? (
-            <button type="button" onClick={onClearRecent}>
-              비우기
-            </button>
-          ) : null}
-        </div>
-        {recentTargets.length === 0 ? (
-          <span>아직 없음</span>
-        ) : (
-          <ul>
-            {recentTargets.map((target, index) => (
-              <li key={`${target.section}:${target.tab ?? ""}:${index}`}>
-                <button type="button" onClick={() => onNavigate(target.section, target.tab)}>
-                  {getSectionLabel(target.section, target.tab)}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
       {groups.map((group) => (
         <div key={group.id} className={`admin-nav-group admin-nav-group--${group.id}`}>
           <button
