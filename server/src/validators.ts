@@ -1,5 +1,14 @@
 import { z } from "zod";
-import type { AdminLoginRequest, InquiryCreatePayload, InquiryStatusRequest, NoticeUpsertRequest, ResourceUpsertRequest } from "./types";
+import type {
+  AdminLoginRequest,
+  CmsPageUpsertRequest,
+  InquiryCreatePayload,
+  InquiryStatusRequest,
+  MainPageUpsertRequest,
+  PublicSiteSettingsUpsertRequest,
+  NoticeUpsertRequest,
+  ResourceUpsertRequest
+} from "./types";
 
 const heroSlideSchema = z.object({
   id: z.string().min(1),
@@ -74,17 +83,21 @@ export const siteContentSchema = z.object({
 export const resourceSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
-  type: z.enum(["Catalog", "White Paper", "Certificate", "Case Study"])
+  type: z.enum(["Catalog", "White Paper", "Certificate", "Case Study"]),
+  fileUrl: z.string(),
+  markdown: z.string()
 });
 
 export const noticeSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
-  publishedAt: z.string().date()
+  publishedAt: z.string().date(),
+  markdown: z.string()
 });
 
 export const inquirySchema = z.object({
   id: z.string().min(1),
+  inquiryType: z.enum(["quote", "test-demo"]),
   company: z.string().min(1),
   position: z.string(),
   name: z.string().min(1),
@@ -92,7 +105,8 @@ export const inquirySchema = z.object({
   contactNumber: z.string(),
   requirements: z.string(),
   consent: z.boolean(),
-  status: z.enum(["received", "in-review", "done"]),
+  status: z.enum(["in-review", "done"]),
+  isRead: z.boolean(),
   createdAt: z.string().datetime()
 });
 
@@ -110,15 +124,19 @@ const loginSchema = z.object({
 
 const resourceUpsertSchema = z.object({
   title: z.string().min(1),
-  type: z.enum(["Catalog", "White Paper", "Certificate", "Case Study"])
+  type: z.enum(["Catalog", "White Paper", "Certificate", "Case Study"]),
+  fileUrl: z.string().default(""),
+  markdown: z.string().default("")
 });
 
 const noticeUpsertSchema = z.object({
   title: z.string().min(1),
-  publishedAt: z.string().date()
+  publishedAt: z.string().date(),
+  markdown: z.string().default("")
 });
 
 const inquiryCreateSchema = z.object({
+  inquiryType: z.enum(["quote", "test-demo"]),
   company: z.string().min(1),
   position: z.string().default(""),
   name: z.string().min(1),
@@ -129,7 +147,103 @@ const inquiryCreateSchema = z.object({
 });
 
 const inquiryStatusSchema = z.object({
-  status: z.enum(["received", "in-review", "done"])
+  status: z.enum(["in-review", "done"])
+});
+
+const mainPageSettingsSchema = z.object({
+  heroCopyTop: z.string().min(1),
+  heroCopyMid: z.string().min(1),
+  heroCopyBottom: z.string().min(1),
+  heroCtaLabel: z.string().min(1),
+  heroCtaHref: z.string().min(1),
+  aboutTitle: z.string().min(1),
+  aboutBody1: z.string().min(1),
+  aboutBody2: z.string().min(1),
+  aboutImageUrl: z.string().min(1),
+  solutionTitle: z.string().min(1),
+  solutionBody1: z.string().min(1),
+  solutionBody2: z.string().min(1),
+  solutionStepImage1: z.string().min(1),
+  solutionStepImage2: z.string().min(1),
+  solutionStepImage3: z.string().min(1),
+  footerAddress: z.string().min(1),
+  footerCopyright: z.string().min(1)
+});
+
+const mainPageSlideSchema = z.object({
+  id: z.string().min(1),
+  imageUrl: z.string().min(1),
+  sortOrder: z.number().int().nonnegative()
+});
+
+const mainPageCardSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  imageUrl: z.string(),
+  linkUrl: z.string().min(1),
+  sortOrder: z.number().int().nonnegative()
+});
+
+const mainPageContentSchema = z.object({
+  settings: mainPageSettingsSchema,
+  slides: z.array(mainPageSlideSchema).min(1),
+  applicationCards: z.array(mainPageCardSchema).min(1)
+});
+
+const routeMetaSchema = z.object({
+  route: z.string().min(1),
+  title: z.string().min(1),
+  faviconUrl: z.string().min(1),
+  ogImageUrl: z.string().min(1),
+  subBannerImageUrl: z.string().optional()
+});
+
+type HeaderMenuItemInput = {
+  id: string;
+  label: string;
+  href: string;
+  target?: "_self" | "_blank";
+  children?: HeaderMenuItemInput[];
+};
+
+const headerMenuItemSchema: z.ZodType<HeaderMenuItemInput> = z.lazy(() =>
+  z.object({
+    id: z.string().min(1),
+    label: z.string().min(1),
+    href: z.string().min(1),
+    target: z.enum(["_self", "_blank"]).optional(),
+    children: z.array(headerMenuItemSchema).optional()
+  })
+);
+
+const publicSiteSettingsSchema = z.object({
+  routeMeta: z.array(routeMetaSchema).min(1),
+  headerTopMenu: z.array(headerMenuItemSchema).min(1),
+  headerProductMega: z.array(headerMenuItemSchema).min(1)
+}).superRefine((value, ctx) => {
+  const walk = (items: HeaderMenuItemInput[], path: string) => {
+    items.forEach((item, index) => {
+      const current = `${path}.${index}`;
+      if ((item.href === "/inquiry/quote" || item.href === "/inquiry/test-demo") && item.children?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "견적요청 / TEST 및 DEMO 페이지는 하위 페이지를 둘 수 없습니다.",
+          path: ["headerTopMenu", current, "children"]
+        });
+      }
+      if (item.children?.length) {
+        walk(item.children, `${current}.children`);
+      }
+    });
+  };
+  walk(value.headerTopMenu, "headerTopMenu");
+});
+
+const cmsPageUpsertSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  imageUrl: z.string().min(1),
+  markdown: z.string()
 });
 
 export const parseLogin = (value: unknown): AdminLoginRequest => loginSchema.parse(value);
@@ -138,3 +252,8 @@ export const parseResourceUpsert = (value: unknown): ResourceUpsertRequest => re
 export const parseNoticeUpsert = (value: unknown): NoticeUpsertRequest => noticeUpsertSchema.parse(value);
 export const parseInquiryCreate = (value: unknown): InquiryCreatePayload => inquiryCreateSchema.parse(value);
 export const parseInquiryStatus = (value: unknown): InquiryStatusRequest => inquiryStatusSchema.parse(value);
+export const parseMainPageUpsert = (value: unknown): MainPageUpsertRequest => mainPageContentSchema.parse(value);
+export const parsePublicSiteSettingsUpsert = (value: unknown): PublicSiteSettingsUpsertRequest =>
+  publicSiteSettingsSchema.parse(value);
+export const parseCmsPageUpsert = (value: unknown): CmsPageUpsertRequest =>
+  cmsPageUpsertSchema.parse(value);

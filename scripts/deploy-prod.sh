@@ -87,7 +87,7 @@ if [[ "$SKIP_HEALTHCHECK" -eq 0 ]]; then
   health_url="http://localhost:${backend_port}/api/health"
   ok=0
   for _ in $(seq 1 60); do
-    if curl -fsS "$health_url" >/dev/null; then
+    if curl -fsS "$health_url" >/dev/null 2>&1; then
       ok=1
       break
     fi
@@ -105,9 +105,21 @@ if [[ "$SKIP_HEALTHCHECK" -eq 0 ]]; then
   fi
 
   step "Checking HTTP -> HTTPS redirect"
-  status="$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${http_port}/")"
-  if [[ "$status" != "301" && "$status" != "302" && "$status" != "307" && "$status" != "308" ]]; then
-    echo "Expected redirect status on HTTP, got: $status"
+  redirect_ok=0
+  redirect_status=""
+  for _ in $(seq 1 30); do
+    redirect_status="$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${http_port}/" || true)"
+    if [[ "$redirect_status" == "301" || "$redirect_status" == "302" || "$redirect_status" == "307" || "$redirect_status" == "308" ]]; then
+      redirect_ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ "$redirect_ok" -ne 1 ]]; then
+    echo "Expected redirect status on HTTP, got: ${redirect_status:-unknown}"
+    echo
+    echo "Frontend logs (last 120 lines):"
+    docker compose "${COMPOSE_ARGS[@]}" logs --tail=120 frontend_prod backend || true
     exit 1
   fi
 

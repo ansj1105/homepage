@@ -45,12 +45,15 @@ export interface ResourceItem {
   id: string;
   title: string;
   type: "Catalog" | "White Paper" | "Certificate" | "Case Study";
+  fileUrl: string;
+  markdown: string;
 }
 
 export interface NoticeItem {
   id: string;
   title: string;
   publishedAt: string;
+  markdown: string;
 }
 
 export interface QuickLink {
@@ -81,6 +84,7 @@ export interface SiteContent {
 }
 
 export interface InquiryCreateRequest {
+  inquiryType: "quote" | "test-demo";
   company: string;
   position: string;
   name: string;
@@ -92,8 +96,79 @@ export interface InquiryCreateRequest {
 
 export interface InquiryItem extends InquiryCreateRequest {
   id: string;
-  status: "received" | "in-review" | "done";
+  status: "in-review" | "done";
+  isRead: boolean;
   createdAt: string;
+}
+
+export interface MainPageSettings {
+  heroCopyTop: string;
+  heroCopyMid: string;
+  heroCopyBottom: string;
+  heroCtaLabel: string;
+  heroCtaHref: string;
+  aboutTitle: string;
+  aboutBody1: string;
+  aboutBody2: string;
+  aboutImageUrl: string;
+  solutionTitle: string;
+  solutionBody1: string;
+  solutionBody2: string;
+  solutionStepImage1: string;
+  solutionStepImage2: string;
+  solutionStepImage3: string;
+  footerAddress: string;
+  footerCopyright: string;
+}
+
+export interface MainPageSlide {
+  id: string;
+  imageUrl: string;
+  sortOrder: number;
+}
+
+export interface MainPageApplicationCard {
+  id: string;
+  label: string;
+  imageUrl: string;
+  linkUrl: string;
+  sortOrder: number;
+}
+
+export interface MainPageContent {
+  settings: MainPageSettings;
+  slides: MainPageSlide[];
+  applicationCards: MainPageApplicationCard[];
+}
+
+export interface HeaderMenuItem {
+  id: string;
+  label: string;
+  href: string;
+  target?: "_self" | "_blank";
+  children?: HeaderMenuItem[];
+}
+
+export interface RouteMetaSetting {
+  route: string;
+  title: string;
+  faviconUrl: string;
+  ogImageUrl: string;
+  subBannerImageUrl?: string;
+}
+
+export interface PublicSiteSettings {
+  routeMeta: RouteMetaSetting[];
+  headerTopMenu: HeaderMenuItem[];
+  headerProductMega: HeaderMenuItem[];
+}
+
+export interface CmsPage {
+  slug: string;
+  title: string;
+  imageUrl: string;
+  markdown: string;
+  updatedAt: string;
 }
 
 export interface ProductFilterCriteria {

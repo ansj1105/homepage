@@ -40,6 +40,23 @@ a {
   color: inherit;
 }
 
+.wrap {
+  width: min(1140px, 92vw);
+  margin: 0 auto;
+}
+
+.t_center {
+  text-align: center;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.f_open {
+  letter-spacing: 0.04em;
+}
+
 .container {
   width: min(1140px, 92vw);
   margin: 0 auto;
@@ -720,6 +737,10 @@ a {
   margin: 0 0 6px;
 }
 
+.admin-panel h3 {
+  margin: 18px 0 8px;
+}
+
 .admin-panel p {
   margin: 0 0 10px;
   color: var(--muted);
@@ -746,7 +767,7 @@ a {
 
 .admin-inline-form {
   display: grid;
-  grid-template-columns: 1fr 180px auto;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 8px;
 }
 
@@ -766,6 +787,12 @@ a {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+}
+
+.admin-list li div {
+  flex: 1;
+  display: grid;
+  gap: 6px;
 }
 
 .admin-list li span {
@@ -943,6 +970,12 @@ a {
   min-height: 220px;
   display: grid;
   align-items: center;
+}
+
+html[data-has-route-sub-banner="1"] .company-shell-hero {
+  background-image:
+    linear-gradient(120deg, rgba(16, 36, 63, 0.62), rgba(15, 50, 95, 0.48)),
+    var(--route-sub-banner-image) !important;
 }
 
 .company-shell-hero-inner {
@@ -1143,6 +1176,31 @@ a {
   max-width: 100%;
   height: auto;
   margin-top: 14px;
+}
+
+.markdown-block {
+  display: grid;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.markdown-block h1,
+.markdown-block h2,
+.markdown-block h3,
+.markdown-block p {
+  margin: 0;
+}
+
+.markdown-block ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.markdown-block img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
 }
 
 .inquiry-shell-hero {
@@ -1428,6 +1486,32 @@ a {
   max-width: none;
 }
 
+.footer_wrap {
+  border-top: 1px solid #dcdcdc;
+  background: #fff;
+}
+
+.footer_wrap .footer {
+  min-height: 110px;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 60px;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+}
+
+.footer_wrap .f_info .info01 {
+  color: #646464;
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.footer_wrap .f_info .info02 {
+  color: #969696;
+  font-size: 12px;
+  margin: 0;
+}
+
 .company-shell-body {
   margin-top: 0;
 }
@@ -1474,4 +1558,15 @@ a {
   padding: 10px 100px;
   display: inline-block;
   cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  .footer_wrap .footer {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .footer_wrap .top_btn {
+    justify-self: end;
+  }
 }

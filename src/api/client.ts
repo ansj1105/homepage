@@ -1,7 +1,10 @@
 import type {
+  CmsPage,
   InquiryCreateRequest,
   InquiryItem,
+  MainPageContent,
   NoticeItem,
+  PublicSiteSettings,
   ResourceItem,
   SiteContent
 } from "../types";
@@ -44,6 +47,9 @@ const request = async <T>(
 
 export const apiClient = {
   getContent: () => request<SiteContent>("/api/content"),
+  getCmsPage: (slug: string) => request<CmsPage>(`/api/cms-pages/${slug}`),
+  getPublicSettings: () => request<PublicSiteSettings>("/api/settings/public"),
+  getMainPage: () => request<MainPageContent>("/api/main-page"),
   getResources: () => request<ResourceItem[]>("/api/resources"),
   getNotices: () => request<NoticeItem[]>("/api/notices"),
   submitInquiry: (payload: InquiryCreateRequest) =>
@@ -58,6 +64,10 @@ export const apiClient = {
     }),
   adminGetInquiries: (token: string) =>
     request<InquiryItem[]>("/api/admin/inquiries", { method: "GET" }, token),
+  adminGetInquiryUnreadCount: (token: string) =>
+    request<{ unreadCount: number }>("/api/admin/inquiries/unread-count", { method: "GET" }, token),
+  adminMarkAllInquiriesRead: (token: string) =>
+    request<{ updatedCount: number }>("/api/admin/inquiries/read-all", { method: "PUT" }, token),
   adminUpdateInquiryStatus: (id: string, status: InquiryItem["status"], token: string) =>
     request<InquiryItem>(
       `/api/admin/inquiries/${id}/status`,
@@ -76,11 +86,55 @@ export const apiClient = {
       },
       token
     ),
+  adminGetMainPage: (token: string) =>
+    request<MainPageContent>("/api/admin/main-page", { method: "GET" }, token),
+  adminSaveMainPage: (content: MainPageContent, token: string) =>
+    request<MainPageContent>(
+      "/api/admin/main-page",
+      {
+        method: "PUT",
+        body: JSON.stringify(content)
+      },
+      token
+    ),
+  adminGetPublicSettings: (token: string) =>
+    request<PublicSiteSettings>("/api/admin/settings/public", { method: "GET" }, token),
+  adminSavePublicSettings: (settings: PublicSiteSettings, token: string) =>
+    request<PublicSiteSettings>(
+      "/api/admin/settings/public",
+      { method: "PUT", body: JSON.stringify(settings) },
+      token
+    ),
+  adminGetCmsPages: (token: string) =>
+    request<CmsPage[]>("/api/admin/cms-pages", { method: "GET" }, token),
+  adminCreateCmsPage: (payload: Omit<CmsPage, "updatedAt">, token: string) =>
+    request<CmsPage>(
+      "/api/admin/cms-pages",
+      { method: "POST", body: JSON.stringify(payload) },
+      token
+    ),
+  adminUpdateCmsPage: (slug: string, payload: Omit<CmsPage, "updatedAt" | "slug">, token: string) =>
+    request<CmsPage>(
+      `/api/admin/cms-pages/${slug}`,
+      { method: "PUT", body: JSON.stringify(payload) },
+      token
+    ),
+  adminDeleteCmsPage: (slug: string, token: string) =>
+    request<void>(`/api/admin/cms-pages/${slug}`, { method: "DELETE" }, token),
   adminCreateResource: (payload: Omit<ResourceItem, "id">, token: string) =>
     request<ResourceItem>(
       "/api/admin/resources",
       {
         method: "POST",
+        body: JSON.stringify(payload)
+      },
+      token
+    ),
+  adminUpdateResource: (id: string, payload: Omit<ResourceItem, "id">, token: string) =>
+    request<ResourceItem>(
+      `/api/admin/resources/${id}`,
+      {
+        method: "PUT",
         body: JSON.stringify(payload)
       },
       token
@@ -92,6 +146,15 @@ export const apiClient = {
       "/api/admin/notices",
       {
         method: "POST",
+        body: JSON.stringify(payload)
+      },
+      token
+    ),
+  adminUpdateNotice: (id: string, payload: Omit<NoticeItem, "id">, token: string) =>
+    request<NoticeItem>(
+      `/api/admin/notices/${id}`,
+      {
+        method: "PUT",
         body: JSON.stringify(payload)
       },
       token

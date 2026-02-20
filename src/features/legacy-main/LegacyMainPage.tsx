@@ -1,25 +1,51 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiClient } from "../../api/client";
+import { defaultMainPageContent } from "../../data/mainPageDefaults";
 import { PublicHeader } from "../../pages/public/PublicHeader";
-import {
-  legacyAddress,
-  legacyAppCards,
-  legacyHeroSlides
-} from "./data";
+import { MarkdownBlock } from "../../pages/public/MarkdownBlock";
+import type { MainPageContent } from "../../types";
 import "./legacy-main.css";
 
 const LegacyMainPage = () => {
+  const [mainPage, setMainPage] = useState<MainPageContent>(defaultMainPageContent);
   const [slideIndex, setSlideIndex] = useState(0);
+  const orderedSlides = useMemo(
+    () => [...mainPage.slides].sort((a, b) => a.sortOrder - b.sortOrder),
+    [mainPage.slides]
+  );
+  const orderedCards = useMemo(
+    () => [...mainPage.applicationCards].sort((a, b) => a.sortOrder - b.sortOrder),
+    [mainPage.applicationCards]
+  );
 
   useEffect(() => {
+    apiClient
+      .getMainPage()
+      .then((payload) => {
+        if (payload.slides.length > 0) {
+          setMainPage(payload);
+        }
+      })
+      .catch(() => {
+        // Keep fallback defaults when API is unavailable.
+      });
+  }, []);
+
+  useEffect(() => {
+    if (orderedSlides.length === 0) return;
     const timer = window.setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % legacyHeroSlides.length);
+      setSlideIndex((prev) => (prev + 1) % orderedSlides.length);
     }, 4500);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [orderedSlides.length]);
 
-  const currentSlide = useMemo(() => legacyHeroSlides[slideIndex], [slideIndex]);
+  const currentSlide = useMemo(
+    () => orderedSlides[slideIndex]?.imageUrl ?? defaultMainPageContent.slides[0].imageUrl,
+    [orderedSlides, slideIndex]
+  );
+  const settings = mainPage.settings;
 
   return (
     <div className="legacy-main-root">
@@ -33,17 +59,17 @@ const LegacyMainPage = () => {
         >
           <div className="legacy-main-hero-dim" />
           <div className="legacy-main-hero-copy">
-            <p className="hero-copy-top">SHINHOTEK</p>
-            <p className="hero-copy-mid">Innovation Light Changes the World</p>
-            <p className="hero-copy-bottom">BEST Technology Solution</p>
-            <Link className="hero-copy-cta" to="/company/ceo">
-              ABOUT SHINHOTEK
+            <p className="hero-copy-top">{settings.heroCopyTop}</p>
+            <p className="hero-copy-mid">{settings.heroCopyMid}</p>
+            <p className="hero-copy-bottom">{settings.heroCopyBottom}</p>
+            <Link className="hero-copy-cta" to={settings.heroCtaHref}>
+              {settings.heroCtaLabel}
             </Link>
           </div>
           <div className="legacy-main-hero-dots" role="tablist" aria-label="Main slide control">
-            {legacyHeroSlides.map((slide, idx) => (
+            {orderedSlides.map((slide, idx) => (
               <button
-                key={slide}
+                key={slide.id}
                 type="button"
                 className={slideIndex === idx ? "dot is-active" : "dot"}
                 aria-label={`슬라이드 ${idx + 1}`}
@@ -55,53 +81,42 @@ const LegacyMainPage = () => {
 
         <section className="legacy-main-about">
           <div className="legacy-main-about-bg">
-            <img src="/assets/legacy/images/section/main_part01_img01.jpg" alt="ABOUT SHINHOTEK" />
+            <img src={settings.aboutImageUrl} alt={settings.aboutTitle} />
           </div>
           <div className="legacy-main-about-copy">
-            <h2>ABOUT SHINHOTEK</h2>
-            <p>
-              광학은 앞으로 펼쳐질 미래 사회의 핵심 기술로서, 자율주행 자동차 등 광범위한 분야에 활용이 되고 있습니다.
-            </p>
-            <p>
-              신호텍은 고객사의 요구에 대한 광학 컨설팅을 통해 최적의 제품을 공급함으로써 국내의 레이저 산업 및 연구 분야의
-              발전에 앞장서고 있습니다.
-            </p>
+            <h2>{settings.aboutTitle}</h2>
+            <MarkdownBlock markdown={settings.aboutBody1} />
+            <MarkdownBlock markdown={settings.aboutBody2} />
           </div>
         </section>
 
         <section className="legacy-main-solution">
           <img className="solution-fx before" src="/assets/legacy/images/section/main_part02_bg01.png" alt="" />
           <img className="solution-fx after" src="/assets/legacy/images/section/main_part02_bg02.png" alt="" />
-          <h2>SH SOLUTION</h2>
+          <h2>{settings.solutionTitle}</h2>
           <ul className="solution-icons" aria-label="solution steps">
             <li>
-              <img src="/assets/legacy/images/section/main_part02_img01.png" alt="step 1" />
+              <img src={settings.solutionStepImage1} alt="step 1" />
             </li>
             <li>
-              <img src="/assets/legacy/images/section/main_part02_img02.png" alt="step 2" />
+              <img src={settings.solutionStepImage2} alt="step 2" />
             </li>
             <li>
-              <img src="/assets/legacy/images/section/main_part02_img03.png" alt="step 3" />
+              <img src={settings.solutionStepImage3} alt="step 3" />
             </li>
           </ul>
-          <p>
-            SHINHOTEK은 BPS(Business Partner System)을 기반으로 하여, 기성 광학 구성품 또는 모듈과 단품을 통합한
-            광학계 솔루션을 고객사에 제안합니다.
-          </p>
-          <p>
-            가격과 미 경험에 의한 실패 확률을 줄여 최선의 효율을 추구하고, 향후 고객 application 및 사양에 맞는 맞춤화된
-            광학 솔루션을 제공하겠습니다.
-          </p>
+          <MarkdownBlock markdown={settings.solutionBody1} />
+          <MarkdownBlock markdown={settings.solutionBody2} />
         </section>
 
         <section className="legacy-main-application">
           <ul>
-            {legacyAppCards.map((card) => (
+            {orderedCards.map((card) => (
               <li key={card.id}>
-                <Link to="/product" className="application-card">
+                <Link to={card.linkUrl} className="application-card">
                   <span
                     className="application-card-bg"
-                    style={card.imagePath ? { backgroundImage: `url(${card.imagePath})` } : undefined}
+                    style={card.imageUrl ? { backgroundImage: `url(${card.imageUrl})` } : undefined}
                   />
                   <span className="application-card-copy">
                     <small>SHINHOTEK</small>
@@ -119,8 +134,8 @@ const LegacyMainPage = () => {
           <Link to="/main" className="legacy-main-footer-logo">
             <img src="/assets/legacy/images/logo/f_logo.png" alt="SHINHOTEK" />
           </Link>
-          <p>{legacyAddress}</p>
-          <small>Copyright 2017 SHINHOTEK. All Rights Reserved.</small>
+          <p>{settings.footerAddress}</p>
+          <small>{settings.footerCopyright}</small>
           <button
             type="button"
             className="legacy-main-top-btn"

@@ -1,31 +1,43 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { apiClient } from "../../api/client";
+import { defaultCmsPages } from "../../data/cmsPageDefaults";
 import {
   getCategoryBySlug,
   getItemBySlug,
   getLabel,
   productTaxonomy
 } from "../../data/productTaxonomy";
-import type { InquiryCreateRequest, InquiryItem, ResourceItem } from "../../types";
+import type { CmsPage, InquiryCreateRequest, InquiryItem, ResourceItem } from "../../types";
 import { usePublicOutlet } from "./context";
 import { findRelatedProducts, resourceTypeLabel } from "./helpers";
+import { MarkdownBlock } from "./MarkdownBlock";
 import { SectionHeading } from "./SectionHeading";
 import { CompanySectionShell } from "./CompanySectionShell";
 
 export const CompanyCeoPage = () => {
   const { t } = usePublicOutlet();
+  const fallback = defaultCmsPages.find((item) => item.slug === "company-ceo")!;
+  const [page, setPage] = useState<CmsPage>(fallback);
+
+  useEffect(() => {
+    apiClient
+      .getCmsPage("company-ceo")
+      .then((result) => setPage(result))
+      .catch(() => {
+        setPage(fallback);
+      });
+  }, [fallback]);
 
   return (
-    <CompanySectionShell title={t("company.ceo.pageTitle")}>
+    <CompanySectionShell title={page.title || t("company.ceo.pageTitle")}>
       <div className="company-ceo-visual">
-        <img src="/assets/legacy/images/sub1_1_img02.png" alt={t("company.ceo.visualAlt")} />
+        <img src={page.imageUrl || fallback.imageUrl} alt={t("company.ceo.visualAlt")} />
       </div>
 
-      <dl className="company-ceo-copy">
-        <dt>{t("company.ceo.headline")}</dt>
-        <dd>{t("company.ceo.description")}</dd>
-      </dl>
+      <div className="company-ceo-copy">
+        <MarkdownBlock markdown={page.markdown || fallback.markdown} />
+      </div>
 
       <div className="company-ceo-sign">
         <img src="/assets/legacy/images/sub1_1_img03.png" alt={t("company.ceo.signatureAlt")} />
@@ -36,59 +48,34 @@ export const CompanyCeoPage = () => {
 
 export const CompanyVisionPage = () => {
   const { t } = usePublicOutlet();
+  const fallback = defaultCmsPages.find((item) => item.slug === "company-vision")!;
+  const [page, setPage] = useState<CmsPage>(fallback);
+
+  useEffect(() => {
+    apiClient
+      .getCmsPage("company-vision")
+      .then((result) => setPage(result))
+      .catch(() => {
+        setPage(fallback);
+      });
+  }, [fallback]);
 
   return (
-    <CompanySectionShell title={t("company.title.vision")}>
+    <CompanySectionShell title={page.title || t("company.title.vision")}>
       <section className="company-vision">
-        <div className="company-vision-section-title">
-          <p>{t("company.vision.section.vision")}</p>
-        </div>
-
-        <div className="company-vision-intro">
-          <p>
-            {t("company.vision.intro.prefix")}
-            <span className="is-blue">{t("company.vision.intro.blue")}</span>
-            <br />
-            {t("company.vision.intro.middle")}
-            <span className="is-green">{t("company.vision.intro.green")}</span>
-            <br />
-            {t("company.vision.intro.suffixPrefix")}
-            <span className="is-quote">{t("company.vision.intro.quote")}</span>
-            {t("company.vision.intro.suffix")}
-          </p>
-        </div>
-
-        <div className="company-vision-section-title">
-          <p>{t("company.vision.section.vision2030")}</p>
-        </div>
         <div className="company-vision-image-wrap">
           <img
-            src="/assets/legacy/images/sub1_2_img02_m.jpg"
-            alt={t("company.vision.vision2030AltMobile")}
-            className="mobile_img"
-          />
-          <img
-            src="/assets/legacy/images/sub1_2_img02.png"
-            alt={t("company.vision.vision2030AltDesktop")}
-            className="pc_img"
-          />
-        </div>
-
-        <div className="company-vision-section-title">
-          <p>{t("company.vision.section.fourw")}</p>
-        </div>
-        <div className="company-vision-image-wrap">
-          <img
-            src="/assets/legacy/images/sub1_2_img03_m.jpg"
+            src={page.imageUrl || fallback.imageUrl}
             alt={t("company.vision.fourWAltMobile")}
             className="mobile_img"
           />
           <img
-            src="/assets/legacy/images/sub1_2_img03.png"
+            src={page.imageUrl || fallback.imageUrl}
             alt={t("company.vision.fourWAltDesktop")}
             className="pc_img"
           />
         </div>
+        <MarkdownBlock markdown={page.markdown || fallback.markdown} />
       </section>
     </CompanySectionShell>
   );
@@ -129,10 +116,21 @@ export const CompanyLocationPage = () => {
 
 export const PartnerCorePage = () => {
   const { t } = usePublicOutlet();
+  const fallback = defaultCmsPages.find((item) => item.slug === "partner-core")!;
+  const [page, setPage] = useState<CmsPage>(fallback);
+
+  useEffect(() => {
+    apiClient
+      .getCmsPage("partner-core")
+      .then((result) => setPage(result))
+      .catch(() => {
+        setPage(fallback);
+      });
+  }, [fallback]);
 
   return (
     <CompanySectionShell
-      title={t("partner.title")}
+      title={page.title || t("partner.title")}
       sectionTitle={t("section.partner")}
       sectionSlogan={t("company.shell.slogan")}
       asideSubtitle={t("partner.shell.subtitle")}
@@ -143,7 +141,8 @@ export const PartnerCorePage = () => {
     >
       <div className="partner-core-content">
         <div className="sub2_1" />
-        <img src="/assets/legacy/images/seul-ra-i-deu11573621207.jpg" alt={t("partner.core.imageAlt")} />
+        <img src={page.imageUrl || fallback.imageUrl} alt={t("partner.core.imageAlt")} />
+        <MarkdownBlock markdown={page.markdown || fallback.markdown} />
       </div>
     </CompanySectionShell>
   );
@@ -330,6 +329,7 @@ export const QuoteInquiryPage = () => {
     const phone = [hp1, hp2, hp3].filter(Boolean).join("-");
 
     const payload: InquiryCreateRequest = {
+      inquiryType: "quote",
       company: t("inquiry.form.companyFallback"),
       position: "",
       name: String(formData.get("s_v1") ?? ""),
@@ -435,6 +435,7 @@ export const TestDemoPage = () => {
     const productName = String(formData.get("s_v4") ?? "");
     const body = String(formData.get("s_t1") ?? "");
     const payload: InquiryCreateRequest = {
+      inquiryType: "test-demo",
       company: t("inquiry.form.companyFallback"),
       position: "",
       name: String(formData.get("s_v1") ?? ""),
@@ -613,7 +614,15 @@ export const InquiryLibraryPage = () => {
                   <td>
                     <Link to={`/inquiry/library/${resource.id}`}>{resource.title}</Link>
                   </td>
-                  <td className="pc_display">{resourceTypeLabel(resource.type, locale)}</td>
+                  <td className="pc_display">
+                    {resource.fileUrl ? (
+                      <a href={resource.fileUrl} target="_blank" rel="noreferrer">
+                        {t("inquiry.library.download")}
+                      </a>
+                    ) : (
+                      resourceTypeLabel(resource.type, locale)
+                    )}
+                  </td>
                   <td className="pc_display">-</td>
                   <td className="pc_display">-</td>
                 </tr>
@@ -678,8 +687,17 @@ export const InquiryLibraryDetailPage = () => {
           <p className="library-detail-type">{resourceTypeLabel(resource.type, locale)}</p>
           <h2>{resource.title}</h2>
         </header>
-        <p>{t("inquiry.library.detail.description")}</p>
+        {resource.markdown ? (
+          <MarkdownBlock markdown={resource.markdown} />
+        ) : (
+          <p>{t("inquiry.library.detail.description")}</p>
+        )}
         <div className="library-detail-actions">
+          {resource.fileUrl ? (
+            <a className="primary-link" href={resource.fileUrl} target="_blank" rel="noreferrer">
+              {t("inquiry.library.download")}
+            </a>
+          ) : null}
           <Link className="primary-link" to="/inquiry/library">
             {t("inquiry.library.detail.backToList")}
           </Link>
@@ -839,6 +857,7 @@ export const NoticeDetailPage = () => {
           {t("notice.date")}:{" "}
           {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
         </p>
+        {notice.markdown ? <MarkdownBlock markdown={notice.markdown} /> : null}
         <div className="library-detail-actions">
           <Link className="primary-link" to="/notice">
             {t("notice.detail.backToList")}

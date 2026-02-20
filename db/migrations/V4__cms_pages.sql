@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS cms_pages (
+  slug TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  markdown TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

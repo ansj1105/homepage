@@ -2,21 +2,42 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { ZodError } from "zod";
 import { createToken, verifyToken } from "./auth";
 import {
+  createCmsPage,
   createInquiry,
   createNotice,
   createResource,
+  countUnreadInquiries,
+  deleteCmsPage,
   deleteNotice,
   deleteResource,
+  getCmsPageBySlug,
+  getMainPageContent,
+  getPublicSiteSettings,
   getContent,
+  listCmsPages,
   listInquiries,
+  markAllInquiriesAsRead,
+  saveMainPageContent,
+  savePublicSiteSettings,
   listNotices,
   listResources,
   saveContent,
   updateInquiryStatus,
+  updateCmsPage,
   updateNotice,
   updateResource
 } from "./db";
-import { parseInquiryCreate, parseInquiryStatus, parseLogin, parseNoticeUpsert, parseResourceUpsert, parseSiteContent } from "./validators";
+import {
+  parseCmsPageUpsert,
+  parseInquiryCreate,
+  parseInquiryStatus,
+  parseLogin,
+  parseMainPageUpsert,
+  parseNoticeUpsert,
+  parsePublicSiteSettingsUpsert,
+  parseResourceUpsert,
+  parseSiteContent
+} from "./validators";
 
 const adminUser = process.env.ADMIN_USERNAME ?? "admin";
 const adminPassword = process.env.ADMIN_PASSWORD ?? "change-me";
@@ -108,11 +129,129 @@ export const createApp = () => {
     }
   });
 
+  app.get("/api/settings/public", async (_req, res, next) => {
+    try {
+      const settings = await getPublicSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/main-page", async (_req, res, next) => {
+    try {
+      const content = await getMainPageContent();
+      res.json(content);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/cms-pages/:slug", async (req, res, next) => {
+    try {
+      const slug = getParamValue(req.params.slug);
+      const page = await getCmsPageBySlug(slug);
+      if (!page) {
+        res.status(404).json({ message: "CMS page not found" });
+        return;
+      }
+      res.json(page);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.put("/api/admin/content", requireAdmin, async (req, res, next) => {
     try {
       const payload = parseSiteContent(req.body);
       const updated = await saveContent(payload);
       res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/admin/settings/public", requireAdmin, async (_req, res, next) => {
+    try {
+      const settings = await getPublicSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/admin/settings/public", requireAdmin, async (req, res, next) => {
+    try {
+      const payload = parsePublicSiteSettingsUpsert(req.body);
+      const updated = await savePublicSiteSettings(payload);
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/admin/main-page", requireAdmin, async (_req, res, next) => {
+    try {
+      const content = await getMainPageContent();
+      res.json(content);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/admin/main-page", requireAdmin, async (req, res, next) => {
+    try {
+      const payload = parseMainPageUpsert(req.body);
+      const updated = await saveMainPageContent(payload);
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/admin/cms-pages", requireAdmin, async (_req, res, next) => {
+    try {
+      const pages = await listCmsPages();
+      res.json(pages);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/admin/cms-pages", requireAdmin, async (req, res, next) => {
+    try {
+      const payload = parseCmsPageUpsert(req.body);
+      const created = await createCmsPage(payload.slug, payload.title, payload.imageUrl, payload.markdown);
+      res.status(201).json(created);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/admin/cms-pages/:slug", requireAdmin, async (req, res, next) => {
+    try {
+      const slug = getParamValue(req.params.slug);
+      const payload = parseCmsPageUpsert({ ...req.body, slug });
+      const updated = await updateCmsPage(slug, payload.title, payload.imageUrl, payload.markdown);
+      if (!updated) {
+        res.status(404).json({ message: "CMS page not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/admin/cms-pages/:slug", requireAdmin, async (req, res, next) => {
+    try {
+      const slug = getParamValue(req.params.slug);
+      const deleted = await deleteCmsPage(slug);
+      if (!deleted) {
+        res.status(404).json({ message: "CMS page not found" });
+        return;
+      }
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -130,7 +269,7 @@ export const createApp = () => {
   app.post("/api/admin/resources", requireAdmin, async (req, res, next) => {
     try {
       const payload = parseResourceUpsert(req.body);
-      const created = await createResource(payload.title, payload.type);
+      const created = await createResource(payload.title, payload.type, payload.fileUrl, payload.markdown);
       res.status(201).json(created);
     } catch (error) {
       next(error);
@@ -141,7 +280,7 @@ export const createApp = () => {
     try {
       const payload = parseResourceUpsert(req.body);
       const id = getParamValue(req.params.id);
-      const hit = await updateResource(id, payload.title, payload.type);
+      const hit = await updateResource(id, payload.title, payload.type, payload.fileUrl, payload.markdown);
       if (!hit) {
         res.status(404).json({ message: "Resource not found" });
         return;
@@ -178,7 +317,7 @@ export const createApp = () => {
   app.post("/api/admin/notices", requireAdmin, async (req, res, next) => {
     try {
       const payload = parseNoticeUpsert(req.body);
-      const created = await createNotice(payload.title, payload.publishedAt);
+      const created = await createNotice(payload.title, payload.publishedAt, payload.markdown);
       res.status(201).json(created);
     } catch (error) {
       next(error);
@@ -189,7 +328,7 @@ export const createApp = () => {
     try {
       const payload = parseNoticeUpsert(req.body);
       const id = getParamValue(req.params.id);
-      const hit = await updateNotice(id, payload.title, payload.publishedAt);
+      const hit = await updateNotice(id, payload.title, payload.publishedAt, payload.markdown);
       if (!hit) {
         res.status(404).json({ message: "Notice not found" });
         return;
@@ -228,6 +367,24 @@ export const createApp = () => {
     try {
       const inquiries = await listInquiries();
       res.json(inquiries);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/admin/inquiries/unread-count", requireAdmin, async (_req, res, next) => {
+    try {
+      const unreadCount = await countUnreadInquiries();
+      res.json({ unreadCount });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/admin/inquiries/read-all", requireAdmin, async (_req, res, next) => {
+    try {
+      const updatedCount = await markAllInquiriesAsRead();
+      res.json({ updatedCount });
     } catch (error) {
       next(error);
     }

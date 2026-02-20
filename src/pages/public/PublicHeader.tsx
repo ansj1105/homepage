@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { apiClient } from "../../api/client";
+import { defaultPublicSiteSettings } from "../../data/siteSettingsDefaults";
 import { useI18n } from "../../i18n/I18nContext";
-import {
-  legacyProductMega,
-  legacyTopMenu,
-  type LegacyMenuItem
-} from "../../features/legacy-main/data";
+import type { HeaderMenuItem } from "../../types";
 import "../../features/legacy-main/legacy-main.css";
 
 const LanguageSwitch = () => {
@@ -32,11 +30,27 @@ const LanguageSwitch = () => {
 };
 
 export const PublicHeader = () => {
-  const { locale, setLocale, t } = useI18n();
+  const { locale, t } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productMenuOpen, setProductMenuOpen] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
+  const [topMenu, setTopMenu] = useState<HeaderMenuItem[]>(defaultPublicSiteSettings.headerTopMenu);
+  const [productMega, setProductMega] = useState<HeaderMenuItem[]>(
+    defaultPublicSiteSettings.headerProductMega
+  );
+
+  useEffect(() => {
+    apiClient
+      .getPublicSettings()
+      .then((settings) => {
+        setTopMenu(settings.headerTopMenu);
+        setProductMega(settings.headerProductMega);
+      })
+      .catch(() => {
+        // Keep fallback settings.
+      });
+  }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -60,9 +74,13 @@ export const PublicHeader = () => {
     };
   }, [mobileMenuOpen]);
 
-  const openTarget = (target: LegacyMenuItem["target"]): "_self" | "_blank" => target ?? "_self";
-  const renderMenuLink = (item: LegacyMenuItem, className?: string, onClick?: () => void) => {
-    const label = menuLabel(item.id, item.label, t);
+  const productMenuId = useMemo(() => {
+    const productTop = topMenu.find((item) => item.href.startsWith("/product"));
+    return productTop?.id ?? "";
+  }, [topMenu]);
+
+  const openTarget = (target: HeaderMenuItem["target"]): "_self" | "_blank" => target ?? "_self";
+  const renderMenuLink = (item: HeaderMenuItem, className?: string, onClick?: () => void) => {
     if (item.href.startsWith("http")) {
       return (
         <a
@@ -72,13 +90,13 @@ export const PublicHeader = () => {
           rel="noreferrer"
           onClick={onClick}
         >
-          {label}
+          {item.label}
         </a>
       );
     }
     return (
       <Link className={className} to={item.href} onClick={onClick}>
-        {label}
+        {item.label}
       </Link>
     );
   };
@@ -93,17 +111,17 @@ export const PublicHeader = () => {
 
           <nav className="legacy-main-nav" aria-label="Main navigation">
             <ul>
-              {legacyTopMenu.map((menu) => (
+              {topMenu.map((menu) => (
                 <li
                   key={menu.id}
                   className="legacy-main-nav-item"
                   onMouseEnter={() => {
-                    if (menu.id === "db4958d7") {
+                    if (menu.id === productMenuId) {
                       setProductMenuOpen(true);
                     }
                   }}
                   onMouseLeave={() => {
-                    if (menu.id === "db4958d7") {
+                    if (menu.id === productMenuId) {
                       setProductMenuOpen(false);
                     }
                   }}
@@ -143,7 +161,7 @@ export const PublicHeader = () => {
           onMouseLeave={() => setProductMenuOpen(false)}
         >
           <div className="legacy-main-mega-inner">
-            {legacyProductMega.map((menu) => (
+            {productMega.map((menu) => (
               <div key={menu.id} className="legacy-main-mega-group">
                 {renderMenuLink(menu, "legacy-main-mega-title")}
                 <ul>
@@ -159,7 +177,7 @@ export const PublicHeader = () => {
 
       <aside className={mobileMenuOpen ? "legacy-main-mobile is-open" : "legacy-main-mobile"}>
         <ul>
-          {legacyTopMenu.map((menu) => (
+          {topMenu.map((menu) => (
             <li key={menu.id}>
               {renderMenuLink(menu, "legacy-main-mobile-link", () => setMobileMenuOpen(false))}
               {menu.children ? (
@@ -187,87 +205,4 @@ export const PublicHeader = () => {
       />
     </>
   );
-};
-
-const menuLabel = (id: string, fallback: string, t: (key: string) => string): string => {
-  switch (id) {
-    case "be21e5fa":
-      return t("nav.company");
-    case "54ddbaf0":
-      return t("nav.company.ceo");
-    case "a8efd0b7":
-      return t("nav.company.vision");
-    case "f4984283":
-      return t("nav.company.location");
-    case "cd917f17":
-      return t("nav.partner");
-    case "sub2_1":
-      return t("nav.partner.core");
-    case "db4958d7":
-      return t("nav.product");
-    case "02708bea":
-      return t("nav.inquiry");
-    case "inquiry":
-      return t("nav.inquiry.quote");
-    case "testdemo":
-      return t("nav.inquiry.testDemo");
-    case "menual":
-      return t("nav.inquiry.library");
-    case "ff6078f4":
-    case "b13e0b14":
-      return t("nav.notice");
-    case "6b5eebd7":
-      return t("nav.product.laser");
-    case "aa49a34a":
-      return t("nav.product.laser.nanosecond");
-    case "d9a8c320":
-      return t("nav.product.laser.picosecond");
-    case "b8f82ab3":
-      return t("nav.product.laser.co2");
-    case "336850dd":
-      return t("nav.product.laser.excimer");
-    case "5ea7cbd3":
-      return t("nav.product.laser.diode");
-    case "1f638fd0":
-      return t("nav.product.optics");
-    case "b451fed3":
-      return t("nav.product.optics.monocle");
-    case "23452345":
-      return t("nav.product.optics.ulo");
-    case "pro6_3":
-      return t("nav.product.optics.green");
-    case "pro6_4":
-      return t("nav.product.optics.jenoptik");
-    case "1f969dbb":
-      return t("nav.product.scanner");
-    case "176a9c95":
-      return t("nav.product.scanner.scanlab");
-    case "e158d94e":
-      return t("nav.product.custom");
-    case "28acbd82":
-      return t("nav.product.custom.meopta");
-    case "13300bde":
-      return t("nav.product.custom.femtoprint");
-    case "965c17c3":
-      return t("nav.product.measurement");
-    case "ee3098e3":
-      return t("nav.product.measurement.point");
-    case "1b1dd59a":
-      return t("nav.product.measurement.metrolux");
-    case "pro4_3":
-      return t("nav.product.measurement.shinhotek");
-    case "pro8_1":
-    case "36bdb97f":
-      return t("nav.product.others");
-    case "6d145a0f":
-      return t("nav.product.beam");
-    case "bf7f57c7":
-      return t("nav.product.beam.adloptica");
-    case "6bea92d7":
-      return t("nav.product.beam.power");
-    case "pro5_1":
-      return t("nav.product.beam.silios");
-    default:
-      return fallback;
-  }
 };
