@@ -1,51 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { PublicHeader } from "../../pages/public/PublicHeader";
 import {
   legacyAddress,
   legacyAppCards,
-  legacyHeroSlides,
-  legacyProductMega,
-  legacyTopMenu,
-  type LegacyMenuItem
+  legacyHeroSlides
 } from "./data";
 import "./legacy-main.css";
 
-const openTarget = (target: LegacyMenuItem["target"]): "_self" | "_blank" => target ?? "_self";
-
-const LegacyLink = ({
-  item,
-  className,
-  onClick
-}: {
-  item: LegacyMenuItem;
-  className?: string;
-  onClick?: () => void;
-}) => {
-  if (item.href.startsWith("http")) {
-    return (
-      <a
-        className={className}
-        href={item.href}
-        target={openTarget(item.target)}
-        rel="noreferrer"
-        onClick={onClick}
-      >
-        {item.label}
-      </a>
-    );
-  }
-
-  return (
-    <Link className={className} to={item.href} onClick={onClick}>
-      {item.label}
-    </Link>
-  );
-};
-
 const LegacyMainPage = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [productMenuOpen, setProductMenuOpen] = useState(false);
-  const [headerScrolled, setHeaderScrolled] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -56,131 +19,11 @@ const LegacyMainPage = () => {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => setHeaderScrolled(window.scrollY > 0);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
-
   const currentSlide = useMemo(() => legacyHeroSlides[slideIndex], [slideIndex]);
 
   return (
     <div className="legacy-main-root">
-      <header className={headerScrolled ? "legacy-main-header is-scrolled" : "legacy-main-header"}>
-        <div className="legacy-main-header-inner">
-          <Link className="legacy-main-logo" to="/main" aria-label="SHINHOTEK home">
-            <img src="/assets/legacy/images/logo/h_logo.png" alt="SHINHOTEK" />
-          </Link>
-
-          <nav className="legacy-main-nav" aria-label="Main navigation">
-            <ul>
-              {legacyTopMenu.map((menu) => (
-                <li
-                  key={menu.id}
-                  className="legacy-main-nav-item"
-                  onMouseEnter={() => {
-                    if (menu.id === "db4958d7") {
-                      setProductMenuOpen(true);
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    if (menu.id === "db4958d7") {
-                      setProductMenuOpen(false);
-                    }
-                  }}
-                >
-                  <LegacyLink item={menu} className="legacy-main-nav-link" />
-                  {menu.children ? (
-                    <ul className="legacy-main-submenu">
-                      {menu.children.map((child) => (
-                        <li key={child.id}>
-                          <LegacyLink item={child} />
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <button
-            type="button"
-            className={mobileMenuOpen ? "legacy-main-menu-btn is-open" : "legacy-main-menu-btn"}
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-expanded={mobileMenuOpen}
-            aria-label="메뉴 열기"
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
-
-        <div
-          className={productMenuOpen ? "legacy-main-mega is-open" : "legacy-main-mega"}
-          onMouseEnter={() => setProductMenuOpen(true)}
-          onMouseLeave={() => setProductMenuOpen(false)}
-        >
-          <div className="legacy-main-mega-inner">
-            {legacyProductMega.map((menu) => (
-              <div key={menu.id} className="legacy-main-mega-group">
-                <LegacyLink item={menu} className="legacy-main-mega-title" />
-                <ul>
-                  {menu.children?.map((child) => (
-                    <li key={child.id}>
-                      <LegacyLink item={child} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </header>
-
-      <aside className={mobileMenuOpen ? "legacy-main-mobile is-open" : "legacy-main-mobile"}>
-        <ul>
-          {legacyTopMenu.map((menu) => (
-            <li key={menu.id}>
-              <LegacyLink
-                item={menu}
-                className="legacy-main-mobile-link"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-              {menu.children ? (
-                <ul>
-                  {menu.children.map((child) => (
-                    <li key={child.id}>
-                      <LegacyLink
-                        item={child}
-                        className="legacy-main-mobile-sub-link"
-                        onClick={() => setMobileMenuOpen(false)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <button
-        type="button"
-        className={mobileMenuOpen ? "legacy-main-overlay is-open" : "legacy-main-overlay"}
-        onClick={() => setMobileMenuOpen(false)}
-        aria-label="메뉴 닫기"
-      />
+      <PublicHeader />
 
       <main className="legacy-main-content">
         <section

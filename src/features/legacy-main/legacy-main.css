@@ -96,6 +96,26 @@
   transform: translateY(0);
 }
 
+.legacy-lang-switch {
+  margin-left: 8px;
+}
+
+.legacy-lang-switch .lang-switch {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 3px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.legacy-lang-switch .lang-switch button {
+  color: #d4ddec;
+}
+
+.legacy-lang-switch .lang-switch button.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 .legacy-main-menu-btn {
   display: none;
   width: 44px;
@@ -200,6 +220,27 @@
 
 .legacy-main-mobile > ul > li + li {
   margin-top: 12px;
+}
+
+.legacy-main-mobile-lang {
+  margin-top: 16px;
+}
+
+.legacy-main-mobile-lang .lang-switch {
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.legacy-main-mobile-lang .lang-switch button {
+  color: #d4ddec;
+}
+
+.legacy-main-mobile-lang .lang-switch button.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .legacy-main-mobile-link {

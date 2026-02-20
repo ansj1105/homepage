@@ -86,7 +86,7 @@ if [[ "$SKIP_HEALTHCHECK" -eq 0 ]]; then
   step "Running backend health check"
   health_url="http://localhost:${backend_port}/api/health"
   ok=0
-  for _ in $(seq 1 30); do
+  for _ in $(seq 1 60); do
     if curl -fsS "$health_url" >/dev/null; then
       ok=1
       break
@@ -95,6 +95,12 @@ if [[ "$SKIP_HEALTHCHECK" -eq 0 ]]; then
   done
   if [[ "$ok" -ne 1 ]]; then
     echo "Backend health check failed: $health_url"
+    echo
+    echo "Backend logs (last 120 lines):"
+    docker compose "${COMPOSE_ARGS[@]}" logs --tail=120 backend || true
+    echo
+    echo "DB logs (last 80 lines):"
+    docker compose "${COMPOSE_ARGS[@]}" logs --tail=80 db flyway || true
     exit 1
   fi
 

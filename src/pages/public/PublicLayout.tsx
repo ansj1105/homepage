@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { apiClient } from "../../api/client";
 import { productTaxonomy } from "../../data/productTaxonomy";
 import {
@@ -11,65 +11,15 @@ import { useI18n } from "../../i18n/I18nContext";
 import { localizeSiteContent } from "../../i18n/localizeSiteContent";
 import type { NoticeItem, ResourceItem, SiteContent } from "../../types";
 import type { PublicOutletContext } from "./context";
-
-const TopNavLink = ({
-  to,
-  label,
-  activePrefix
-}: {
-  to: string;
-  label: string;
-  activePrefix: string;
-}) => {
-  const location = useLocation();
-  const isActive = location.pathname.startsWith(activePrefix);
-  return (
-    <Link className={isActive ? "top-nav-link active" : "top-nav-link"} to={to}>
-      {label}
-    </Link>
-  );
-};
-
-const LanguageSwitch = () => {
-  const { locale, setLocale, t } = useI18n();
-
-  return (
-    <div className="lang-switch" aria-label={t("lang.label")}>
-      <button
-        type="button"
-        className={locale === "ko" ? "active" : ""}
-        onClick={() => setLocale("ko")}
-      >
-        {t("lang.ko")}
-      </button>
-      <button
-        type="button"
-        className={locale === "en" ? "active" : ""}
-        onClick={() => setLocale("en")}
-      >
-        {t("lang.en")}
-      </button>
-    </div>
-  );
-};
+import { PublicHeader } from "./PublicHeader";
 
 export const PublicLayout = () => {
   const { locale, t } = useI18n();
-  const location = useLocation();
   const [content, setContent] = useState<SiteContent>(initialSiteContent);
   const [resources, setResources] = useState<ResourceItem[]>(initialResources);
   const [notices, setNotices] = useState<NoticeItem[]>(initialNotices);
   const [apiFallback, setApiFallback] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
-
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     let isMounted = true;
@@ -127,76 +77,7 @@ export const PublicLayout = () => {
 
   return (
     <>
-      <header className="site-header">
-        <div className="container site-header-inner">
-          <Link className="brand" to="/company/ceo">
-            SHINHOTEK
-            <span>{t("brand.tagline")}</span>
-          </Link>
-
-          <button
-            className="mobile-menu-button"
-            type="button"
-            aria-expanded={mobileMenuOpen}
-            aria-label="Toggle menu"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-
-          <nav className={mobileMenuOpen ? "site-nav open" : "site-nav"} aria-label="Main navigation">
-            <ul>
-              <li className="has-submenu">
-                <TopNavLink to="/company/ceo" activePrefix="/company" label={t("nav.company")} />
-                <ul className="submenu">
-                  <li>
-                    <NavLink to="/company/ceo">{t("nav.company.ceo")}</NavLink>
-                  </li>
-                  <li>
-                    <NavLink to="/company/vision">{t("nav.company.vision")}</NavLink>
-                  </li>
-                  <li>
-                    <NavLink to="/company/location">{t("nav.company.location")}</NavLink>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <TopNavLink to="/partner/core" activePrefix="/partner" label={t("nav.partner")} />
-              </li>
-              <li>
-                <TopNavLink to="/product" activePrefix="/product" label={t("nav.product")} />
-              </li>
-              <li className="has-submenu">
-                <TopNavLink to="/inquiry/quote" activePrefix="/inquiry" label={t("nav.inquiry")} />
-                <ul className="submenu">
-                  <li>
-                    <NavLink to="/inquiry/quote">{t("nav.inquiry.quote")}</NavLink>
-                  </li>
-                  <li>
-                    <NavLink to="/inquiry/test-demo">{t("nav.inquiry.testDemo")}</NavLink>
-                  </li>
-                  <li>
-                    <NavLink to="/inquiry/library">{t("nav.inquiry.library")}</NavLink>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <TopNavLink to="/notice" activePrefix="/notice" label={t("nav.notice")} />
-              </li>
-              <li>
-                <NavLink className="top-nav-link admin-link" to="/admin">
-                  {t("nav.admin")}
-                </NavLink>
-              </li>
-              <li>
-                <LanguageSwitch />
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="site-main">
         <div className="container">
