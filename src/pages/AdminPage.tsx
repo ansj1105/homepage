@@ -3,6 +3,14 @@ import { Link } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { AdminPanel } from "../components/admin/AdminPanel";
 import { AdminSectionTabs } from "../components/admin/AdminSectionTabs";
+import { AdminSidebar } from "../components/admin/AdminSidebar";
+import {
+  type AdminSectionId,
+  type MainEditorTab,
+  type RecentTarget,
+  adminNavGroups,
+  mainEditorTabs
+} from "../components/admin/adminNavigation";
 import { defaultCmsPages } from "../data/cmsPageDefaults";
 import { defaultMainPageContent } from "../data/mainPageDefaults";
 import { defaultPublicSiteSettings } from "../data/siteSettingsDefaults";
@@ -22,66 +30,12 @@ import type {
 const tokenStorageKey = "sh_admin_token";
 const adminUiStorageKey = "sh_admin_ui_v1";
 
-type AdminSectionId =
-  | "main"
-  | "public-settings"
-  | "cms-pages"
-  | "resources"
-  | "notices"
-  | "inquiries";
-
-type AdminNavGroup = {
-  id: string;
-  label: string;
-  items: Array<{
-    id: AdminSectionId;
-    label: string;
-    children?: Array<{ id: MainEditorTab; label: string }>;
-  }>;
-};
-
-type MainEditorTab = "hero" | "about" | "solution" | "cards" | "footer";
-type RecentTarget = { section: AdminSectionId; tab?: MainEditorTab };
-
 type PersistedAdminUi = {
   activeSection?: AdminSectionId;
   mainEditorTab?: MainEditorTab;
   expandedGroupId?: string;
   recentTargets?: RecentTarget[];
 };
-
-const mainEditorTabs: Array<{ id: MainEditorTab; label: string }> = [
-  { id: "hero", label: "배너" },
-  { id: "about", label: "ABOUT" },
-  { id: "solution", label: "SH SOLUTION" },
-  { id: "cards", label: "하단 카드" },
-  { id: "footer", label: "푸터" }
-];
-
-const adminNavGroups: AdminNavGroup[] = [
-  {
-    id: "site",
-    label: "사이트 관리",
-    items: [
-      { id: "main", label: "메인 페이지", children: mainEditorTabs },
-      { id: "public-settings", label: "메타/헤더 설정" },
-      { id: "cms-pages", label: "본문 CMS" }
-    ]
-  },
-  {
-    id: "board",
-    label: "게시판 관리",
-    items: [
-      { id: "resources", label: "자료실" },
-      { id: "notices", label: "공지사항" }
-    ]
-  },
-  {
-    id: "inquiry",
-    label: "요청 관리",
-    items: [{ id: "inquiries", label: "견적/Test 문의" }]
-  }
-];
 
 const loadPersistedAdminUi = (): PersistedAdminUi => {
   try {
@@ -92,18 +46,6 @@ const loadPersistedAdminUi = (): PersistedAdminUi => {
   } catch {
     return {};
   }
-};
-
-const getSectionLabel = (section: AdminSectionId, tab?: MainEditorTab): string => {
-  if (section === "main") {
-    const sub = mainEditorTabs.find((item) => item.id === tab);
-    return sub ? `메인 페이지 · ${sub.label}` : "메인 페이지";
-  }
-  if (section === "public-settings") return "메타/헤더 설정";
-  if (section === "cms-pages") return "본문 CMS";
-  if (section === "resources") return "자료실";
-  if (section === "notices") return "공지사항";
-  return "견적/Test 문의";
 };
 
 const createClientId = () =>
@@ -1185,79 +1127,17 @@ const AdminPage = () => {
       {message ? <p className="admin-message">{message}</p> : null}
 
       <div className="admin-layout">
-        <aside className="admin-sidebar" aria-label="관리자 메뉴">
-          <div className="admin-quick-access">
-            <p>최근 접근</p>
-            {recentTargets.length === 0 ? (
-              <span>아직 없음</span>
-            ) : (
-              <ul>
-                {recentTargets.map((target, index) => (
-                  <li key={`${target.section}:${target.tab ?? ""}:${index}`}>
-                    <button
-                      type="button"
-                      onClick={() => navigateToSection(target.section, target.tab)}
-                    >
-                      {getSectionLabel(target.section, target.tab)}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {adminNavGroups.map((group) => (
-            <div key={group.id} className="admin-nav-group">
-              <button
-                type="button"
-                className={expandedGroupId === group.id ? "admin-nav-group-toggle is-open" : "admin-nav-group-toggle"}
-                onClick={() => setExpandedGroupId((prev) => (prev === group.id ? "" : group.id))}
-                aria-expanded={expandedGroupId === group.id}
-              >
-                <span>{group.label}</span>
-                <span>{expandedGroupId === group.id ? "−" : "+"}</span>
-              </button>
-              {expandedGroupId === group.id ? (
-                <ul>
-                  {group.items.map((item) => (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        className={item.id === activeSection ? "is-active" : ""}
-                        onClick={() =>
-                          navigateToSection(
-                            item.id,
-                            item.id === "main" && item.children?.length ? item.children[0].id : undefined
-                          )
-                        }
-                      >
-                        {item.label}
-                        {item.id === "inquiries" && unreadInquiryCount > 0 ? (
-                          <span className="admin-nav-badge">{unreadInquiryCount}</span>
-                        ) : null}
-                      </button>
-                      {item.id === "main" && item.children ? (
-                        <ul className={item.id === activeSection ? "admin-subdepth is-open" : "admin-subdepth"}>
-                          {item.children.map((sub) => (
-                            <li key={sub.id}>
-                              <button
-                                type="button"
-                                className={item.id === activeSection && mainEditorTab === sub.id ? "is-active" : ""}
-                                onClick={() => navigateToSection("main", sub.id)}
-                              >
-                                {sub.label}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ))}
-        </aside>
+        <AdminSidebar
+          groups={adminNavGroups}
+          activeSection={activeSection}
+          mainEditorTab={mainEditorTab}
+          expandedGroupId={expandedGroupId}
+          unreadInquiryCount={unreadInquiryCount}
+          recentTargets={recentTargets}
+          onClearRecent={() => setRecentTargets([])}
+          onToggleGroup={(groupId) => setExpandedGroupId((prev) => (prev === groupId ? "" : groupId))}
+          onNavigate={navigateToSection}
+        />
 
         <section className="admin-content">{renderActiveSection()}</section>
       </div>

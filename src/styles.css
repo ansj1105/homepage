@@ -691,12 +691,31 @@ a {
 }
 
 .admin-quick-access p {
-  margin: 0 0 8px;
+  margin: 0;
   color: rgba(214, 230, 247, 0.78);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+.admin-quick-access-head {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-quick-access-head button {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: transparent;
+  color: #c7d7ec;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
 }
 
 .admin-quick-access span {
