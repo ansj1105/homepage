@@ -2066,14 +2066,22 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   display: inline-block;
   float: right;
   position: relative;
-  padding-right: 79px;
+  padding-right: 0;
   margin-bottom: 15px;
+}
+
+#aside_nav .list_board .search_wrap form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 
 #aside_nav .search_wrap input[type="text"] {
   box-sizing: border-box;
   max-width: 170px;
-  width: 100%;
+  width: 170px;
+  min-width: 120px;
   height: 40px;
   margin: 0;
   padding: 0 5px;
@@ -2084,6 +2092,7 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 
 #aside_nav .search_wrap select {
   width: 85px;
+  min-width: 85px;
   padding: 0 5px;
   height: 40px;
   color: #787878;
@@ -2101,10 +2110,9 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   color: #323232;
   font-size: 14px;
   width: 80px;
+  min-width: 80px;
   height: 40px;
-  position: absolute;
-  top: 0;
-  right: 0;
+  position: static;
 }
 
 #aside_nav .paginate {

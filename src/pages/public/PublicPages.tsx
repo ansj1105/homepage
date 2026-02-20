@@ -921,6 +921,7 @@ export const NoticePage = () => {
               <option value="file">{t("notice.search.file")}</option>
             </select>
             <input
+              type="text"
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder={t("notice.search.placeholder")}
