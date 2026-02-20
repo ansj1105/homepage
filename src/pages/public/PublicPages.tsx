@@ -14,6 +14,7 @@ import { findRelatedProducts, resourceTypeLabel } from "./helpers";
 import { MarkdownBlock } from "./MarkdownBlock";
 import { SectionHeading } from "./SectionHeading";
 import { CompanySectionShell } from "./CompanySectionShell";
+import { DetailArticle } from "./DetailArticle";
 
 const INQUIRY_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 const INQUIRY_ALLOWED_EXTENSIONS = new Set([
@@ -844,27 +845,25 @@ export const InquiryLibraryDetailPage = () => {
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >
-      <article className="library-detail">
-        <header>
-          <p className="library-detail-type">{resourceTypeLabel(resource.type, locale)}</p>
-          <h2>{resource.title}</h2>
-        </header>
-        {resource.markdown ? (
-          <MarkdownBlock markdown={resource.markdown} />
-        ) : (
-          <p>{t("inquiry.library.detail.description")}</p>
-        )}
-        <div className="library-detail-actions">
-          {resource.fileUrl ? (
-            <a className="primary-link" href={resource.fileUrl} target="_blank" rel="noreferrer">
-              {t("inquiry.library.download")}
-            </a>
-          ) : null}
-          <Link className="primary-link" to="/inquiry/library">
-            {t("inquiry.library.detail.backToList")}
-          </Link>
-        </div>
-      </article>
+      <DetailArticle
+        typeLabel={resourceTypeLabel(resource.type, locale)}
+        title={resource.title}
+        meta={<span>{t("inquiry.library.table.file")}: {resourceTypeLabel(resource.type, locale)}</span>}
+        markdown={resource.markdown}
+        fallbackText={t("inquiry.library.detail.description")}
+        actions={
+          <>
+            {resource.fileUrl ? (
+              <a className="primary-link" href={resource.fileUrl} target="_blank" rel="noreferrer">
+                {t("inquiry.library.download")}
+              </a>
+            ) : null}
+            <Link className="primary-link" to="/inquiry/library">
+              {t("inquiry.library.detail.backToList")}
+            </Link>
+          </>
+        }
+      />
     </CompanySectionShell>
   );
 };
@@ -1016,22 +1015,22 @@ export const NoticeDetailPage = () => {
       heroClassName="company-shell-hero notice-shell-hero"
       tabs={[{ label: t("notice.title"), to: "/notice" }]}
     >
-      <article className="library-detail">
-        <header>
-          <p className="library-detail-type">{t("notice.title")}</p>
-          <h2>{notice.title}</h2>
-        </header>
-        <p>
-          {t("notice.date")}:{" "}
-          {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
-        </p>
-        {notice.markdown ? <MarkdownBlock markdown={notice.markdown} /> : null}
-        <div className="library-detail-actions">
+      <DetailArticle
+        typeLabel={t("notice.title")}
+        title={notice.title}
+        meta={
+          <span>
+            {t("notice.date")}:{" "}
+            {new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}
+          </span>
+        }
+        markdown={notice.markdown}
+        actions={
           <Link className="primary-link" to="/notice">
             {t("notice.detail.backToList")}
           </Link>
-        </div>
-      </article>
+        }
+      />
     </CompanySectionShell>
   );
 };

@@ -56,7 +56,7 @@ export const AdminSidebar = ({
       </div>
 
       {groups.map((group) => (
-        <div key={group.id} className="admin-nav-group">
+        <div key={group.id} className={`admin-nav-group admin-nav-group--${group.id}`}>
           <button
             type="button"
             className={expandedGroupId === group.id ? "admin-nav-group-toggle is-open" : "admin-nav-group-toggle"}
@@ -72,7 +72,7 @@ export const AdminSidebar = ({
                 <li key={item.id}>
                   <button
                     type="button"
-                    className={item.id === activeSection ? "is-active" : ""}
+                    className={item.id === activeSection ? "admin-depth1-btn is-active" : "admin-depth1-btn"}
                     onClick={() =>
                       onNavigate(
                         item.id,
@@ -91,7 +91,11 @@ export const AdminSidebar = ({
                         <li key={sub.id}>
                           <button
                             type="button"
-                            className={item.id === activeSection && mainEditorTab === sub.id ? "is-active" : ""}
+                            className={
+                              item.id === activeSection && mainEditorTab === sub.id
+                                ? "admin-depth2-btn is-active"
+                                : "admin-depth2-btn"
+                            }
                             onClick={() => onNavigate("main", sub.id)}
                           >
                             {sub.label}
