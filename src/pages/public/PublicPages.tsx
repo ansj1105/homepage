@@ -41,7 +41,7 @@ export const CompanyVisionPage = () => {
     <CompanySectionShell title={t("company.title.vision")}>
       <section className="company-vision">
         <div className="company-vision-section-title">
-          <p>VISION</p>
+          <p>{t("company.vision.section.vision")}</p>
         </div>
 
         <div className="company-vision-intro">
@@ -59,7 +59,7 @@ export const CompanyVisionPage = () => {
         </div>
 
         <div className="company-vision-section-title">
-          <p>VISION 2030</p>
+          <p>{t("company.vision.section.vision2030")}</p>
         </div>
         <div className="company-vision-image-wrap">
           <img
@@ -75,7 +75,7 @@ export const CompanyVisionPage = () => {
         </div>
 
         <div className="company-vision-section-title">
-          <p>Four W’s & One H</p>
+          <p>{t("company.vision.section.fourw")}</p>
         </div>
         <div className="company-vision-image-wrap">
           <img
@@ -99,29 +99,30 @@ export const CompanyLocationPage = () => {
 
   return (
     <CompanySectionShell title={t("company.title.location")}>
-      <article className="content-card">
-        <p>{t("company.locationGuideLegacy")}</p>
-        <iframe
-          title={t("company.location.mapTitle")}
-          src="https://maps.google.com/maps?q=19%20Gasan%20digital%201-ro%2C%20Geumcheon-gu%2C%20Seoul&t=&z=14&ie=UTF8&iwloc=&output=embed"
-          loading="lazy"
-          className="location-map"
-        />
-        <dl className="info-grid">
-          <div>
-            <dt>{t("company.location.addLabel")}</dt>
+      <div className="sub1_3">
+        <div className="map">
+          <iframe
+            title={t("company.location.mapTitle")}
+            src="https://maps.google.com/maps?q=19%20Gasan%20digital%201-ro%2C%20Geumcheon-gu%2C%20Seoul&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            loading="lazy"
+            className="location-map"
+          />
+        </div>
+        <div className="map_info">
+          <dl>
+            <dt className="medium">Add.</dt>
             <dd>{t("company.location.addValue")}</dd>
-          </div>
-          <div>
-            <dt>{t("company.contact")}</dt>
-            <dd>
-              Tel. {t("company.location.telValue")}
-              <br />
-              Fax. {t("company.location.faxValue")}
-            </dd>
-          </div>
-        </dl>
-      </article>
+          </dl>
+          <dl>
+            <dt className="medium">Tel.</dt>
+            <dd>{t("company.location.telValue")}</dd>
+          </dl>
+          <dl>
+            <dt className="medium">Fax.</dt>
+            <dd>{t("company.location.faxValue")}</dd>
+          </dl>
+        </div>
+      </div>
     </CompanySectionShell>
   );
 };
@@ -141,6 +142,7 @@ export const PartnerCorePage = () => {
       tabs={[{ label: t("nav.partner.core"), to: "/partner/core" }]}
     >
       <div className="partner-core-content">
+        <div className="sub2_1" />
         <img src="/assets/legacy/images/seul-ra-i-deu11573621207.jpg" alt={t("partner.core.imageAlt")} />
       </div>
     </CompanySectionShell>
@@ -322,19 +324,19 @@ export const QuoteInquiryPage = () => {
   const submitInquiry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const hp1 = String(formData.get("contactPart1") ?? "");
-    const hp2 = String(formData.get("contactPart2") ?? "");
-    const hp3 = String(formData.get("contactPart3") ?? "");
+    const hp1 = String(formData.get("s_v2_hp1") ?? "");
+    const hp2 = String(formData.get("s_v2_hp2") ?? "");
+    const hp3 = String(formData.get("s_v2_hp3") ?? "");
     const phone = [hp1, hp2, hp3].filter(Boolean).join("-");
 
     const payload: InquiryCreateRequest = {
-      company: String(formData.get("company") ?? t("inquiry.form.companyFallback")),
+      company: t("inquiry.form.companyFallback"),
       position: "",
-      name: String(formData.get("name") ?? ""),
-      email: String(formData.get("email") ?? ""),
+      name: String(formData.get("s_v1") ?? ""),
+      email: String(formData.get("s_v3") ?? ""),
       contactNumber: phone,
-      requirements: String(formData.get("requirements") ?? ""),
-      consent: formData.get("consent") === "on"
+      requirements: String(formData.get("s_t1") ?? ""),
+      consent: true
     };
 
     try {
@@ -363,58 +365,58 @@ export const QuoteInquiryPage = () => {
     >
       <p className="section-description">{t("inquiry.quote.description")}</p>
 
-      <form className="inquiry-form inquiry-form-legacy" onSubmit={submitInquiry}>
-        <label htmlFor="quote-name">
-          {t("inquiry.form.name")} *
-          <input id="quote-name" name="name" required />
-        </label>
-
-        <label htmlFor="quote-company">
-          {t("inquiry.form.company")}
-          <input id="quote-company" name="company" />
-        </label>
-
-        <label htmlFor="contact-part-1">
-          {t("inquiry.form.contact")} *
-          <div className="inquiry-contact-row">
-            <select id="contact-part-1" name="contactPart1" required defaultValue="010">
-              <option value="010">010</option>
-              <option value="011">011</option>
-              <option value="016">016</option>
-              <option value="017">017</option>
-              <option value="018">018</option>
-              <option value="019">019</option>
-            </select>
-            <span>-</span>
-            <input name="contactPart2" maxLength={4} inputMode="numeric" required />
-            <span>-</span>
-            <input name="contactPart3" maxLength={4} inputMode="numeric" required />
-          </div>
-        </label>
-
-        <label htmlFor="quote-email">
-          {t("inquiry.form.email")} *
-          <input id="quote-email" name="email" type="email" required />
-        </label>
-
-        <label htmlFor="quote-requirements">
-          {t("inquiry.form.requirements")}
-          <textarea id="quote-requirements" name="requirements" rows={6} />
-        </label>
-
-        <label htmlFor="quote-file">
-          {t("inquiry.form.file")}
-          <input id="quote-file" name="attachment" type="file" />
-          <small>{t("inquiry.form.fileHint")}</small>
-        </label>
-
-        <label className="consent-row">
-          <input type="checkbox" name="consent" required />
-          {t("inquiry.form.consent")}
-        </label>
-        <button className="primary-link" type="submit">
-          {t("inquiry.form.submit")}
-        </button>
+      <form className="inquiry inquiry-form-legacy inquiry-form-quote" onSubmit={submitInquiry}>
+        <table cellPadding={0} cellSpacing={0}>
+          <colgroup>
+            <col width="13%" />
+            <col width="87%" />
+          </colgroup>
+          <tbody>
+            <tr>
+              <th className="t_left">{t("inquiry.form.name")}</th>
+              <td>
+                <input type="text" name="s_v1" id="s_v1" style={{ width: "100%" }} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.contact")}</th>
+              <td>
+                <select name="s_v2_hp1" style={{ width: 55 }} defaultValue="010" title="휴대전화 첫번째">
+                  <option value="">선택</option>
+                  <option value="010">010</option>
+                  <option value="011">011</option>
+                  <option value="016">016</option>
+                  <option value="017">017</option>
+                  <option value="018">018</option>
+                  <option value="019">019</option>
+                </select>{" "}
+                - <input type="text" name="s_v2_hp2" size={4} maxLength={4} required /> -{" "}
+                <input type="text" name="s_v2_hp3" size={4} maxLength={4} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.email")}</th>
+              <td>
+                <input type="email" name="s_v3" id="s_v3" required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.requirements")}</th>
+              <td>
+                <textarea name="s_t1" id="s_t1" style={{ width: "100%", height: 115 }} />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.file")}</th>
+              <td>
+                <input type="file" id="s_v4" name="s_v4" style={{ maxWidth: 200 }} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="inquiry_btn t_center">
+          <button type="submit">{t("inquiry.form.submitLegacy")}</button>
+        </div>
       </form>
 
       {submittedMessage ? <p className="status-banner success">{submittedMessage}</p> : null}
@@ -430,16 +432,16 @@ export const TestDemoPage = () => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    const productName = String(formData.get("productName") ?? "");
-    const body = String(formData.get("requirements") ?? "");
+    const productName = String(formData.get("s_v4") ?? "");
+    const body = String(formData.get("s_t1") ?? "");
     const payload: InquiryCreateRequest = {
       company: t("inquiry.form.companyFallback"),
       position: "",
-      name: String(formData.get("name") ?? ""),
-      email: String(formData.get("email") ?? ""),
-      contactNumber: String(formData.get("contact") ?? ""),
+      name: String(formData.get("s_v1") ?? ""),
+      email: String(formData.get("s_v3") ?? ""),
+      contactNumber: String(formData.get("s_v2") ?? ""),
       requirements: productName ? `[${t("inquiry.form.productName")}] ${productName}\n${body}` : body,
-      consent: formData.get("consent") === "on"
+      consent: true
     };
 
     try {
@@ -468,45 +470,54 @@ export const TestDemoPage = () => {
     >
       <p className="section-description">{t("inquiry.testDemo.description")}</p>
 
-      <form className="inquiry-form inquiry-form-legacy" onSubmit={submitTestDemo}>
-        <label htmlFor="testdemo-product-name">
-          {t("inquiry.form.productName")} *
-          <input id="testdemo-product-name" name="productName" required />
-        </label>
-
-        <label htmlFor="testdemo-name">
-          {t("inquiry.form.name")} *
-          <input id="testdemo-name" name="name" required />
-        </label>
-
-        <label htmlFor="testdemo-contact">
-          {t("inquiry.form.contact")} *
-          <input id="testdemo-contact" name="contact" required />
-        </label>
-
-        <label htmlFor="testdemo-email">
-          {t("inquiry.form.email")} *
-          <input id="testdemo-email" name="email" type="email" required />
-        </label>
-
-        <label htmlFor="testdemo-requirements">
-          {t("inquiry.form.requirements")}
-          <textarea id="testdemo-requirements" name="requirements" rows={6} />
-        </label>
-
-        <label htmlFor="testdemo-file">
-          {t("inquiry.form.file")}
-          <input id="testdemo-file" name="attachment" type="file" />
-          <small>{t("inquiry.form.fileHint")}</small>
-        </label>
-
-        <label className="consent-row">
-          <input type="checkbox" name="consent" required />
-          {t("inquiry.form.consent")}
-        </label>
-        <button className="primary-link" type="submit">
-          {t("inquiry.form.submit")}
-        </button>
+      <form className="inquiry inquiry-form-legacy inquiry-form-quote" onSubmit={submitTestDemo}>
+        <table cellPadding={0} cellSpacing={0}>
+          <colgroup>
+            <col width="13%" />
+            <col width="87%" />
+          </colgroup>
+          <tbody>
+            <tr>
+              <th className="t_left">{t("inquiry.form.productName")}</th>
+              <td>
+                <input type="text" name="s_v4" id="s_v4" style={{ width: "100%" }} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.applicant")}</th>
+              <td>
+                <input type="text" name="s_v1" id="s_v1" style={{ width: "100%" }} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.contact")}</th>
+              <td>
+                <input type="text" name="s_v2" id="s_v2" style={{ width: "100%" }} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.email")}</th>
+              <td>
+                <input type="email" name="s_v3" id="s_v3" style={{ width: "100%" }} required />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.requirements")}</th>
+              <td>
+                <textarea name="s_t1" id="s_t1" style={{ width: "100%", height: 115 }} />
+              </td>
+            </tr>
+            <tr>
+              <th className="t_left">{t("inquiry.form.file")}</th>
+              <td>
+                <input type="file" id="s_v5" name="s_v5" style={{ maxWidth: 200 }} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div className="inquiry_btn t_center">
+          <button type="submit">{t("inquiry.form.submitLegacy")}</button>
+        </div>
       </form>
 
       {submittedMessage ? <p className="status-banner success">{submittedMessage}</p> : null}
@@ -545,42 +556,41 @@ export const InquiryLibraryPage = () => {
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >
-      <div className="library-toolbar">
-        <p className="library-total">
+      <div className="list_board">
+        <p className="total">
           {t("inquiry.library.totalPrefix")}
           <span>{filteredResources.length}</span>
           {t("inquiry.library.totalSuffix")}
         </p>
+        <div className="search_wrap">
+          <form style={{ margin: 0 }} onSubmit={(event) => event.preventDefault()}>
+            <select
+              value={keyfield}
+              onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
+              aria-label={t("inquiry.library.search.keyfield")}
+            >
+              <option value="title">{t("inquiry.library.search.title")}</option>
+              <option value="file">{t("inquiry.library.search.file")}</option>
+            </select>
+            <input
+              type="text"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              aria-label={t("inquiry.library.search.placeholder")}
+            />
+            <input type="submit" className="search_btn" value={t("inquiry.library.search.submit")} />
+          </form>
+        </div>
 
-        <form className="library-search" role="search" onSubmit={(event) => event.preventDefault()}>
-          <select
-            value={keyfield}
-            onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
-            aria-label={t("inquiry.library.search.keyfield")}
-          >
-            <option value="title">{t("inquiry.library.search.title")}</option>
-            <option value="file">{t("inquiry.library.search.file")}</option>
-          </select>
-          <input
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder={t("inquiry.library.search.placeholder")}
-            aria-label={t("inquiry.library.search.placeholder")}
-          />
-          <button type="submit">{t("inquiry.library.search.submit")}</button>
-        </form>
-      </div>
-
-      <div className="library-table-wrap">
-        <table className="library-table">
+        <table cellPadding={0} cellSpacing={0} border={0} className="list_board_table">
           <colgroup>
-            <col width="90" />
-            <col />
-            <col width="120" />
-            <col width="130" />
-            <col width="90" />
+            <col width="80" className="pc_display" />
+            <col width="*" />
+            <col width="80" className="pc_display" />
+            <col width="120" className="pc_display" />
+            <col width="100" className="pc_display" />
           </colgroup>
-          <thead>
+          <thead className="pc_display">
             <tr>
               <th scope="col">{t("inquiry.library.table.no")}</th>
               <th scope="col">{t("inquiry.library.table.title")}</th>
@@ -592,25 +602,28 @@ export const InquiryLibraryPage = () => {
           <tbody>
             {filteredResources.length === 0 ? (
               <tr>
-                <td colSpan={5} className="is-empty">
+                <td colSpan={5} className="farm-A-empty t_center">
                   {t("inquiry.library.empty")}
                 </td>
               </tr>
             ) : (
               filteredResources.map((resource: ResourceItem, index) => (
                 <tr key={resource.id}>
-                  <td>{filteredResources.length - index}</td>
-                  <td className="is-title">
+                  <td className="pc_display">{filteredResources.length - index}</td>
+                  <td>
                     <Link to={`/inquiry/library/${resource.id}`}>{resource.title}</Link>
                   </td>
-                  <td>{resourceTypeLabel(resource.type, locale)}</td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td className="pc_display">{resourceTypeLabel(resource.type, locale)}</td>
+                  <td className="pc_display">-</td>
+                  <td className="pc_display">-</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        <div className="paginate t_center">
+          <div className="ui-pagenate" />
+        </div>
       </div>
     </CompanySectionShell>
   );
@@ -678,6 +691,7 @@ export const InquiryLibraryDetailPage = () => {
 
 export const NoticePage = () => {
   const { notices, locale, t } = usePublicOutlet();
+  const [keyfield, setKeyfield] = useState<"title" | "file">("title");
   const [keyword, setKeyword] = useState("");
 
   const sortedNotices = useMemo(
@@ -693,12 +707,15 @@ export const NoticePage = () => {
   const filteredNotices = useMemo(() => {
     const query = keyword.trim().toLowerCase();
     if (!query) return sortedNotices;
+    if (keyfield === "file") {
+      return [];
+    }
     return sortedNotices.filter((notice) => notice.title.toLowerCase().includes(query));
-  }, [sortedNotices, keyword]);
+  }, [sortedNotices, keyword, keyfield]);
 
   return (
     <CompanySectionShell
-      title={t("notice.heading")}
+      title={t("notice.contentTitle")}
       sectionTitle={t("section.notice")}
       sectionSlogan={t("company.shell.slogan")}
       asideSubtitle={t("notice.shell.subtitle")}
@@ -714,6 +731,14 @@ export const NoticePage = () => {
           {t("notice.totalSuffix")}
         </p>
         <form className="library-search" role="search" onSubmit={(event) => event.preventDefault()}>
+          <select
+            value={keyfield}
+            onChange={(event) => setKeyfield(event.target.value as "title" | "file")}
+            aria-label={t("notice.search.keyfield")}
+          >
+            <option value="title">{t("notice.search.title")}</option>
+            <option value="file">{t("notice.search.file")}</option>
+          </select>
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
@@ -729,6 +754,7 @@ export const NoticePage = () => {
           <colgroup>
             <col width="90" />
             <col />
+            <col width="120" />
             <col width="130" />
             <col width="90" />
           </colgroup>
@@ -736,6 +762,7 @@ export const NoticePage = () => {
             <tr>
               <th scope="col">{t("notice.table.no")}</th>
               <th scope="col">{t("notice.table.title")}</th>
+              <th scope="col">{t("notice.table.file")}</th>
               <th scope="col">{t("notice.table.date")}</th>
               <th scope="col">{t("notice.table.views")}</th>
             </tr>
@@ -743,7 +770,7 @@ export const NoticePage = () => {
           <tbody>
             {filteredNotices.length === 0 ? (
               <tr>
-                <td colSpan={4} className="is-empty">
+                <td colSpan={5} className="is-empty">
                   {t("notice.empty")}
                 </td>
               </tr>
@@ -754,6 +781,7 @@ export const NoticePage = () => {
                   <td className="is-title">
                     <Link to={`/notice/${notice.id}`}>{notice.title}</Link>
                   </td>
+                  <td>-</td>
                   <td>{new Date(notice.publishedAt).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US")}</td>
                   <td>-</td>
                 </tr>
@@ -774,7 +802,7 @@ export const NoticeDetailPage = () => {
   if (!notice) {
     return (
       <CompanySectionShell
-        title={t("notice.heading")}
+        title={t("notice.contentTitle")}
         sectionTitle={t("section.notice")}
         sectionSlogan={t("company.shell.slogan")}
         asideSubtitle={t("notice.shell.subtitle")}
@@ -793,7 +821,7 @@ export const NoticeDetailPage = () => {
 
   return (
     <CompanySectionShell
-      title={t("notice.heading")}
+      title={t("notice.contentTitle")}
       sectionTitle={t("section.notice")}
       sectionSlogan={t("company.shell.slogan")}
       asideSubtitle={t("notice.shell.subtitle")}

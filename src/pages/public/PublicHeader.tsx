@@ -32,7 +32,7 @@ const LanguageSwitch = () => {
 };
 
 export const PublicHeader = () => {
-  const { locale, setLocale } = useI18n();
+  const { locale, setLocale, t } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productMenuOpen, setProductMenuOpen] = useState(false);
@@ -62,6 +62,7 @@ export const PublicHeader = () => {
 
   const openTarget = (target: LegacyMenuItem["target"]): "_self" | "_blank" => target ?? "_self";
   const renderMenuLink = (item: LegacyMenuItem, className?: string, onClick?: () => void) => {
+    const label = menuLabel(item.id, item.label, t);
     if (item.href.startsWith("http")) {
       return (
         <a
@@ -71,13 +72,13 @@ export const PublicHeader = () => {
           rel="noreferrer"
           onClick={onClick}
         >
-          {item.label}
+          {label}
         </a>
       );
     }
     return (
       <Link className={className} to={item.href} onClick={onClick}>
-        {item.label}
+        {label}
       </Link>
     );
   };
@@ -128,7 +129,7 @@ export const PublicHeader = () => {
             className={mobileMenuOpen ? "legacy-main-menu-btn is-open" : "legacy-main-menu-btn"}
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
-            aria-label="메뉴 열기"
+            aria-label={t("nav.menu.open")}
           >
             <span />
             <span />
@@ -182,8 +183,91 @@ export const PublicHeader = () => {
         type="button"
         className={mobileMenuOpen ? "legacy-main-overlay is-open" : "legacy-main-overlay"}
         onClick={() => setMobileMenuOpen(false)}
-        aria-label="메뉴 닫기"
+        aria-label={t("nav.menu.close")}
       />
     </>
   );
+};
+
+const menuLabel = (id: string, fallback: string, t: (key: string) => string): string => {
+  switch (id) {
+    case "be21e5fa":
+      return t("nav.company");
+    case "54ddbaf0":
+      return t("nav.company.ceo");
+    case "a8efd0b7":
+      return t("nav.company.vision");
+    case "f4984283":
+      return t("nav.company.location");
+    case "cd917f17":
+      return t("nav.partner");
+    case "sub2_1":
+      return t("nav.partner.core");
+    case "db4958d7":
+      return t("nav.product");
+    case "02708bea":
+      return t("nav.inquiry");
+    case "inquiry":
+      return t("nav.inquiry.quote");
+    case "testdemo":
+      return t("nav.inquiry.testDemo");
+    case "menual":
+      return t("nav.inquiry.library");
+    case "ff6078f4":
+    case "b13e0b14":
+      return t("nav.notice");
+    case "6b5eebd7":
+      return t("nav.product.laser");
+    case "aa49a34a":
+      return t("nav.product.laser.nanosecond");
+    case "d9a8c320":
+      return t("nav.product.laser.picosecond");
+    case "b8f82ab3":
+      return t("nav.product.laser.co2");
+    case "336850dd":
+      return t("nav.product.laser.excimer");
+    case "5ea7cbd3":
+      return t("nav.product.laser.diode");
+    case "1f638fd0":
+      return t("nav.product.optics");
+    case "b451fed3":
+      return t("nav.product.optics.monocle");
+    case "23452345":
+      return t("nav.product.optics.ulo");
+    case "pro6_3":
+      return t("nav.product.optics.green");
+    case "pro6_4":
+      return t("nav.product.optics.jenoptik");
+    case "1f969dbb":
+      return t("nav.product.scanner");
+    case "176a9c95":
+      return t("nav.product.scanner.scanlab");
+    case "e158d94e":
+      return t("nav.product.custom");
+    case "28acbd82":
+      return t("nav.product.custom.meopta");
+    case "13300bde":
+      return t("nav.product.custom.femtoprint");
+    case "965c17c3":
+      return t("nav.product.measurement");
+    case "ee3098e3":
+      return t("nav.product.measurement.point");
+    case "1b1dd59a":
+      return t("nav.product.measurement.metrolux");
+    case "pro4_3":
+      return t("nav.product.measurement.shinhotek");
+    case "pro8_1":
+    case "36bdb97f":
+      return t("nav.product.others");
+    case "6d145a0f":
+      return t("nav.product.beam");
+    case "bf7f57c7":
+      return t("nav.product.beam.adloptica");
+    case "6bea92d7":
+      return t("nav.product.beam.power");
+    case "pro5_1":
+      return t("nav.product.beam.silios");
+    default:
+      return fallback;
+  }
 };

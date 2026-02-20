@@ -226,18 +226,9 @@ const solutions: SolutionArea[] = [
   }
 ];
 
-export const resources: ResourceItem[] = [
-  { id: "r-1", title: "Integrated Catalog 2026", type: "Catalog" },
-  { id: "r-2", title: "Laser Process White Paper", type: "White Paper" },
-  { id: "r-3", title: "Quality Certificates", type: "Certificate" },
-  { id: "r-4", title: "Battery Case Study Collection", type: "Case Study" }
-];
+export const resources: ResourceItem[] = [];
 
-export const notices: NoticeItem[] = [
-  { id: "n-1", title: "2026 Exhibition Schedule", publishedAt: "2026-01-10" },
-  { id: "n-2", title: "AOI Solution Demo Request Open", publishedAt: "2026-01-22" },
-  { id: "n-3", title: "Homepage Renewal Phase 1 Release", publishedAt: "2026-02-05" }
-];
+export const notices: NoticeItem[] = [];
 
 export const initialSiteContent: SiteContent = {
   heroSlides: [

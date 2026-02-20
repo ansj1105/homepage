@@ -951,6 +951,10 @@ a {
   color: #fff;
 }
 
+.sub_bg_txt {
+  text-align: center;
+}
+
 .company-shell-hero-inner strong {
   display: block;
   font-size: clamp(32px, 5vw, 40px);
@@ -963,6 +967,9 @@ a {
 
 .company-shell-body {
   margin-top: 26px;
+}
+
+.company-shell-body .sub_nav {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
   gap: 28px;
@@ -1110,6 +1117,18 @@ a {
   display: inline-block;
 }
 
+.sub1_3 {
+  display: grid;
+  gap: 20px;
+}
+
+.sub1_3 .map {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
 .partner-shell-hero {
   background-image:
     linear-gradient(120deg, rgba(16, 36, 63, 0.62), rgba(15, 50, 95, 0.48)),
@@ -1123,8 +1142,7 @@ a {
 .partner-core-content img {
   max-width: 100%;
   height: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  margin-top: 14px;
 }
 
 .inquiry-shell-hero {
@@ -1281,8 +1299,34 @@ a {
   margin-top: 20px;
 }
 
+.map_info {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 16px;
+}
+
+.map_info dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.map_info dt {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.map_info dd {
+  margin: 0;
+  color: var(--muted);
+}
+
 @media (max-width: 900px) {
-  .company-shell-body {
+  .company-shell-body .sub_nav {
     grid-template-columns: 1fr;
     gap: 16px;
   }
@@ -1372,4 +1416,62 @@ a {
     width: 100%;
     text-align: left;
   }
+}
+
+/* Legacy parity overrides */
+.site-main {
+  padding: 0 0 56px;
+}
+
+.site-main > .container {
+  width: 100%;
+  max-width: none;
+}
+
+.company-shell-body {
+  margin-top: 0;
+}
+
+.company-shell-aside .dep1_label {
+  display: none;
+}
+
+.company-shell-aside .dep2 a.on {
+  color: #fff;
+  background-color: #3675de;
+}
+
+.company-shell-content .sub_title p {
+  margin: 0;
+}
+
+.location-map {
+  width: 100%;
+  height: 390px;
+  border: 0;
+  border-radius: 0;
+}
+
+.partner-core-content img {
+  border-radius: 0;
+}
+
+.inquiry-form-quote input[type="text"],
+.inquiry-form-quote input[type="email"],
+.inquiry-form-quote textarea,
+.inquiry-form-quote select {
+  border: 1px solid #c8d7e8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.inquiry-form-quote .inquiry_btn button {
+  color: #3675de;
+  font-size: 16px;
+  border: 2px solid #3675de;
+  background: #fff;
+  padding: 10px 100px;
+  display: inline-block;
+  cursor: pointer;
 }

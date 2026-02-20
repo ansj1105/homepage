@@ -1,7 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { apiClient } from "../../api/client";
-import { productTaxonomy } from "../../data/productTaxonomy";
 import {
   initialSiteContent,
   notices as initialNotices,
@@ -65,8 +64,6 @@ export const PublicLayout = () => {
   }, []);
 
   const localizedContent = useMemo(() => localizeSiteContent(content, locale), [content, locale]);
-  const phoneHref = `tel:${localizedContent.contact.tel.replace(/[^+\d]/g, "")}`;
-
   const outletContext: PublicOutletContext = {
     content: localizedContent,
     resources,
@@ -81,34 +78,6 @@ export const PublicLayout = () => {
 
       <main className="site-main">
         <div className="container">
-          <section className="hero-band" aria-label="Site intro">
-            <p>{t("site.hero.title")}</p>
-            <h1>{t("site.hero.subtitle")}</h1>
-            <div className="hero-band-actions">
-              <Link className="primary-link" to="/product">
-                {t("site.hero.primary")}
-              </Link>
-              <Link className="ghost-link" to="/inquiry/quote">
-                {t("site.hero.secondary")}
-              </Link>
-            </div>
-          </section>
-
-          <section className="trust-strip" aria-label="Key metrics">
-            <article>
-              <strong>{localizedContent.partners.length}+</strong>
-              <span>{t("site.metric.partners")}</span>
-            </article>
-            <article>
-              <strong>{productTaxonomy.length}</strong>
-              <span>{t("site.metric.categories")}</span>
-            </article>
-            <article>
-              <strong>{localizedContent.contact.tel}</strong>
-              <span>{t("site.metric.support")}</span>
-            </article>
-          </section>
-
           {loading ? <p className="status-banner">{t("site.loading")}</p> : null}
           {apiFallback ? <p className="status-banner warning">{t("site.apiFallback")}</p> : null}
 
@@ -116,38 +85,27 @@ export const PublicLayout = () => {
         </div>
       </main>
 
-      <aside className="floating-quick" aria-label="Quick actions">
-        <Link to="/inquiry/quote">{t("site.quick.quote")}</Link>
-        <a href={phoneHref}>{t("site.quick.call")}</a>
-        {localizedContent.quickLinks.slice(0, 2).map((item) => (
-          <a key={item.label} href={item.url} target="_blank" rel="noreferrer">
-            {item.label}
-          </a>
-        ))}
-      </aside>
-
-      <footer className="site-footer">
-        <div className="container site-footer-inner">
-          <div>
-            <h3>SHINHOTEK Co., Ltd.</h3>
-            <p>{localizedContent.contact.headquarter}</p>
-            <p>
-              Tel. {localizedContent.contact.tel} | Fax. {localizedContent.contact.fax}
-            </p>
+      <div className="footer_wrap">
+        <div className="footer wrap">
+          <div className="f_logo">
+            <Link to="/main">
+              <img src="/assets/legacy/images/logo/f_logo.png" alt="SHINHOTEK" />
+            </Link>
           </div>
-          <div>
-            <h3>R&D Center</h3>
-            <p>{localizedContent.contact.rdCenter}</p>
-            <p>
-              {localizedContent.contact.email} | {localizedContent.contact.website}
+          <div className="f_info">
+            <p className="info01">
+              {localizedContent.contact.headquarter} T {localizedContent.contact.tel} F{" "}
+              {localizedContent.contact.fax}
             </p>
+            <p className="info02">Copyright 2017 SHINHOTEK. All Right Reserved.</p>
           </div>
-          <div>
-            <h3>{t("footer.policy")}</h3>
-            <p>{t("footer.policyText")}</p>
+          <div className="top_btn t_center">
+            <span role="button" tabIndex={0} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              TOP
+            </span>
           </div>
         </div>
-      </footer>
+      </div>
     </>
   );
 };

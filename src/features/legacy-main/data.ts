@@ -99,7 +99,7 @@ export const legacyProductMega: LegacyMenuItem[] = [
       {
         id: "13300bde",
         label: "FEMTOPRINT®",
-        href: "http://shinhotek.hmandoo.co.kr/shop_contents/myboard_read.htm?load_type=&page_idx=0&tag_on=&h_search_c=0&h_search_v=&me_popup=&myboard_code=pro7_2&page_limit=10&idx=86351&page=1&category_idx=",
+        href: "http://shinhotek.hmandoo.co.kr/shop_contents/myboard_read.htm?load_type=&page_idx=0&tag_on=&h_search_c=0&h_search_v=&me_popup=&myboard_code=pro7_2&page_limit=10&idx=863051&page=1&category_idx=",
         target: "_blank"
       }
     ]
