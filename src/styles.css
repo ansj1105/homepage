@@ -841,6 +841,8 @@ dl::after {
   font-weight: 700;
   min-height: 42px;
   padding: 10px 12px;
+  width: calc(100% - 8px);
+  margin-left: 8px;
 }
 
 .admin-nav-group button:hover {
@@ -871,8 +873,8 @@ dl::after {
   border-color: rgba(141, 181, 224, 0.2);
   color: #b7cce3;
   font-size: 12px;
-  width: calc(100% - 10px);
-  margin-left: 10px;
+  width: calc(100% - 18px);
+  margin-left: 18px;
   border-radius: 8px;
   padding: 6px 10px;
   justify-content: flex-start;
