@@ -45,10 +45,19 @@
   display: flex;
   align-items: center;
   gap: 18px;
+  width: auto;
+}
+
+.legacy-main-header .legacy-main-nav > ul,
+.legacy-main-header .legacy-main-nav > ul > li {
+  width: auto !important;
+  max-width: none !important;
 }
 
 .legacy-main-nav-item {
   position: relative;
+  width: auto;
+  flex: 0 0 auto;
 }
 
 .legacy-main-nav-link {
@@ -70,7 +79,9 @@
   background: rgba(0, 0, 0, 0.84);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  min-width: 190px;
+  min-width: max(220px, 100%);
+  width: max-content;
+  max-width: 75vw;
   opacity: 0;
   pointer-events: none;
   transform: translateY(8px);
@@ -87,6 +98,8 @@
   text-decoration: none;
   font-size: 14px;
   padding: 5px 8px;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .legacy-main-nav-item:hover .legacy-main-submenu,
