@@ -1,5 +1,9 @@
 ﻿export { PublicLayout } from "./PublicLayout";
 export {
+  ApplicationDetailPage,
+  ApplicationListPage,
+  CompanyOverviewPage,
+  CompanyPartnerPage,
   CompanyCeoPage,
   CompanyLocationPage,
   CompanyVisionPage,
@@ -10,6 +14,8 @@ export {
   NoticeDetailPage,
   NoticePage,
   PartnerCorePage,
+  SolutionDetailPage,
+  SolutionListPage,
   ProductCategoryListPage,
   ProductCategoryPage,
   ProductItemPage,

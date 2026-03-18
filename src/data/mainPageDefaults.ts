@@ -3,21 +3,21 @@ import type { MainPageContent } from "../types";
 export const defaultMainPageContent: MainPageContent = {
   settings: {
     heroCopyTop: "SHINHOTEK",
-    heroCopyMid: "Innovation Light Changes the World",
-    heroCopyBottom: "BEST Technology Solution",
-    heroCtaLabel: "ABOUT SHINHOTEK",
-    heroCtaHref: "/company/ceo",
+    heroCopyMid: "Integrated Photonics for Industrial Engineering",
+    heroCopyBottom: "Precision components, practical system thinking, reliable execution",
+    heroCtaLabel: "VIEW SOLUTIONS",
+    heroCtaHref: "/product",
     aboutTitle: "ABOUT SHINHOTEK",
     aboutBody1:
-      "광학은 앞으로 펼쳐질 미래 사회의 핵심 기술로서, 자율주행 자동차 등 광범위한 분야에 활용이 되고 있습니다.",
+      "신호텍은 산업 현장에서 바로 검토할 수 있는 광학 부품과 시스템 구성을 중심으로, 요구 사양에 맞는 현실적인 제안을 빠르게 정리합니다.",
     aboutBody2:
-      "신호텍은 고객사의 요구에 대한 광학 컨설팅을 통해 최적의 제품을 공급함으로써 국내의 레이저 산업 및 연구 분야의 발전에 앞장서고 있습니다.",
+      "복잡한 제품 정보를 나열하기보다 고객이 필요한 방향을 빠르게 파악할 수 있도록, 포트폴리오 구조와 적용 흐름을 명확하게 전달하는 데 집중합니다.",
     aboutImageUrl: "/assets/legacy/images/section/main_part01_img01.jpg",
     solutionTitle: "SH SOLUTION",
     solutionBody1:
-      "SHINHOTEK은 BPS(Business Partner System)을 기반으로 하여, 기성 광학 구성품 또는 모듈과 단품을 통합한 광학계 솔루션을 고객사에 제안합니다.",
+      "고객 공정과 사양에 맞는 요소를 유기적으로 연결해 도입 검토부터 적용 판단까지 이어질 수 있는 솔루션 흐름을 설계합니다.",
     solutionBody2:
-      "가격과 미 경험에 의한 실패 확률을 줄여 최선의 효율을 추구하고, 향후 고객 application 및 사양에 맞는 맞춤화된 광학 솔루션을 제공하겠습니다.",
+      "메인 페이지는 기술 키워드를 그대로 나열하기보다, 어떤 성격의 회사이고 어떤 구조로 문제를 풀어주는지 한눈에 이해되도록 구성합니다.",
     solutionStepImage1: "/assets/legacy/images/section/main_part02_img01.png",
     solutionStepImage2: "/assets/legacy/images/section/main_part02_img02.png",
     solutionStepImage3: "/assets/legacy/images/section/main_part02_img03.png",
@@ -35,36 +35,36 @@ export const defaultMainPageContent: MainPageContent = {
       id: "semiconductor",
       label: "Semiconductor",
       imageUrl: "/assets/legacy/images/application/main_part03_img011504858501.png",
-      linkUrl: "/product",
+      linkUrl: "/application/semiconductor",
       sortOrder: 0
     },
-    { id: "solar-cell", label: "Solar cell", imageUrl: "", linkUrl: "/product", sortOrder: 1 },
+    { id: "solar-cell", label: "Solar cell", imageUrl: "", linkUrl: "/application/solar-cell", sortOrder: 1 },
     {
       id: "aerospace",
       label: "Aerospace",
       imageUrl: "/assets/legacy/images/application/main_part03_img031504858618.png",
-      linkUrl: "/product",
+      linkUrl: "/application/aerospace",
       sortOrder: 2
     },
     {
       id: "medical",
       label: "Medical",
       imageUrl: "/assets/legacy/images/application/main_part03_img041504858646.png",
-      linkUrl: "/product",
+      linkUrl: "/application/medical-bio",
       sortOrder: 3
     },
     {
       id: "automotive",
       label: "Automotive",
       imageUrl: "/assets/legacy/images/application/main_part03_img051504858663.png",
-      linkUrl: "/product",
+      linkUrl: "/application/automotive",
       sortOrder: 4
     },
     {
       id: "oled-display",
       label: "OLED display",
       imageUrl: "/assets/legacy/images/application/main_part03_img061504858679.png",
-      linkUrl: "/product",
+      linkUrl: "/application/oled-display",
       sortOrder: 5
     }
   ]

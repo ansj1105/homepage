@@ -5,6 +5,10 @@ import { defaultPublicSiteSettings } from "./data/siteSettingsDefaults";
 import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import {
+  ApplicationDetailPage,
+  ApplicationListPage,
+  CompanyOverviewPage,
+  CompanyPartnerPage,
   CompanyCeoPage,
   CompanyLocationPage,
   CompanyVisionPage,
@@ -14,6 +18,8 @@ import {
   NoticeDetailPage,
   NoticePage,
   PartnerCorePage,
+  SolutionDetailPage,
+  SolutionListPage,
   ProductCategoryListPage,
   ProductCategoryPage,
   ProductItemPage,
@@ -119,14 +125,21 @@ const App = () => (
 
       <Route path="/" element={<PublicLayout />}>
         <Route path="company">
-          <Route index element={<Navigate to="ceo" replace />} />
-          <Route path="ceo" element={<CompanyCeoPage />} />
-          <Route path="vision" element={<CompanyVisionPage />} />
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<CompanyOverviewPage />} />
+          <Route path="partner" element={<CompanyPartnerPage />} />
           <Route path="location" element={<CompanyLocationPage />} />
+          <Route path="ceo" element={<Navigate to="/company/overview" replace />} />
+          <Route path="vision" element={<Navigate to="/company/overview" replace />} />
         </Route>
 
         <Route path="partner">
-          <Route path="core" element={<PartnerCorePage />} />
+          <Route path="core" element={<Navigate to="/company/partner" replace />} />
+        </Route>
+
+        <Route path="application">
+          <Route index element={<ApplicationListPage />} />
+          <Route path=":applicationId" element={<ApplicationDetailPage />} />
         </Route>
 
         <Route path="product">
@@ -135,7 +148,13 @@ const App = () => (
           <Route path=":categorySlug/:itemSlug" element={<ProductItemPage />} />
         </Route>
 
+        <Route path="solution">
+          <Route index element={<SolutionListPage />} />
+          <Route path=":solutionId" element={<SolutionDetailPage />} />
+        </Route>
+
         <Route path="inquiry">
+          <Route index element={<Navigate to="quote" replace />} />
           <Route path="quote" element={<QuoteInquiryPage />} />
           <Route path="test-demo" element={<TestDemoPage />} />
           <Route path="library" element={<InquiryLibraryPage />} />

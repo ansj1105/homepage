@@ -8,9 +8,16 @@ import {
   getLabel,
   productTaxonomy
 } from "../../data/productTaxonomy";
-import type { CmsPage, InquiryCreateRequest, InquiryItem, ResourceItem } from "../../types";
+import type {
+  ApplicationCategory,
+  CmsPage,
+  InquiryCreateRequest,
+  InquiryItem,
+  ResourceItem,
+  SolutionArea
+} from "../../types";
 import { usePublicOutlet } from "./context";
-import { findRelatedProducts, resourceTypeLabel } from "./helpers";
+import { resourceTypeLabel } from "./helpers";
 import { MarkdownBlock } from "./MarkdownBlock";
 import { SectionHeading } from "./SectionHeading";
 import { CompanySectionShell } from "./CompanySectionShell";
@@ -37,6 +44,57 @@ const getFileExtension = (filename: string) => {
   const dotIndex = filename.lastIndexOf(".");
   if (dotIndex < 0) return "";
   return filename.slice(dotIndex).toLowerCase();
+};
+
+const getCompanyInfoTabs = (t: (key: never) => string) => [
+  { label: t("nav.company.overview" as never), to: "/company/overview" },
+  { label: t("nav.company.partners" as never), to: "/company/partner" },
+  { label: t("nav.company.location" as never), to: "/company/location" }
+];
+
+const getApplicationTabs = (applications: ApplicationCategory[]) =>
+  applications.map((item) => ({ label: item.name, to: `/application/${item.id}` }));
+
+const getSolutionTabs = (solutions: SolutionArea[]) =>
+  solutions.map((item) => ({ label: item.title, to: `/solution/${item.id}` }));
+
+export const CompanyOverviewPage = () => {
+  const { t } = usePublicOutlet();
+  const ceoFallback = defaultCmsPages.find((item) => item.slug === "company-ceo")!;
+  const visionFallback = defaultCmsPages.find((item) => item.slug === "company-vision")!;
+  const [ceoPage, setCeoPage] = useState<CmsPage>(ceoFallback);
+  const [visionPage, setVisionPage] = useState<CmsPage>(visionFallback);
+
+  useEffect(() => {
+    apiClient.getCmsPage("company-ceo").then(setCeoPage).catch(() => setCeoPage(ceoFallback));
+    apiClient.getCmsPage("company-vision").then(setVisionPage).catch(() => setVisionPage(visionFallback));
+  }, [ceoFallback, visionFallback]);
+
+  return (
+    <CompanySectionShell title={t("nav.company.overview" as never)} tabs={getCompanyInfoTabs(t as never)}>
+      <section className="page-section">
+        <article className="content-card">
+          <SectionHeading
+            title={ceoPage.title || t("company.ceo.pageTitle")}
+            subtitle={t("section.company")}
+          />
+          <MarkdownBlock markdown={ceoPage.markdown || ceoFallback.markdown} />
+        </article>
+        <article className="content-card">
+          <SectionHeading
+            title={visionPage.title || t("company.title.vision")}
+            subtitle={t("section.company")}
+          />
+          <img
+            src={visionPage.imageUrl || visionFallback.imageUrl}
+            alt={t("company.vision.fourWAltDesktop")}
+            className="company-overview-visual"
+          />
+          <MarkdownBlock markdown={visionPage.markdown || visionFallback.markdown} />
+        </article>
+      </section>
+    </CompanySectionShell>
+  );
 };
 
 export const CompanyCeoPage = () => {
@@ -109,7 +167,7 @@ export const CompanyLocationPage = () => {
   const { t } = usePublicOutlet();
 
   return (
-    <CompanySectionShell title={t("company.title.location")}>
+    <CompanySectionShell title={t("company.title.location")} tabs={getCompanyInfoTabs(t as never)}>
       <div className="sub1_3">
         <div className="map">
           <iframe
@@ -134,6 +192,25 @@ export const CompanyLocationPage = () => {
           </dl>
         </div>
       </div>
+    </CompanySectionShell>
+  );
+};
+
+export const CompanyPartnerPage = () => {
+  const { t } = usePublicOutlet();
+  const fallback = defaultCmsPages.find((item) => item.slug === "partner-core")!;
+  const [page, setPage] = useState<CmsPage>(fallback);
+
+  useEffect(() => {
+    apiClient.getCmsPage("partner-core").then(setPage).catch(() => setPage(fallback));
+  }, [fallback]);
+
+  return (
+    <CompanySectionShell title={t("nav.company.partners" as never)} tabs={getCompanyInfoTabs(t as never)}>
+      <article className="content-card">
+        <SectionHeading title={page.title || t("partner.title")} subtitle={t("section.company")} />
+        <MarkdownBlock markdown={page.markdown || fallback.markdown} />
+      </article>
     </CompanySectionShell>
   );
 };
@@ -171,6 +248,173 @@ export const PartnerCorePage = () => {
   );
 };
 
+export const ApplicationListPage = () => {
+  const { content, t } = usePublicOutlet();
+
+  return (
+    <CompanySectionShell
+      title={t("application.title" as never)}
+      sectionTitle={t("section.application" as never)}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("application.subtitle" as never)}
+      heroAriaLabel={t("application.heroAria" as never)}
+      asideAriaLabel={t("application.asideAria" as never)}
+      heroClassName="company-shell-hero application-shell-hero"
+      tabs={getApplicationTabs(content.applications)}
+    >
+      <section className="page-section">
+        <p className="section-description">{t("application.description" as never)}</p>
+        <div className="application-grid">
+          {content.applications.map((item) => (
+            <Link key={item.id} to={`/application/${item.id}`} className="category-card">
+              <h3>{item.name}</h3>
+              <p>{item.summary}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </CompanySectionShell>
+  );
+};
+
+export const ApplicationDetailPage = () => {
+  const { content, t } = usePublicOutlet();
+  const { applicationId } = useParams();
+  const application = content.applications.find((item) => item.id === applicationId);
+
+  if (!application) {
+    return (
+      <CompanySectionShell
+        title={t("application.title" as never)}
+        sectionTitle={t("section.application" as never)}
+        sectionSlogan={t("company.shell.slogan")}
+        asideSubtitle={t("application.subtitle" as never)}
+        heroAriaLabel={t("application.heroAria" as never)}
+        asideAriaLabel={t("application.asideAria" as never)}
+        heroClassName="company-shell-hero application-shell-hero"
+        tabs={getApplicationTabs(content.applications)}
+      >
+        <article className="content-card">
+          <p>{t("application.notFound" as never)}</p>
+          <Link className="text-link" to="/application">
+            {t("application.backToList" as never)}
+          </Link>
+        </article>
+      </CompanySectionShell>
+    );
+  }
+
+  return (
+    <CompanySectionShell
+      title={application.name}
+      sectionTitle={t("section.application" as never)}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("application.subtitle" as never)}
+      heroAriaLabel={t("application.heroAria" as never)}
+      asideAriaLabel={t("application.asideAria" as never)}
+      heroClassName="company-shell-hero application-shell-hero"
+      tabs={getApplicationTabs(content.applications)}
+    >
+      <section className="page-section">
+        <article className="content-card">
+          <SectionHeading title={application.name} subtitle={t("section.application" as never)} />
+          <p>{application.summary}</p>
+          <dl className="info-grid">
+            <div>
+              <dt>{t("application.process" as never)}</dt>
+              <dd>{application.process}</dd>
+            </div>
+            <div>
+              <dt>{t("application.recommended" as never)}</dt>
+              <dd>{application.recommendedProductCategory}</dd>
+            </div>
+          </dl>
+        </article>
+      </section>
+    </CompanySectionShell>
+  );
+};
+
+export const SolutionListPage = () => {
+  const { content, t } = usePublicOutlet();
+
+  return (
+    <CompanySectionShell
+      title={t("solution.title" as never)}
+      sectionTitle={t("section.solution" as never)}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("solution.subtitle" as never)}
+      heroAriaLabel={t("solution.heroAria" as never)}
+      asideAriaLabel={t("solution.asideAria" as never)}
+      heroClassName="company-shell-hero solution-shell-hero"
+      tabs={getSolutionTabs(content.solutions)}
+    >
+      <section className="page-section">
+        <p className="section-description">{t("solution.description" as never)}</p>
+        <div className="solution-grid">
+          {content.solutions.map((item) => (
+            <Link key={item.id} to={`/solution/${item.id}`} className="category-card">
+              <h3>{item.title}</h3>
+              <p>{item.overview}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </CompanySectionShell>
+  );
+};
+
+export const SolutionDetailPage = () => {
+  const { content, t } = usePublicOutlet();
+  const { solutionId } = useParams();
+  const solution = content.solutions.find((item) => item.id === solutionId);
+
+  if (!solution) {
+    return (
+      <CompanySectionShell
+        title={t("solution.title" as never)}
+        sectionTitle={t("section.solution" as never)}
+        sectionSlogan={t("company.shell.slogan")}
+        asideSubtitle={t("solution.subtitle" as never)}
+        heroAriaLabel={t("solution.heroAria" as never)}
+        asideAriaLabel={t("solution.asideAria" as never)}
+        heroClassName="company-shell-hero solution-shell-hero"
+        tabs={getSolutionTabs(content.solutions)}
+      >
+        <article className="content-card">
+          <p>{t("solution.notFound" as never)}</p>
+          <Link className="text-link" to="/solution">
+            {t("solution.backToList" as never)}
+          </Link>
+        </article>
+      </CompanySectionShell>
+    );
+  }
+
+  return (
+    <CompanySectionShell
+      title={solution.title}
+      sectionTitle={t("section.solution" as never)}
+      sectionSlogan={t("company.shell.slogan")}
+      asideSubtitle={t("solution.subtitle" as never)}
+      heroAriaLabel={t("solution.heroAria" as never)}
+      asideAriaLabel={t("solution.asideAria" as never)}
+      heroClassName="company-shell-hero solution-shell-hero"
+      tabs={getSolutionTabs(content.solutions)}
+    >
+      <article className="content-card">
+        <SectionHeading title={solution.title} subtitle={t("section.solution" as never)} />
+        <p>{solution.overview}</p>
+        <ul className="bullet-list">
+          {solution.capabilities.map((capability) => (
+            <li key={capability}>{capability}</li>
+          ))}
+        </ul>
+      </article>
+    </CompanySectionShell>
+  );
+};
+
 export const ProductCategoryListPage = () => {
   const { locale, t } = usePublicOutlet();
 
@@ -196,7 +440,7 @@ export const ProductCategoryListPage = () => {
 };
 
 export const ProductCategoryPage = () => {
-  const { content, locale, t } = usePublicOutlet();
+  const { locale, t } = usePublicOutlet();
   const { categorySlug } = useParams();
   const category = getCategoryBySlug(categorySlug);
 
@@ -213,8 +457,6 @@ export const ProductCategoryPage = () => {
       </section>
     );
   }
-
-  const relatedProducts = findRelatedProducts(content.products, category);
 
   return (
     <section className="page-section">
@@ -235,29 +477,13 @@ export const ProductCategoryPage = () => {
         ))}
       </div>
 
-      <h2 className="subheading">{t("product.related")}</h2>
-      {relatedProducts.length === 0 ? (
-        <p className="section-description">{t("product.empty")}</p>
-      ) : (
-        <div className="related-grid">
-          {relatedProducts.slice(0, 8).map((product) => (
-            <article key={product.id} className="related-card">
-              <h3>{product.name}</h3>
-              <p>{product.benefit}</p>
-              <ul>
-                <li>{product.category}</li>
-                <li>{product.manufacturer}</li>
-              </ul>
-            </article>
-          ))}
-        </div>
-      )}
+      <p className="section-description">{t("product.categoryGuide" as never)}</p>
     </section>
   );
 };
 
 export const ProductItemPage = () => {
-  const { content, locale, t } = usePublicOutlet();
+  const { locale, t } = usePublicOutlet();
   const { categorySlug, itemSlug } = useParams();
   const category = getCategoryBySlug(categorySlug);
   const item = getItemBySlug(category, itemSlug);
@@ -290,7 +516,7 @@ export const ProductItemPage = () => {
     );
   }
 
-  const relatedProducts = findRelatedProducts(content.products, category);
+  const siblingItems = category.items.filter((entry) => entry.slug !== item.slug);
 
   return (
     <section className="page-section">
@@ -309,6 +535,10 @@ export const ProductItemPage = () => {
             <dt>{t("product.subList")}</dt>
             <dd>{getLabel(item.label, locale)}</dd>
           </div>
+          <div>
+            <dt>{t("product.representativeBrand" as never)}</dt>
+            <dd>{getLabel(item.label, locale)}</dd>
+          </div>
         </dl>
 
         <Link className="primary-link" to="/inquiry/quote">
@@ -316,22 +546,19 @@ export const ProductItemPage = () => {
         </Link>
       </article>
 
-      <h2 className="subheading">{t("product.related")}</h2>
-      {relatedProducts.length === 0 ? (
+      <h2 className="subheading">{t("product.otherBrands" as never)}</h2>
+      {siblingItems.length === 0 ? (
         <p className="section-description">{t("product.empty")}</p>
       ) : (
-        <div className="related-grid">
-          {relatedProducts.slice(0, 6).map((product) => (
-            <article key={product.id} className="related-card">
-              <h3>{product.name}</h3>
-              <p>{product.benefit}</p>
-              <ul>
-                <li>{product.manufacturer}</li>
-                <li>
-                  {product.wavelengthNm} nm / {product.powerW} W
-                </li>
-              </ul>
-            </article>
+        <div className="category-grid compact">
+          {siblingItems.map((sibling) => (
+            <Link
+              key={sibling.slug}
+              to={`/product/${category.slug}/${sibling.slug}`}
+              className="category-card compact"
+            >
+              <h3>{getLabel(sibling.label, locale)}</h3>
+            </Link>
           ))}
         </div>
       )}
@@ -408,7 +635,6 @@ export const QuoteInquiryPage = () => {
       heroClassName="company-shell-hero inquiry-shell-hero"
       tabs={[
         { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
-        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >
@@ -587,7 +813,6 @@ export const TestDemoPage = () => {
       heroClassName="company-shell-hero inquiry-shell-hero"
       tabs={[
         { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
-        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >
@@ -715,7 +940,6 @@ export const InquiryLibraryPage = () => {
       heroClassName="company-shell-hero inquiry-shell-hero"
       tabs={[
         { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
-        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >
@@ -818,7 +1042,6 @@ export const InquiryLibraryDetailPage = () => {
         heroClassName="company-shell-hero inquiry-shell-hero"
         tabs={[
           { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
-          { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
           { label: t("nav.inquiry.library"), to: "/inquiry/library" }
         ]}
       >
@@ -841,7 +1064,6 @@ export const InquiryLibraryDetailPage = () => {
       heroClassName="company-shell-hero inquiry-shell-hero"
       tabs={[
         { label: t("nav.inquiry.quote"), to: "/inquiry/quote" },
-        { label: t("nav.inquiry.testDemo"), to: "/inquiry/test-demo" },
         { label: t("nav.inquiry.library"), to: "/inquiry/library" }
       ]}
     >

@@ -62,9 +62,28 @@ const LegacyMainPage = () => {
             <p className="hero-copy-top">{settings.heroCopyTop}</p>
             <p className="hero-copy-mid">{settings.heroCopyMid}</p>
             <p className="hero-copy-bottom">{settings.heroCopyBottom}</p>
-            <Link className="hero-copy-cta" to={settings.heroCtaHref}>
-              {settings.heroCtaLabel}
-            </Link>
+            <div className="hero-copy-actions">
+              <Link className="hero-copy-cta" to={settings.heroCtaHref}>
+                {settings.heroCtaLabel}
+              </Link>
+              <Link className="hero-copy-cta secondary" to="/inquiry/quote">
+                REQUEST QUOTE
+              </Link>
+            </div>
+            <div className="legacy-main-hero-panel" aria-label="메인 요약">
+              <article>
+                <span>Portfolio</span>
+                <strong>Curated Product Lines</strong>
+              </article>
+              <article>
+                <span>Approach</span>
+                <strong>Selection to Validation</strong>
+              </article>
+              <article>
+                <span>Focus</span>
+                <strong>Industrial Optics Execution</strong>
+              </article>
+            </div>
           </div>
           <div className="legacy-main-hero-dots" role="tablist" aria-label="Main slide control">
             {orderedSlides.map((slide, idx) => (
@@ -84,32 +103,79 @@ const LegacyMainPage = () => {
             <img src={settings.aboutImageUrl} alt={settings.aboutTitle} />
           </div>
           <div className="legacy-main-about-copy">
-            <h2>{settings.aboutTitle}</h2>
-            <MarkdownBlock markdown={settings.aboutBody1} />
-            <MarkdownBlock markdown={settings.aboutBody2} />
+            <div className="legacy-main-section-intro">
+              <p>Company Profile</p>
+              <h2>{settings.aboutTitle}</h2>
+            </div>
+            <div className="legacy-main-about-grid">
+              <div className="legacy-main-about-body">
+                <MarkdownBlock markdown={settings.aboutBody1} />
+                <MarkdownBlock markdown={settings.aboutBody2} />
+              </div>
+              <aside className="legacy-main-about-aside">
+                <span>What SHINHOTEK Does</span>
+                <strong>Technical curation with practical decision support.</strong>
+                <p>복잡한 제품군을 한눈에 정리하고, 적용 판단이 빠르게 이뤄지도록 구조화합니다.</p>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section className="legacy-main-trust">
+          <div className="legacy-main-section-intro">
+            <p>Why SHINHOTEK</p>
+            <h2>Built For Clear Technical Decisions</h2>
+          </div>
+          <div className="legacy-main-trust-grid">
+            <article className="legacy-main-trust-card">
+              <span>01</span>
+              <strong>Structured Portfolio</strong>
+              <p>제품을 단순 나열하지 않고 검토 가능한 체계로 다시 정리합니다.</p>
+            </article>
+            <article className="legacy-main-trust-card">
+              <span>02</span>
+              <strong>Engineering Context</strong>
+              <p>사양과 적용 흐름을 함께 보면서 실제 의사결정에 필요한 맥락을 제공합니다.</p>
+            </article>
+            <article className="legacy-main-trust-card">
+              <span>03</span>
+              <strong>Reliable Communication</strong>
+              <p>견적과 기술 문의로 자연스럽게 이어질 수 있는 B2B 구조를 유지합니다.</p>
+            </article>
           </div>
         </section>
 
         <section className="legacy-main-solution">
           <img className="solution-fx before" src="/assets/legacy/images/section/main_part02_bg01.png" alt="" />
           <img className="solution-fx after" src="/assets/legacy/images/section/main_part02_bg02.png" alt="" />
-          <h2>{settings.solutionTitle}</h2>
-          <ul className="solution-icons" aria-label="solution steps">
-            <li>
-              <img src={settings.solutionStepImage1} alt="step 1" />
-            </li>
-            <li>
-              <img src={settings.solutionStepImage2} alt="step 2" />
-            </li>
-            <li>
-              <img src={settings.solutionStepImage3} alt="step 3" />
-            </li>
-          </ul>
-          <MarkdownBlock markdown={settings.solutionBody1} />
-          <MarkdownBlock markdown={settings.solutionBody2} />
+          <div className="legacy-main-section-intro">
+            <p>Solution Flow</p>
+            <h2>{settings.solutionTitle}</h2>
+          </div>
+          <div className="legacy-main-solution-panel">
+            <ul className="solution-icons" aria-label="solution steps">
+              <li>
+                <img src={settings.solutionStepImage1} alt="step 1" />
+              </li>
+              <li>
+                <img src={settings.solutionStepImage2} alt="step 2" />
+              </li>
+              <li>
+                <img src={settings.solutionStepImage3} alt="step 3" />
+              </li>
+            </ul>
+            <div className="legacy-main-solution-copy">
+              <MarkdownBlock markdown={settings.solutionBody1} />
+              <MarkdownBlock markdown={settings.solutionBody2} />
+            </div>
+          </div>
         </section>
 
         <section className="legacy-main-application">
+          <div className="legacy-main-section-intro">
+            <p>Application</p>
+            <h2>Industry-Oriented Entry Points</h2>
+          </div>
           <ul>
             {orderedCards.map((card) => (
               <li key={card.id}>

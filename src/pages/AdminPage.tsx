@@ -782,20 +782,24 @@ const AdminPage = () => {
     <>
       <AdminPanel title="운영 대시보드" description="방문자, 문의, 콘텐츠, 동기화 상태를 한 번에 확인합니다.">
         <div className="admin-dashboard-kpis">
-          <article>
+          <article className="admin-kpi-card admin-kpi-card--accent">
             <strong>오늘 방문자</strong>
+            <span>실시간 유입 현황</span>
             <p>{todayVisitorCount}명</p>
           </article>
-          <article>
+          <article className="admin-kpi-card">
             <strong>미확인 요청</strong>
+            <span>빠른 확인 필요</span>
             <p>{unreadInquiryItemsCount}건</p>
           </article>
-          <article>
+          <article className="admin-kpi-card">
             <strong>처리중 문의</strong>
+            <span>응답 대기 상태</span>
             <p>{pendingInquiryCount}건</p>
           </article>
-          <article>
+          <article className="admin-kpi-card">
             <strong>콘텐츠 합계</strong>
+            <span>리소스, 공지, CMS 합산</span>
             <p>{resources.length + notices.length + cmsPages.length}건</p>
           </article>
         </div>
@@ -830,7 +834,11 @@ const AdminPage = () => {
           </select>
         }
       >
-        <p>기준일({visitorStatsDate}) 방문자: {selectedVisitorCount}명</p>
+        <div className="admin-dashboard-inline-stat">
+          <span>기준일</span>
+          <strong>{visitorStatsDate}</strong>
+          <em>{selectedVisitorCount}명</em>
+        </div>
         {visitorStats.length === 0 ? (
           <p>방문자 데이터가 없습니다.</p>
         ) : (
@@ -1811,22 +1819,41 @@ const AdminPage = () => {
     <main className="admin-shell">
       <header className="admin-top">
         <div className="admin-top-main">
+          <p className="admin-top-kicker">Operations Console</p>
           <h1>{t("admin.title")}</h1>
-          <p>오늘 방문자: {todayVisitorCount}</p>
+          <p>콘텐츠 운영, 문의 응대, 공지 게시를 한 곳에서 관리합니다.</p>
         </div>
-        <nav className="admin-top-nav" aria-label="관리자 상단 메뉴">
-          <button type="button" onClick={refreshAdminData} disabled={busy}>
-            새로고침
-          </button>
-          <button type="button" onClick={logout}>
-            {t("admin.logout")}
-          </button>
-          <Link to="/main">{t("admin.publicSite")}</Link>
-        </nav>
+        <div className="admin-top-side">
+          <div className="admin-top-metrics" aria-label="운영 요약">
+            <article>
+              <span>오늘 방문자</span>
+              <strong>{todayVisitorCount}</strong>
+            </article>
+            <article>
+              <span>미확인 문의</span>
+              <strong>{unreadInquiryItemsCount}</strong>
+            </article>
+            <article>
+              <span>콘텐츠 합계</span>
+              <strong>{resources.length + notices.length + cmsPages.length}</strong>
+            </article>
+          </div>
+          <nav className="admin-top-nav" aria-label="관리자 상단 메뉴">
+            <button type="button" onClick={refreshAdminData} disabled={busy}>
+              새로고침
+            </button>
+            <Link to="/main">{t("admin.publicSite")}</Link>
+            <button type="button" onClick={logout}>
+              {t("admin.logout")}
+            </button>
+          </nav>
+        </div>
       </header>
 
       {lastSyncedAt ? (
-        <p className="admin-sync-time">최근 동기화: {new Date(lastSyncedAt).toLocaleString()}</p>
+        <p className="admin-sync-time">
+          최근 동기화: {new Date(lastSyncedAt).toLocaleString()} · 최근 접근 {recentTargets.length}건
+        </p>
       ) : null}
 
       {message ? <p className="admin-message">{message}</p> : null}
@@ -1838,6 +1865,7 @@ const AdminPage = () => {
           mainEditorTab={mainEditorTab}
           expandedGroupId={expandedGroupId}
           unreadInquiryCount={unreadInquiryCount}
+          recentCount={recentTargets.length}
           onToggleGroup={(groupId) => setExpandedGroupId((prev) => (prev === groupId ? "" : groupId))}
           onNavigate={navigateToSection}
         />

@@ -98,6 +98,42 @@ const mapCmsPageRow = (row: CmsPageRow): CmsPage => ({
   updatedAt: row.updated_at
 });
 
+const hasLatestTopMenu = (settings: PublicSiteSettings): boolean => {
+  const ids = new Set(settings.headerTopMenu.map((item) => item.id));
+  return ids.has("company") && ids.has("application") && ids.has("solution") && ids.has("inquiry");
+};
+
+const hasLatestProductMega = (settings: PublicSiteSettings): boolean => {
+  const ids = new Set(settings.headerProductMega.map((item) => item.id));
+  return ids.has("laser") && ids.has("laser-metrology") && ids.has("optical-solution");
+};
+
+const hasLatestRouteMeta = (settings: PublicSiteSettings): boolean => {
+  const routes = new Set(settings.routeMeta.map((item) => item.route));
+  return routes.has("/application") && routes.has("/solution");
+};
+
+const normalizePublicSiteSettings = (settings: PublicSiteSettings): PublicSiteSettings => {
+  if (hasLatestTopMenu(settings) && hasLatestProductMega(settings) && hasLatestRouteMeta(settings)) {
+    return settings;
+  }
+
+  return {
+    ...settings,
+    routeMeta: defaultPublicSiteSettings.routeMeta,
+    headerTopMenu: defaultPublicSiteSettings.headerTopMenu,
+    headerProductMega: defaultPublicSiteSettings.headerProductMega
+  };
+};
+
+const normalizeMainPageContent = (content: MainPageContent): MainPageContent => ({
+  ...content,
+  applicationCards: content.applicationCards.map((card) => ({
+    ...card,
+    linkUrl: card.linkUrl === "/product" ? `/application/${card.id === "medical" ? "medical-bio" : card.id}` : card.linkUrl
+  }))
+});
+
 export const ensureConnection = async (): Promise<void> => {
   await pool.query("SELECT 1");
 };
@@ -255,7 +291,7 @@ export const getPublicSiteSettings = async (): Promise<PublicSiteSettings> => {
   if (!result.rows[0]) {
     throw new Error("Public site settings not found");
   }
-  return result.rows[0].payload;
+  return normalizePublicSiteSettings(result.rows[0].payload);
 };
 
 export const savePublicSiteSettings = async (
@@ -345,7 +381,7 @@ export const getMainPageContent = async (): Promise<MainPageContent> => {
     throw new Error("Main page settings not found");
   }
 
-  return {
+  return normalizeMainPageContent({
     settings: mapMainPageSettingsRow(settingsResult.rows[0]),
     slides: slidesResult.rows.map((row) => ({
       id: row.id,
@@ -359,7 +395,7 @@ export const getMainPageContent = async (): Promise<MainPageContent> => {
       linkUrl: row.link_url,
       sortOrder: row.sort_order
     }))
-  };
+  });
 };
 
 export const saveMainPageContent = async (payload: MainPageContent): Promise<MainPageContent> => {

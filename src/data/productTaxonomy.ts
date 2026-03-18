@@ -23,61 +23,55 @@ export const productTaxonomy: ProductCategoryNode[] = [
     slug: "laser",
     label: { ko: "Laser", en: "Laser" },
     items: [
-      { slug: "nanosecond", label: { ko: "Nanosecond", en: "Nanosecond" } },
-      {
-        slug: "picosecond-femtosecond",
-        label: { ko: "Picosecond / Femtosecond", en: "Picosecond / Femtosecond" }
-      },
-      { slug: "co2", label: { ko: "CO2", en: "CO2" } },
-      { slug: "excimer", label: { ko: "Excimer", en: "Excimer" } },
-      { slug: "diode-laser", label: { ko: "Diode laser", en: "Diode laser" } }
+      { slug: "spark-laser", label: { ko: "Spark Laser", en: "Spark Laser" } },
+      { slug: "iradion", label: { ko: "Iradion", en: "Iradion" } },
+      { slug: "mase", label: { ko: "Mase", en: "Mase" } },
+      { slug: "dilas", label: { ko: "Dilas", en: "Dilas" } },
+      { slug: "seminex", label: { ko: "Seminex", en: "Seminex" } },
+      { slug: "monocrom", label: { ko: "Monocrom", en: "Monocrom" } },
+      { slug: "optical-engine", label: { ko: "Optical Engine", en: "Optical Engine" } }
+    ]
+  },
+  {
+    slug: "laser-scanner",
+    label: { ko: "Laser Scanner", en: "Laser Scanner" },
+    items: [{ slug: "scanlab", label: { ko: "Scanlab", en: "Scanlab" } }]
+  },
+  {
+    slug: "laser-metrology",
+    label: { ko: "Laser Metrology", en: "Laser Metrology" },
+    items: [
+      { slug: "laser-point", label: { ko: "Laser Point", en: "Laser Point" } },
+      { slug: "lumos", label: { ko: "LUMOS", en: "LUMOS" } }
+    ]
+  },
+  {
+    slug: "beam-shaping",
+    label: { ko: "Beam Shaping", en: "Beam Shaping" },
+    items: [
+      { slug: "adloptica", label: { ko: "Adloptica", en: "Adloptica" } },
+      { slug: "power-photonic", label: { ko: "Power Photonic", en: "Power Photonic" } },
+      { slug: "cailabs", label: { ko: "Cailabs", en: "Cailabs" } }
     ]
   },
   {
     slug: "optics",
     label: { ko: "Optics", en: "Optics" },
     items: [
-      { slug: "monocle", label: { ko: "모노클", en: "Monocle" } },
-      { slug: "ulo-optics", label: { ko: "ULO Optics", en: "ULO Optics" } },
-      { slug: "green-optics", label: { ko: "그린광학", en: "Green Optics" } },
-      { slug: "jenoptik", label: { ko: "옌옵틱", en: "Jenoptik" } }
+      { slug: "optoman", label: { ko: "Optoman", en: "Optoman" } },
+      { slug: "ulo", label: { ko: "ULO", en: "ULO" } },
+      { slug: "zenops", label: { ko: "Zenops", en: "Zenops" } }
     ]
   },
   {
-    slug: "laser-scanner",
-    label: { ko: "Laser scanner", en: "Laser scanner" },
-    items: [{ slug: "scanlab", label: { ko: "Scanlab", en: "Scanlab" } }]
+    slug: "beam-delivery",
+    label: { ko: "Beam Delivery", en: "Beam Delivery" },
+    items: [{ slug: "photonic-tools", label: { ko: "photonic tools", en: "photonic tools" } }]
   },
   {
-    slug: "custom-solution",
-    label: { ko: "Custom solution", en: "Custom solution" },
-    items: [
-      { slug: "meopta", label: { ko: "Meopta", en: "Meopta" } },
-      { slug: "femtoprint", label: { ko: "FEMTOPRINT", en: "FEMTOPRINT" } }
-    ]
-  },
-  {
-    slug: "laser-measurement",
-    label: { ko: "Laser measurement", en: "Laser measurement" },
-    items: [
-      { slug: "laser-point", label: { ko: "Laser point", en: "Laser point" } },
-      { slug: "metrolux", label: { ko: "Metrolux", en: "Metrolux" } },
-      { slug: "shinhotek", label: { ko: "SHINHOTEK", en: "SHINHOTEK" } }
-    ]
-  },
-  {
-    slug: "others",
-    label: { ko: "Others", en: "Others" },
-    items: [{ slug: "others", label: { ko: "Others", en: "Others" } }]
-  },
-  {
-    slug: "beam-shaper",
-    label: { ko: "Beam shaper", en: "Beam shaper" },
-    items: [
-      { slug: "adloptica", label: { ko: "Adloptica", en: "Adloptica" } },
-      { slug: "power-photonic", label: { ko: "Power photonic", en: "Power photonic" } },
-      { slug: "silios", label: { ko: "Silios", en: "Silios" } }
-    ]
+    slug: "optical-solution",
+    label: { ko: "Optical Solution", en: "Optical Solution" },
+    items: [{ slug: "mlo", label: { ko: "MLO", en: "MLO" } }]
   }
 ];
 

@@ -18,11 +18,11 @@ export const defaultPublicSiteSettings: PublicSiteSettings = {
       subBannerImageUrl: "/assets/legacy/images/sub01_-hoe-sa-so-gae_011499426360.jpg"
     },
     {
-      route: "/partner",
-      title: "신호텍 주식회사 파트너",
+      route: "/application",
+      title: "신호텍 주식회사 Application",
       faviconUrl: "/favicon.ico",
-      ogImageUrl: "/assets/legacy/images/seul-ra-i-deu11573621207.jpg",
-      subBannerImageUrl: "/assets/legacy/images/sub2_1_img011499513447.jpg"
+      ogImageUrl: "/assets/legacy/images/hero/main_011500862913.jpg",
+      subBannerImageUrl: "/assets/legacy/images/hero/main_011500862913.jpg"
     },
     {
       route: "/product",
@@ -30,6 +30,13 @@ export const defaultPublicSiteSettings: PublicSiteSettings = {
       faviconUrl: "/favicon.ico",
       ogImageUrl: "/assets/legacy/images/hero/main2_011498524728.jpg",
       subBannerImageUrl: "/assets/legacy/images/sub01_-hoe-sa-so-gae_011499426360.jpg"
+    },
+    {
+      route: "/solution",
+      title: "신호텍 주식회사 광학솔루션",
+      faviconUrl: "/favicon.ico",
+      ogImageUrl: "/assets/legacy/images/section/main_part02_bg02.png",
+      subBannerImageUrl: "/assets/legacy/images/section/main_part02_bg02.png"
     },
     {
       route: "/inquiry",

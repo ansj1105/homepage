@@ -23,34 +23,68 @@ Key variables:
 - `DATABASE_URL` (optional override)
 
 ## 2. Local Development (without Docker)
-1. Start PostgreSQL and run Flyway migrations from `db/migrations`.
-2. Start backend:
+1. Copy env file.
+
+```bash
+cp .env.example .env
+```
+
+2. Start PostgreSQL locally and create the DB/user from `.env`.
+3. Run Flyway migrations in `db/migrations`.
+4. Start backend:
 
 ```bash
 npm run dev:server
 ```
 
-3. Start frontend:
+5. Start frontend:
 
 ```bash
 npm run dev
 ```
 
-4. Open:
+6. Open:
 - Public: `http://localhost:5173`
 - Admin: `http://localhost:5173/admin`
 
 ## 3. Docker Compose
+### 3.1 First run
+
+```bash
+cp .env.example .env
+docker compose config
+```
+
+If you want a clean DB with the latest homepage IA and seed data, reset volumes before the first boot or after major seed changes:
+
+```bash
+docker compose down -v
+```
+
+### 3.2 Start all services
+
 Build and run all services:
 
 ```bash
 npm run docker:up
 ```
 
+Foreground logs:
+
+```bash
+docker compose logs -f
+```
+
 Stop services:
 
 ```bash
 npm run docker:down
+```
+
+Stop and remove DB volume:
+
+```bash
+docker compose down -v
 ```
 
 Services:
@@ -61,6 +95,22 @@ Services:
 
 Public URL after compose up:
 - `http://localhost:8080`
+- Backend health: `http://localhost:3000/api/health`
+
+### 3.3 Safe restart sequence
+1. `docker compose down`
+2. `docker compose up --build`
+
+For a full reseed:
+1. `docker compose down -v`
+2. `docker compose up --build`
+
+### 3.4 Local server architecture
+- Frontend: Vite dev server in local mode, Nginx in Docker mode
+- Backend: Express API in `server/src`
+- DB: PostgreSQL 16
+- Migration: Flyway runs before backend startup
+- Reverse proxy: Nginx container exposes frontend and proxies `/api`
 
 ## 4. Production Nginx (80 -> 443 redirect)
 This project includes production override files for HTTPS termination in Nginx.

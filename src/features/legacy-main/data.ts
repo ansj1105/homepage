@@ -20,114 +20,112 @@ export const legacyHeroSlides = [
 
 export const legacyTopMenu: LegacyMenuItem[] = [
   {
-    id: "be21e5fa",
+    id: "company",
     label: "회사소개",
-    href: "/company/ceo",
+    href: "/company/overview",
     children: [
-      { id: "54ddbaf0", label: "CEO 인사말", href: "/company/ceo" },
-      { id: "a8efd0b7", label: "회사 비전", href: "/company/vision" },
-      { id: "f4984283", label: "찾아오시는 길", href: "/company/location" }
+      { id: "company-overview", label: "CEO 인사말 & 회사 비전", href: "/company/overview" },
+      { id: "company-partner", label: "파트너사 소개", href: "/company/partner" },
+      { id: "company-location", label: "찾아오시는 길", href: "/company/location" }
     ]
   },
   {
-    id: "cd917f17",
-    label: "파트너",
-    href: "/partner/core",
-    children: [{ id: "sub2_1", label: "CORE PARTNER", href: "/partner/core" }]
+    id: "application",
+    label: "Application",
+    href: "/application"
   },
-  { id: "db4958d7", label: "제품", href: "/product" },
   {
-    id: "02708bea",
+    id: "product",
+    label: "제품소개",
+    href: "/product"
+  },
+  {
+    id: "solution",
+    label: "광학솔루션",
+    href: "/solution",
+    children: [
+      { id: "solution-optical", label: "광학설계", href: "/solution/optical-design" },
+      { id: "solution-mechanical", label: "기구설계", href: "/solution/mechanical-design" },
+      { id: "solution-sw", label: "SW 설계", href: "/solution/sw-design" }
+    ]
+  },
+  {
+    id: "inquiry",
     label: "제품문의",
-    href: "/inquiry/quote",
+    href: "/inquiry",
     children: [
-      { id: "inquiry", label: "견적요청", href: "/inquiry/quote" },
-      { id: "testdemo", label: "Test 및 Demo", href: "/inquiry/test-demo" },
-      { id: "menual", label: "자료실(매뉴얼)", href: "/inquiry/library" }
+      { id: "inquiry-quote", label: "견적문의", href: "/inquiry/quote" },
+      { id: "inquiry-library", label: "자료실", href: "/inquiry/library" }
     ]
-  },
-  {
-    id: "ff6078f4",
-    label: "공지사항",
-    href: "/notice",
-    children: [{ id: "b13e0b14", label: "공지사항", href: "/notice" }]
   }
 ];
 
 export const legacyProductMega: LegacyMenuItem[] = [
   {
-    id: "6b5eebd7",
+    id: "laser",
     label: "Laser",
     href: "/product/laser",
     children: [
-      { id: "aa49a34a", label: "Nanosecond", href: "/product/laser/nanosecond" },
-      { id: "d9a8c320", label: "Picosecond/ Femtosecond", href: "/product/laser/picosecond-femtosecond" },
-      { id: "b8f82ab3", label: "CO2", href: "/product/laser/co2" },
-      { id: "336850dd", label: "Excimer", href: "/product/laser/excimer" },
-      { id: "5ea7cbd3", label: "Diode laser", href: "/product/laser/diode-laser" }
+      { id: "spark-laser", label: "Spark Laser", href: "/product/laser/spark-laser" },
+      { id: "iradion", label: "Iradion", href: "/product/laser/iradion" },
+      { id: "mase", label: "Mase", href: "/product/laser/mase" },
+      { id: "dilas", label: "Dilas", href: "/product/laser/dilas" },
+      { id: "seminex", label: "Seminex", href: "/product/laser/seminex" },
+      { id: "monocrom", label: "Monocrom", href: "/product/laser/monocrom" },
+      { id: "optical-engine", label: "Optical Engine", href: "/product/laser/optical-engine" }
     ]
   },
   {
-    id: "1f638fd0",
+    id: "laser-scanner",
+    label: "Laser Scanner",
+    href: "/product/laser-scanner",
+    children: [
+      { id: "scanlab", label: "Scanlab", href: "/product/laser-scanner/scanlab" }
+    ]
+  },
+  {
+    id: "laser-metrology",
+    label: "Laser Metrology",
+    href: "/product/laser-metrology",
+    children: [
+      { id: "laser-point", label: "Laser Point", href: "/product/laser-metrology/laser-point" },
+      { id: "lumos", label: "LUMOS", href: "/product/laser-metrology/lumos" }
+    ]
+  },
+  {
+    id: "beam-shaping",
+    label: "Beam Shaping",
+    href: "/product/beam-shaping",
+    children: [
+      { id: "adloptica", label: "Adloptica", href: "/product/beam-shaping/adloptica" },
+      { id: "power-photonic", label: "Power Photonic", href: "/product/beam-shaping/power-photonic" },
+      { id: "cailabs", label: "Cailabs", href: "/product/beam-shaping/cailabs" }
+    ]
+  },
+  {
+    id: "optics",
     label: "Optics",
     href: "/product/optics",
     children: [
-      { id: "b451fed3", label: "모노클", href: "/product/optics/monocle" },
-      { id: "23452345", label: "ULO Optics", href: "/product/optics/ulo-optics" },
-      { id: "pro6_3", label: "그린광학", href: "/product/optics/green-optics" },
-      { id: "pro6_4", label: "옌옵틱", href: "/product/optics/jenoptik" }
+      { id: "optoman", label: "Optoman", href: "/product/optics/optoman" },
+      { id: "ulo", label: "ULO", href: "/product/optics/ulo" },
+      { id: "zenops", label: "Zenops", href: "/product/optics/zenops" }
     ]
   },
   {
-    id: "1f969dbb",
-    label: "Laser scanner",
-    href: "/product/laser-scanner",
-    children: [{ id: "176a9c95", label: "Scanlab", href: "/product/laser-scanner/scanlab" }]
-  },
-  {
-    id: "e158d94e",
-    label: "Custom solution",
-    href: "http://shinhotek.hmandoo.co.kr/shop_contents/myboard_read.htm?load_type=&page_idx=0&tag_on=&h_search_c=0&h_search_v=&me_popup=&myboard_code=pro7_1&page_limit=10&idx=862531&page=1&category_idx=",
-    target: "_blank",
+    id: "beam-delivery",
+    label: "Beam Delivery",
+    href: "/product/beam-delivery",
     children: [
-      {
-        id: "28acbd82",
-        label: "Meopta",
-        href: "http://shinhotek.hmandoo.co.kr/shop_contents/myboard_read.htm?load_type=&page_idx=0&tag_on=&h_search_c=0&h_search_v=&me_popup=&myboard_code=pro7_1&page_limit=10&idx=862531&page=1&category_idx=",
-        target: "_blank"
-      },
-      {
-        id: "13300bde",
-        label: "FEMTOPRINT®",
-        href: "http://shinhotek.hmandoo.co.kr/shop_contents/myboard_read.htm?load_type=&page_idx=0&tag_on=&h_search_c=0&h_search_v=&me_popup=&myboard_code=pro7_2&page_limit=10&idx=863051&page=1&category_idx=",
-        target: "_blank"
-      }
+      { id: "photonic-tools", label: "photonic tools", href: "/product/beam-delivery/photonic-tools" }
     ]
   },
   {
-    id: "965c17c3",
-    label: "Laser measurement",
-    href: "/product/laser-measurement",
+    id: "optical-solution",
+    label: "Optical Solution",
+    href: "/product/optical-solution",
     children: [
-      { id: "ee3098e3", label: "Laser point", href: "/product/laser-measurement/laser-point" },
-      { id: "1b1dd59a", label: "Metrolux", href: "/product/laser-measurement/metrolux" },
-      { id: "pro4_3", label: "SHINHOTEK", href: "/product/laser-measurement/shinhotek" }
-    ]
-  },
-  {
-    id: "pro8_1",
-    label: "Others",
-    href: "/product/others",
-    children: [{ id: "36bdb97f", label: "Others", href: "/product/others/others" }]
-  },
-  {
-    id: "6d145a0f",
-    label: "Beam shaper",
-    href: "/product/beam-shaper",
-    children: [
-      { id: "bf7f57c7", label: "Adloptica", href: "/product/beam-shaper/adloptica" },
-      { id: "6bea92d7", label: "Power photonic", href: "/product/beam-shaper/power-photonic" },
-      { id: "pro5_1", label: "Silios", href: "/product/beam-shaper/silios" }
+      { id: "mlo", label: "MLO", href: "/product/optical-solution/mlo" }
     ]
   }
 ];
