@@ -1787,115 +1787,150 @@ const AdminPage = () => {
 
   if (!token) {
     return (
-      <main className="admin-shell">
-        <section className="admin-login">
-          <h1>{t("admin.loginTitle")}</h1>
-          <form onSubmit={login}>
-            <label>
-              {t("admin.username")}
-              <input value={username} onChange={(event) => setUsername(event.target.value)} />
-            </label>
-            <label>
-              {t("admin.password")}
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
-            <button type="submit" disabled={busy}>
-              {busy ? t("admin.signingIn") : t("admin.signIn")}
-            </button>
-          </form>
-          <p className="admin-hint">{t("admin.defaultCred")}</p>
-          {message ? <p className="admin-message">{message}</p> : null}
-          <Link to="/company/ceo">{t("admin.backToSite")}</Link>
+      <main className="admin-shell admin-shell--auth">
+        <section className="admin-auth-stage">
+          <aside className="admin-auth-brand">
+            <p className="admin-auth-kicker">SHINHOTEK CMS</p>
+            <h1>{t("admin.loginTitle")}</h1>
+            <p className="admin-auth-copy">
+              홈페이지 콘텐츠, 공지, 자료실, 문의 흐름을 한 콘솔에서 관리합니다.
+            </p>
+            <div className="admin-auth-points">
+              <article>
+                <span>Content</span>
+                <strong>Main / CMS / Meta</strong>
+              </article>
+              <article>
+                <span>Boards</span>
+                <strong>Notice / Resource</strong>
+              </article>
+              <article>
+                <span>Pipeline</span>
+                <strong>Inquiry Tracking</strong>
+              </article>
+            </div>
+          </aside>
+
+          <section className="admin-login">
+            <div className="admin-login-head">
+              <p className="admin-login-kicker">Admin Access</p>
+              <h2>{t("admin.signIn")}</h2>
+              <span>관리자 계정으로 로그인해 운영 화면에 접근합니다.</span>
+            </div>
+            <form onSubmit={login}>
+              <label>
+                <span>{t("admin.username")}</span>
+                <input value={username} onChange={(event) => setUsername(event.target.value)} />
+              </label>
+              <label>
+                <span>{t("admin.password")}</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
+              <button type="submit" disabled={busy}>
+                {busy ? t("admin.signingIn") : t("admin.signIn")}
+              </button>
+            </form>
+            <p className="admin-hint">{t("admin.defaultCred")}</p>
+            {message ? <p className="admin-message">{message}</p> : null}
+            <Link to="/company/overview">{t("admin.backToSite")}</Link>
+          </section>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="admin-shell">
-      <header className="admin-top">
-        <div className="admin-top-main">
-          <p className="admin-top-kicker">Operations Console</p>
-          <h1>{t("admin.title")}</h1>
-          <p>콘텐츠 운영, 문의 응대, 공지 게시를 한 곳에서 관리합니다.</p>
-        </div>
-        <div className="admin-top-side">
-          <div className="admin-top-metrics" aria-label="운영 요약">
-            <article>
-              <span>오늘 방문자</span>
-              <strong>{todayVisitorCount}</strong>
-            </article>
-            <article>
-              <span>미확인 문의</span>
-              <strong>{unreadInquiryItemsCount}</strong>
-            </article>
-            <article>
-              <span>콘텐츠 합계</span>
-              <strong>{resources.length + notices.length + cmsPages.length}</strong>
-            </article>
+    <main className="admin-shell admin-shell--console">
+      <div className="admin-console">
+        <header className="admin-top">
+          <div className="admin-top-main">
+            <p className="admin-top-kicker">Operations Console</p>
+            <h1>{t("admin.title")}</h1>
+            <p>콘텐츠 운영, 문의 응대, 공지 게시를 한 곳에서 관리합니다.</p>
           </div>
-          <nav className="admin-top-nav" aria-label="관리자 상단 메뉴">
-            <button type="button" onClick={refreshAdminData} disabled={busy}>
-              새로고침
-            </button>
-            <Link to="/main">{t("admin.publicSite")}</Link>
-            <button type="button" onClick={logout}>
-              {t("admin.logout")}
-            </button>
-          </nav>
+          <div className="admin-top-side">
+            <div className="admin-top-metrics" aria-label="운영 요약">
+              <article>
+                <span>오늘 방문자</span>
+                <strong>{todayVisitorCount}</strong>
+              </article>
+              <article>
+                <span>미확인 문의</span>
+                <strong>{unreadInquiryItemsCount}</strong>
+              </article>
+              <article>
+                <span>콘텐츠 합계</span>
+                <strong>{resources.length + notices.length + cmsPages.length}</strong>
+              </article>
+            </div>
+            <nav className="admin-top-nav" aria-label="관리자 상단 메뉴">
+              <button type="button" onClick={refreshAdminData} disabled={busy}>
+                새로고침
+              </button>
+              <Link to="/main">{t("admin.publicSite")}</Link>
+              <button type="button" onClick={logout}>
+                {t("admin.logout")}
+              </button>
+            </nav>
+          </div>
+        </header>
+
+        <div className="admin-console-meta">
+          {lastSyncedAt ? (
+            <p className="admin-sync-time">
+              최근 동기화: {new Date(lastSyncedAt).toLocaleString()} · 최근 접근 {recentTargets.length}건
+            </p>
+          ) : (
+            <p className="admin-sync-time">아직 동기화 기록이 없습니다.</p>
+          )}
+          {message ? <p className="admin-message">{message}</p> : null}
         </div>
-      </header>
 
-      {lastSyncedAt ? (
-        <p className="admin-sync-time">
-          최근 동기화: {new Date(lastSyncedAt).toLocaleString()} · 최근 접근 {recentTargets.length}건
-        </p>
-      ) : null}
+        <div className="admin-layout">
+          <AdminSidebar
+            groups={adminNavGroups}
+            activeSection={activeSection}
+            mainEditorTab={mainEditorTab}
+            expandedGroupId={expandedGroupId}
+            unreadInquiryCount={unreadInquiryCount}
+            recentCount={recentTargets.length}
+            onToggleGroup={(groupId) => setExpandedGroupId((prev) => (prev === groupId ? "" : groupId))}
+            onNavigate={navigateToSection}
+          />
 
-      {message ? <p className="admin-message">{message}</p> : null}
+          <section className="admin-content">
+            {renderActiveSection()}
 
-      <div className="admin-layout">
-        <AdminSidebar
-          groups={adminNavGroups}
-          activeSection={activeSection}
-          mainEditorTab={mainEditorTab}
-          expandedGroupId={expandedGroupId}
-          unreadInquiryCount={unreadInquiryCount}
-          recentCount={recentTargets.length}
-          onToggleGroup={(groupId) => setExpandedGroupId((prev) => (prev === groupId ? "" : groupId))}
-          onNavigate={navigateToSection}
-        />
-
-        <section className="admin-content">{renderActiveSection()}</section>
+            <footer className="admin-recent-footer">
+              <div className="admin-recent-footer-head">
+                <strong>최근 접근</strong>
+                {recentTargets.length > 0 ? (
+                  <button type="button" onClick={() => setRecentTargets([])}>
+                    비우기
+                  </button>
+                ) : null}
+              </div>
+              {recentTargets.length === 0 ? (
+                <p>아직 없음</p>
+              ) : (
+                <ul>
+                  {recentTargets.map((target, index) => (
+                    <li key={`${target.section}:${target.tab ?? ""}:${index}`}>
+                      <button type="button" onClick={() => navigateToSection(target.section, target.tab)}>
+                        {getSectionLabel(target.section, target.tab)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </footer>
+          </section>
+        </div>
       </div>
-
-      <footer className="admin-recent-footer">
-        <div className="admin-recent-footer-head">
-          <strong>최근 접근</strong>
-          {recentTargets.length > 0 ? (
-            <button type="button" onClick={() => setRecentTargets([])}>
-              비우기
-            </button>
-          ) : null}
-        </div>
-        {recentTargets.length === 0 ? (
-          <p>아직 없음</p>
-        ) : (
-          <ul>
-            {recentTargets.map((target, index) => (
-              <li key={`${target.section}:${target.tab ?? ""}:${index}`}>
-                <button type="button" onClick={() => navigateToSection(target.section, target.tab)}>
-                  {getSectionLabel(target.section, target.tab)}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </footer>
     </main>
   );
 };
