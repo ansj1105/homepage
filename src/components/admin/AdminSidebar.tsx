@@ -9,8 +9,10 @@ type AdminSidebarProps = {
   activeSection: AdminSectionId;
   mainEditorTab: MainEditorTab;
   expandedGroupId: string;
+  isCollapsed: boolean;
   unreadInquiryCount: number;
   recentCount: number;
+  onSidebarToggle: () => void;
   onToggleGroup: (groupId: string) => void;
   onNavigate: (section: AdminSectionId, tab?: MainEditorTab) => void;
 };
@@ -27,17 +29,30 @@ export const AdminSidebar = ({
   activeSection,
   mainEditorTab,
   expandedGroupId,
+  isCollapsed,
   unreadInquiryCount,
   recentCount,
+  onSidebarToggle,
   onToggleGroup,
   onNavigate
 }: AdminSidebarProps) => {
   return (
-    <aside className="admin-sidebar" aria-label="관리자 메뉴">
+    <aside className={isCollapsed ? "admin-sidebar is-collapsed" : "admin-sidebar"} aria-label="관리자 메뉴">
+      <button
+        type="button"
+        className="admin-sidebar-toggle"
+        onClick={onSidebarToggle}
+        aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+      >
+        <span>{isCollapsed ? ">>" : "<<"}</span>
+      </button>
+
       <div className="admin-sidebar-brand">
-        <p className="admin-sidebar-kicker">SHINHOTEK CMS</p>
-        <strong>Admin Console</strong>
-        <span>홈페이지 운영, 공지, 문의 관리를 한 화면에서 다룹니다.</span>
+        <p className="admin-sidebar-kicker">{isCollapsed ? "SH" : "SHINHOTEK CMS"}</p>
+        <strong>{isCollapsed ? "CMS" : "Admin Console"}</strong>
+        <span>
+          {isCollapsed ? "운영" : "홈페이지 운영, 공지, 문의 관리를 한 화면에서 다룹니다."}
+        </span>
       </div>
 
       <div className="admin-sidebar-overview">
@@ -53,18 +68,21 @@ export const AdminSidebar = ({
 
       {groups.map((group) => (
         <div key={group.id} className={`admin-nav-group admin-nav-group--${group.id}`}>
-          <div className="admin-nav-group-copy">
-            <p>{groupMeta[group.id]?.eyebrow ?? "Section"}</p>
-            <span>{groupMeta[group.id]?.summary ?? group.label}</span>
-          </div>
+          {!isCollapsed ? (
+            <div className="admin-nav-group-copy">
+              <p>{groupMeta[group.id]?.eyebrow ?? "Section"}</p>
+              <span>{groupMeta[group.id]?.summary ?? group.label}</span>
+            </div>
+          ) : null}
           <button
             type="button"
             className={expandedGroupId === group.id ? "admin-nav-group-toggle is-open" : "admin-nav-group-toggle"}
             onClick={() => onToggleGroup(group.id)}
             aria-expanded={expandedGroupId === group.id}
+            title={group.label}
           >
-            <span>{group.label}</span>
-            <span>{expandedGroupId === group.id ? "열림" : "펼침"}</span>
+            <span>{isCollapsed ? (groupMeta[group.id]?.eyebrow ?? group.label.slice(0, 2)) : group.label}</span>
+            {!isCollapsed ? <span>{expandedGroupId === group.id ? "열림" : "펼침"}</span> : null}
           </button>
           {expandedGroupId === group.id ? (
             <ul>
@@ -79,13 +97,14 @@ export const AdminSidebar = ({
                         item.id === "main" && item.children?.length ? item.children[0].id : undefined
                       )
                     }
+                    title={item.label}
                   >
-                    {item.label}
+                    {isCollapsed ? item.label.slice(0, 2) : item.label}
                     {item.id === "inquiries" && unreadInquiryCount > 0 ? (
                       <span className="admin-nav-badge">{unreadInquiryCount}</span>
                     ) : null}
                   </button>
-                  {item.id === "main" && item.children ? (
+                  {item.id === "main" && item.children && !isCollapsed ? (
                     <ul className={item.id === activeSection ? "admin-subdepth is-open" : "admin-subdepth"}>
                       {item.children.map((sub) => (
                         <li key={sub.id}>

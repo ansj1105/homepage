@@ -34,6 +34,10 @@ const adminUiStorageKey = "sh_admin_ui_v1";
 const visitorCounterStorageKey = "sh_admin_today_visitors_v1";
 const visitorStatsStorageKey = "sh_admin_visitor_stats_v1";
 const adminLoginHistoryStorageKey = "sh_admin_login_history_v1";
+const adminThemeStorageKey = "sh_admin_theme_v1";
+const adminSidebarStorageKey = "sh_admin_sidebar_v1";
+
+type AdminTheme = "dark" | "light";
 
 type PersistedAdminUi = {
   activeSection?: AdminSectionId;
@@ -109,6 +113,13 @@ const loadLoginHistory = (): AdminLoginHistoryItem[] => {
   }
 };
 
+const loadAdminTheme = (): AdminTheme => {
+  const saved = localStorage.getItem(adminThemeStorageKey);
+  return saved === "light" ? "light" : "dark";
+};
+
+const loadSidebarCollapsed = () => localStorage.getItem(adminSidebarStorageKey) === "1";
+
 const AdminPage = () => {
   const persistedUi = loadPersistedAdminUi();
   const { t } = useI18n();
@@ -141,6 +152,8 @@ const AdminPage = () => {
   const [visitorStatsDate, setVisitorStatsDate] = useState(new Date().toISOString().slice(0, 10));
   const [loginHistory, setLoginHistory] = useState<AdminLoginHistoryItem[]>(loadLoginHistory);
   const [unreadInquiryCount, setUnreadInquiryCount] = useState(0);
+  const [theme, setTheme] = useState<AdminTheme>(loadAdminTheme);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(loadSidebarCollapsed);
   const [activeSection, setActiveSection] = useState<AdminSectionId>(
     persistedUi.activeSection ?? "dashboard"
   );
@@ -318,6 +331,14 @@ const AdminPage = () => {
     };
     localStorage.setItem(adminUiStorageKey, JSON.stringify(payload));
   }, [activeSection, expandedGroupId, mainEditorTab, recentTargets]);
+
+  useEffect(() => {
+    localStorage.setItem(adminThemeStorageKey, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem(adminSidebarStorageKey, isSidebarCollapsed ? "1" : "0");
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     const now = new Date();
@@ -777,6 +798,8 @@ const AdminPage = () => {
 
   const truncateText = (value: string, maxLength = 48) =>
     value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+
+  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
   const renderDashboardSection = () => (
     <>
@@ -1787,26 +1810,32 @@ const AdminPage = () => {
 
   if (!token) {
     return (
-      <main className="admin-shell admin-shell--auth">
+      <main className="admin-shell admin-shell--auth" data-admin-theme={theme}>
         <section className="admin-auth-stage">
           <aside className="admin-auth-brand">
-            <p className="admin-auth-kicker">SHINHOTEK CMS</p>
+            <div className="admin-auth-utility">
+              <p className="admin-auth-kicker">SHINHOTEK CMS</p>
+              <button type="button" className="admin-theme-toggle" onClick={toggleTheme}>
+                {theme === "dark" ? "White mode" : "Dark mode"}
+              </button>
+            </div>
             <h1>{t("admin.loginTitle")}</h1>
             <p className="admin-auth-copy">
-              홈페이지 콘텐츠, 공지, 자료실, 문의 흐름을 한 콘솔에서 관리합니다.
+              `fox_coin_front` 톤을 기준으로 관리자 운영 경험을 정리했습니다. 홈페이지 콘텐츠, 공지,
+              자료실, 문의 흐름을 한 콘솔에서 관리합니다.
             </p>
             <div className="admin-auth-points">
               <article>
-                <span>Content</span>
-                <strong>Main / CMS / Meta</strong>
+                <span>Content Ops</span>
+                <strong>Main / CMS / Meta Sync</strong>
               </article>
               <article>
-                <span>Boards</span>
-                <strong>Notice / Resource</strong>
+                <span>Board Flow</span>
+                <strong>Notice / Resource Publish</strong>
               </article>
               <article>
-                <span>Pipeline</span>
-                <strong>Inquiry Tracking</strong>
+                <span>Inquiry Desk</span>
+                <strong>Unread / In-review Tracking</strong>
               </article>
             </div>
           </aside>
@@ -1815,12 +1844,16 @@ const AdminPage = () => {
             <div className="admin-login-head">
               <p className="admin-login-kicker">Admin Access</p>
               <h2>{t("admin.signIn")}</h2>
-              <span>관리자 계정으로 로그인해 운영 화면에 접근합니다.</span>
+              <span>관리자 계정으로 로그인해 운영 대시보드와 게시 관리 화면에 접근합니다.</span>
             </div>
             <form onSubmit={login}>
               <label>
                 <span>{t("admin.username")}</span>
-                <input value={username} onChange={(event) => setUsername(event.target.value)} />
+                <input
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  placeholder="관리자 아이디"
+                />
               </label>
               <label>
                 <span>{t("admin.password")}</span>
@@ -1828,15 +1861,18 @@ const AdminPage = () => {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
+                  placeholder="비밀번호"
                 />
               </label>
               <button type="submit" disabled={busy}>
                 {busy ? t("admin.signingIn") : t("admin.signIn")}
               </button>
             </form>
-            <p className="admin-hint">{t("admin.defaultCred")}</p>
+            <div className="admin-login-meta">
+              <p className="admin-hint">{t("admin.defaultCred")}</p>
+              <Link to="/company/overview">{t("admin.backToSite")}</Link>
+            </div>
             {message ? <p className="admin-message">{message}</p> : null}
-            <Link to="/company/overview">{t("admin.backToSite")}</Link>
           </section>
         </section>
       </main>
@@ -1844,13 +1880,29 @@ const AdminPage = () => {
   }
 
   return (
-    <main className="admin-shell admin-shell--console">
+    <main className="admin-shell admin-shell--console" data-admin-theme={theme}>
       <div className="admin-console">
         <header className="admin-top">
-          <div className="admin-top-main">
-            <p className="admin-top-kicker">Operations Console</p>
-            <h1>{t("admin.title")}</h1>
-            <p>콘텐츠 운영, 문의 응대, 공지 게시를 한 곳에서 관리합니다.</p>
+          <div className="admin-top-main-wrap">
+            <div className="admin-top-main">
+              <div className="admin-top-row">
+                <button
+                  type="button"
+                  className="admin-chrome-btn admin-chrome-btn--ghost"
+                  onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+                  aria-label={isSidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+                >
+                  {isSidebarCollapsed ? ">>" : "<<"}
+                </button>
+                <p className="admin-top-kicker">Operations Console</p>
+              </div>
+              <h1>{t("admin.title")}</h1>
+              <p>콘텐츠 운영, 문의 응대, 공지 게시를 한 곳에서 관리합니다.</p>
+            </div>
+            <div className="admin-top-status">
+              <span className="admin-top-status-label">Current Theme</span>
+              <strong>{theme === "dark" ? "Dark mode" : "Light mode"}</strong>
+            </div>
           </div>
           <div className="admin-top-side">
             <div className="admin-top-metrics" aria-label="운영 요약">
@@ -1868,11 +1920,21 @@ const AdminPage = () => {
               </article>
             </div>
             <nav className="admin-top-nav" aria-label="관리자 상단 메뉴">
-              <button type="button" onClick={refreshAdminData} disabled={busy}>
+              <button
+                type="button"
+                className="admin-chrome-btn admin-chrome-btn--primary"
+                onClick={refreshAdminData}
+                disabled={busy}
+              >
                 새로고침
               </button>
-              <Link to="/main">{t("admin.publicSite")}</Link>
-              <button type="button" onClick={logout}>
+              <button type="button" className="admin-chrome-btn" onClick={toggleTheme}>
+                {theme === "dark" ? "화이트 모드" : "블랙 모드"}
+              </button>
+              <Link className="admin-chrome-btn" to="/main">
+                {t("admin.publicSite")}
+              </Link>
+              <button type="button" className="admin-chrome-btn" onClick={logout}>
                 {t("admin.logout")}
               </button>
             </nav>
@@ -1896,8 +1958,10 @@ const AdminPage = () => {
             activeSection={activeSection}
             mainEditorTab={mainEditorTab}
             expandedGroupId={expandedGroupId}
+            isCollapsed={isSidebarCollapsed}
             unreadInquiryCount={unreadInquiryCount}
             recentCount={recentTargets.length}
+            onSidebarToggle={() => setIsSidebarCollapsed((prev) => !prev)}
             onToggleGroup={(groupId) => setExpandedGroupId((prev) => (prev === groupId ? "" : groupId))}
             onNavigate={navigateToSection}
           />
