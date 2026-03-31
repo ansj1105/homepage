@@ -24,6 +24,23 @@ const groupMeta: Record<string, { eyebrow: string; summary: string }> = {
   inquiry: { eyebrow: "Pipeline", summary: "유입 문의와 처리 상태를 추적합니다." }
 };
 
+const groupGlyph: Record<string, string> = {
+  overview: "DB",
+  site: "ST",
+  board: "BD",
+  inquiry: "IN"
+};
+
+const sectionGlyph: Record<AdminSectionId, string> = {
+  dashboard: "OV",
+  main: "HM",
+  "public-settings": "MT",
+  "cms-pages": "CM",
+  resources: "RS",
+  notices: "NT",
+  inquiries: "IQ"
+};
+
 export const AdminSidebar = ({
   groups,
   activeSection,
@@ -66,8 +83,9 @@ export const AdminSidebar = ({
         </div>
       </div>
 
-      {groups.map((group) => (
-        <div key={group.id} className={`admin-nav-group admin-nav-group--${group.id}`}>
+      <div className="admin-sidebar-nav">
+        {groups.map((group) => (
+          <div key={group.id} className={`admin-nav-group admin-nav-group--${group.id}`}>
           {!isCollapsed ? (
             <div className="admin-nav-group-copy">
               <p>{groupMeta[group.id]?.eyebrow ?? "Section"}</p>
@@ -81,11 +99,16 @@ export const AdminSidebar = ({
             aria-expanded={expandedGroupId === group.id}
             title={group.label}
           >
-            <span>{isCollapsed ? (groupMeta[group.id]?.eyebrow ?? group.label.slice(0, 2)) : group.label}</span>
+            <span className="admin-menu-item-content">
+              <span className="admin-menu-icon">{groupGlyph[group.id] ?? group.label.slice(0, 2)}</span>
+              <span className="admin-menu-label">
+                {isCollapsed ? (groupMeta[group.id]?.eyebrow ?? group.label.slice(0, 2)) : group.label}
+              </span>
+            </span>
             {!isCollapsed ? <span>{expandedGroupId === group.id ? "열림" : "펼침"}</span> : null}
           </button>
           {expandedGroupId === group.id ? (
-            <ul>
+            <ul className="admin-submenu">
               {group.items.map((item) => (
                 <li key={item.id}>
                   <button
@@ -99,7 +122,12 @@ export const AdminSidebar = ({
                     }
                     title={item.label}
                   >
-                    {isCollapsed ? item.label.slice(0, 2) : item.label}
+                    <span className="admin-menu-item-content">
+                      <span className="admin-menu-icon">{sectionGlyph[item.id]}</span>
+                      <span className="admin-menu-label">
+                        {isCollapsed ? item.label.slice(0, 2) : item.label}
+                      </span>
+                    </span>
                     {item.id === "inquiries" && unreadInquiryCount > 0 ? (
                       <span className="admin-nav-badge">{unreadInquiryCount}</span>
                     ) : null}
@@ -127,8 +155,9 @@ export const AdminSidebar = ({
               ))}
             </ul>
           ) : null}
-        </div>
-      ))}
+          </div>
+        ))}
+      </div>
     </aside>
   );
 };
