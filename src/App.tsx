@@ -120,7 +120,7 @@ const App = () => (
   <BrowserRouter>
     <SiteMetaController />
     <Routes>
-      <Route path="/" element={<MainPage />} />
+      <Route path="/" element={<PowerRankingPage />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/power-ranking" element={<PowerRankingPage />} />
       <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
