@@ -5,8 +5,13 @@ import {
   parseInquiryStatus,
   parseLogin,
   parseNoticeUpsert,
+  parsePowerRankingEquip,
+  parsePowerRankingItemUse,
+  parseTodayVisitor,
   parseResourceUpsert,
-  parseSiteContent
+  parseSiteContent,
+  parseUserLogin,
+  parseUserSignup
 } from "./validators";
 
 describe("validators", () => {
@@ -36,6 +41,7 @@ describe("validators", () => {
 
   it("parses inquiry payload and status", () => {
     const inquiry = parseInquiryCreate({
+      inquiryType: "quote",
       company: "ACME",
       position: "Manager",
       name: "John",
@@ -53,10 +59,51 @@ describe("validators", () => {
     expect(() =>
       parseInquiryCreate({
         company: "ACME",
+        inquiryType: "quote",
         name: "John",
         email: "john@example.com",
         consent: false
       })
     ).toThrow();
+  });
+
+  it("parses user auth payloads", () => {
+    const signup = parseUserSignup({
+      username: "tester01",
+      password: "password123",
+      name: "테스터",
+      nickname: "테스트닉"
+    });
+    const login = parseUserLogin({
+      username: "tester01",
+      password: "password123"
+    });
+    expect(signup.nickname).toBe("테스트닉");
+    expect(login.username).toBe("tester01");
+  });
+
+  it("parses power ranking item use payload", () => {
+    const parsed = parsePowerRankingItemUse({
+      personId: "11111111-1111-1111-1111-111111111111",
+      itemCode: "byeokbangjun-blanket",
+      period: "weekly"
+    });
+    expect(parsed.itemCode).toBe("byeokbangjun-blanket");
+    expect(parsed.period).toBe("weekly");
+  });
+
+  it("parses power ranking equipment payload", () => {
+    const parsed = parsePowerRankingEquip({
+      equipmentCode: "crown-of-cheers"
+    });
+    expect(parsed.equipmentCode).toBe("crown-of-cheers");
+  });
+
+  it("parses today visitor payload", () => {
+    const parsed = parseTodayVisitor({
+      deviceId: "device-123456789012",
+      path: "/dongyeon-power-ranking"
+    });
+    expect(parsed.path).toBe("/dongyeon-power-ranking");
   });
 });

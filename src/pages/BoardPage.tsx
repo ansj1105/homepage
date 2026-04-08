@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client";
+import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 import type { BoardPost, BoardReply } from "../types";
 
@@ -32,8 +33,6 @@ const formatDateTime = (value: string): string => {
 };
 
 type PostDraft = {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
   file: File | null;
@@ -46,8 +45,6 @@ type ReplyDraft = {
 };
 
 type EditingPostDraft = {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
 };
@@ -58,8 +55,6 @@ type EditingReplyDraft = {
 };
 
 const createPostDraft = (): PostDraft => ({
-  authorName: generateAnonymousName(),
-  password: "",
   title: "",
   content: "",
   file: null
@@ -78,6 +73,7 @@ const emptyReplyDraft = (): ReplyDraft => ({
 });
 
 const BoardPage = () => {
+  const { user } = useUserAuth();
   const [posts, setPosts] = useState<BoardPost[]>([]);
   const [postDraft, setPostDraft] = useState<PostDraft>(() => createPostDraft());
   const [replyDrafts, setReplyDrafts] = useState<Record<string, ReplyDraft>>({});
@@ -90,17 +86,20 @@ const BoardPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [replyVisibleCounts, setReplyVisibleCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    document.title = "동연 자유게시판";
+    document.title = "동아리연합회 게시판";
   }, []);
 
   useEffect(() => {
     let isMounted = true;
 
     apiClient
-      .getBoardPosts()
+      .getBoardPosts(searchKeyword)
       .then((items) => {
         if (!isMounted) return;
         setPosts(items);
@@ -119,7 +118,7 @@ const BoardPage = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [searchKeyword, user]);
 
   useEffect(() => {
     setReplyDrafts((current) => {
@@ -150,6 +149,7 @@ const BoardPage = () => {
   }, [posts]);
 
   const postCountLabel = useMemo(() => `${posts.length}개의 게시글`, [posts.length]);
+  const bestPosts = useMemo(() => posts.filter((post) => post.isBest).slice(0, 5), [posts]);
   const totalPages = Math.max(1, Math.ceil(posts.length / BOARD_PAGE_SIZE));
   const pagedPosts = useMemo(
     () => posts.slice((currentPage - 1) * BOARD_PAGE_SIZE, currentPage * BOARD_PAGE_SIZE),
@@ -164,12 +164,22 @@ const BoardPage = () => {
   }, [currentPage, totalPages]);
   const visiblePostStart = posts.length === 0 ? 0 : (currentPage - 1) * BOARD_PAGE_SIZE + 1;
   const visiblePostEnd = Math.min(currentPage * BOARD_PAGE_SIZE, posts.length);
+  const selectedPost = useMemo(
+    () => posts.find((post) => post.id === selectedPostId) ?? pagedPosts[0] ?? null,
+    [pagedPosts, posts, selectedPostId]
+  );
 
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (!selectedPostId || !posts.some((post) => post.id === selectedPostId)) {
+      setSelectedPostId(pagedPosts[0]?.id ?? null);
+    }
+  }, [pagedPosts, posts, selectedPostId]);
 
   const patchPost = (updated: BoardPost) => {
     setPosts((current) => current.map((post) => (post.id === updated.id ? updated : post)));
@@ -211,8 +221,12 @@ const BoardPage = () => {
   };
 
   const handleCreatePost = async () => {
-    if (!postDraft.password.trim() || !postDraft.title.trim() || !postDraft.content.trim()) {
-      setErrorMessage("제목, 내용, 비밀번호를 입력해 주세요.");
+    if (!user) {
+      setErrorMessage("회원가입한 사람만 게시글을 작성할 수 있습니다.");
+      return;
+    }
+    if (!postDraft.title.trim() || !postDraft.content.trim()) {
+      setErrorMessage("제목과 내용을 입력해 주세요.");
       return;
     }
 
@@ -239,8 +253,6 @@ const BoardPage = () => {
       }
 
       const created = await apiClient.createBoardPost({
-        authorName: postDraft.authorName.trim() || generateAnonymousName(),
-        password: postDraft.password.trim(),
         title: postDraft.title.trim(),
         content: postDraft.content.trim(),
         ...filePayload
@@ -260,8 +272,6 @@ const BoardPage = () => {
   const startPostEdit = (post: BoardPost) => {
     setEditingPostId(post.id);
     setEditingPostDraft({
-      authorName: post.authorName,
-      password: "",
       title: post.title,
       content: post.content
     });
@@ -269,8 +279,8 @@ const BoardPage = () => {
 
   const handleUpdatePost = async (postId: string) => {
     if (!editingPostDraft) return;
-    if (!editingPostDraft.password.trim()) {
-      setErrorMessage("게시글 비밀번호를 입력해 주세요.");
+    if (!user) {
+      setErrorMessage("로그인 이후 수정할 수 있습니다.");
       return;
     }
 
@@ -279,8 +289,6 @@ const BoardPage = () => {
     setSuccessMessage("");
     try {
       const updated = await apiClient.updateBoardPost(postId, {
-        authorName: editingPostDraft.authorName.trim() || generateAnonymousName(),
-        password: editingPostDraft.password.trim(),
         title: editingPostDraft.title.trim(),
         content: editingPostDraft.content.trim()
       });
@@ -296,18 +304,40 @@ const BoardPage = () => {
   };
 
   const handleDeletePost = async (postId: string) => {
-    const password = window.prompt("게시글 비밀번호를 입력해 주세요.")?.trim() ?? "";
-    if (!password) return;
+    if (!user) {
+      setErrorMessage("로그인 이후 삭제할 수 있습니다.");
+      return;
+    }
 
     setSubmittingId(postId);
     setErrorMessage("");
     setSuccessMessage("");
     try {
-      await apiClient.deleteBoardPost(postId, password);
+      await apiClient.deleteBoardPost(postId);
       setPosts((current) => current.filter((post) => post.id !== postId));
       setSuccessMessage("게시글이 삭제되었습니다.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "게시글을 삭제하지 못했습니다.");
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  const handleRecommendPost = async (postId: string) => {
+    if (!user) {
+      setErrorMessage("로그인한 사람만 개추할 수 있습니다.");
+      return;
+    }
+
+    setSubmittingId(`recommend-${postId}`);
+    setErrorMessage("");
+    setSuccessMessage("");
+    try {
+      const updated = await apiClient.recommendBoardPost(postId);
+      patchPost(updated);
+      setSuccessMessage("개추가 반영되었습니다.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "개추를 반영하지 못했습니다.");
     } finally {
       setSubmittingId(null);
     }
@@ -389,161 +419,111 @@ const BoardPage = () => {
   };
 
   return (
-    <div className="powerRankingPage">
+    <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
         <CommunityTopBar />
-        <header className="powerRankingHero boardHero">
+        <header className="powerRankingHero powerRankingHeroMaple boardHero">
           <div>
             <p className="powerRankingEyebrow">Board</p>
-            <h1>동연 자유게시판</h1>
+            <h1>동아리연합회 게시판</h1>
             <p className="powerRankingLead">
-              익명 기본 이름과 비밀번호로 게시글과 답글을 자유롭게 남길 수 있습니다.
+              게시글은 회원만 작성할 수 있고, 댓글은 익명으로 자유롭게 남길 수 있습니다.
             </p>
           </div>
           <div className="boardMetaPanel">
             <strong>{postCountLabel}</strong>
-            <span>첨부파일은 5MB 미만만 허용됩니다.</span>
+            <span>개추 5개 이상 게시물은 2주 동안 베스트에 노출됩니다.</span>
           </div>
         </header>
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
         {successMessage ? <div className="boardSuccess">{successMessage}</div> : null}
 
-        <section className="boardComposer">
-          <div className="boardComposerGrid">
-            <input
-              value={postDraft.authorName}
-              onChange={(event) => setPostDraft((current) => ({ ...current, authorName: event.target.value }))}
-              placeholder="이름"
-            />
-            <input
-              type="password"
-              value={postDraft.password}
-              onChange={(event) => setPostDraft((current) => ({ ...current, password: event.target.value }))}
-              placeholder="비밀번호"
-            />
-          </div>
+        <section className="boardSearchBar">
           <input
-            value={postDraft.title}
-            onChange={(event) => setPostDraft((current) => ({ ...current, title: event.target.value }))}
-            placeholder="제목"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="제목 또는 작성자명 검색"
           />
-          <textarea
-            value={postDraft.content}
-            onChange={(event) => setPostDraft((current) => ({ ...current, content: event.target.value }))}
-            placeholder="내용을 입력해 주세요"
-          />
-          <div className="boardComposerFooter">
-            <label className="boardFileField">
-              <span>파일 첨부</span>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.zip,.hwp,.txt"
-                onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)}
-              />
-            </label>
-            <div className="boardComposerActions">
-              <span className="boardFileName">{postDraft.file?.name ?? "선택된 파일 없음"}</span>
-              <button
-                type="button"
-                className="powerRankingVoteButton"
-                disabled={submittingId === "post-create"}
-                onClick={() => void handleCreatePost()}
-              >
-                글쓰기
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            className="powerRankingVoteButton"
+            onClick={() => {
+              setCurrentPage(1);
+              setSearchKeyword(searchInput.trim());
+            }}
+          >
+            검색
+          </button>
         </section>
+
+        {bestPosts.length > 0 ? (
+          <section className="boardBestSection">
+            <div className="powerRankingSectionHead">
+              <div>
+                <p className="powerRankingEyebrow">Best Posts</p>
+                <h2>베스트 게시물</h2>
+              </div>
+              <p className="powerRankingSectionHint">개추 5개 이상, 게시 후 2주 이내</p>
+            </div>
+            <div className="boardBestGrid">
+              {bestPosts.map((post) => (
+                <article key={post.id} className="boardBestCard">
+                  <span className="boardCardBadge isBest">BEST</span>
+                  <strong>{post.title}</strong>
+                  <p>{post.authorName}</p>
+                  <span>개추 {post.recommendationCount}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {isLoading ? (
           <div className="powerRankingLoading">게시글을 불러오는 중입니다.</div>
         ) : (
           <>
-            {posts.length > 0 ? (
-              <section className="boardListToolbar">
-                <div className="boardListSummary">
-                  <strong>{postCountLabel}</strong>
-                  <span>
-                    {visiblePostStart}-{visiblePostEnd} / page {currentPage} of {totalPages}
-                  </span>
+            <section className="powerRankingBoardSection">
+              <section className="boardListShell">
+                <div className="boardTableHeader" aria-hidden="true">
+                  <span>번호</span>
+                  <span>제목</span>
+                  <span>작성자</span>
+                  <span>작성일</span>
+                  <span>조회</span>
+                  <span>추천</span>
                 </div>
-                <nav className="boardPagination boardPaginationCompact" aria-label="게시판 상단 페이지">
-                  <button
-                    type="button"
-                    className="powerRankingBackLink"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(1)}
-                  >
-                    처음
-                  </button>
-                  <button
-                    type="button"
-                    className="powerRankingBackLink"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  >
-                    이전
-                  </button>
-                  <div className="boardPaginationNumbers">
-                    {visiblePageNumbers.map((page) => (
+                <div className="boardTableList">
+                  {pagedPosts.map((post, index) => {
+                    const postNumber = posts.length - ((currentPage - 1) * BOARD_PAGE_SIZE + index);
+                    return (
                       <button
-                        key={page}
+                        key={post.id}
                         type="button"
-                        className={`powerRankingSortButton ${currentPage === page ? "isActive" : ""}`}
-                        onClick={() => setCurrentPage(page)}
+                        className={`boardTableRow ${selectedPost?.id === post.id ? "isSelected" : ""}`.trim()}
+                        onClick={() => setSelectedPostId(post.id)}
                       >
-                        {page}
+                        <span>{postNumber}</span>
+                        <span className="boardTableTitle">
+                          {post.isBest ? <em>BEST</em> : null}
+                          <strong>{post.title}</strong>
+                          {post.replies.length > 0 ? <b>[{post.replies.length}]</b> : null}
+                        </span>
+                        <span>{post.authorName}</span>
+                        <span>{formatDateTime(post.createdAt)}</span>
+                        <span>{post.content.length}</span>
+                        <span>{post.recommendationCount}</span>
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    className="powerRankingBackLink"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                  >
-                    다음
-                  </button>
-                  <button
-                    type="button"
-                    className="powerRankingBackLink"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(totalPages)}
-                  >
-                    끝
-                  </button>
-                </nav>
+                    );
+                  })}
+                  {posts.length === 0 ? <div className="powerRankingLoading">아직 등록된 게시글이 없습니다.</div> : null}
+                </div>
               </section>
-            ) : null}
-            <div className="boardList">
-              {pagedPosts.map((post, index) => {
-                const postNumber = posts.length - ((currentPage - 1) * BOARD_PAGE_SIZE + index);
-                return (
-                <article key={post.id} className="boardCard">
-                {editingPostId === post.id && editingPostDraft ? (
+
+              {selectedPost ? (
+                <article className="boardCard boardDetailCard">
+                {editingPostId === selectedPost.id && editingPostDraft ? (
                   <div className="boardEditBlock">
-                    <div className="boardComposerGrid">
-                      <input
-                        value={editingPostDraft.authorName}
-                        onChange={(event) =>
-                          setEditingPostDraft((current) =>
-                            current ? { ...current, authorName: event.target.value } : current
-                          )
-                        }
-                        placeholder="이름"
-                      />
-                      <input
-                        type="password"
-                        value={editingPostDraft.password}
-                        onChange={(event) =>
-                          setEditingPostDraft((current) =>
-                            current ? { ...current, password: event.target.value } : current
-                          )
-                        }
-                        placeholder="비밀번호"
-                      />
-                    </div>
                     <input
                       value={editingPostDraft.title}
                       onChange={(event) =>
@@ -563,8 +543,8 @@ const BoardPage = () => {
                     <div className="powerRankingMemoButtons">
                       <button
                         type="button"
-                        disabled={submittingId === post.id}
-                        onClick={() => void handleUpdatePost(post.id)}
+                        disabled={submittingId === selectedPost.id}
+                        onClick={() => void handleUpdatePost(selectedPost.id)}
                       >
                         저장
                       </button>
@@ -585,34 +565,46 @@ const BoardPage = () => {
                     <header className="boardCardHead">
                       <div>
                         <div className="boardCardMeta">
-                          <span className="boardCardBadge">No. {postNumber}</span>
-                          <span className="boardCardMetaText">답글 {post.replies.length}</span>
-                          {post.fileUrl ? <span className="boardCardMetaText">첨부 있음</span> : null}
+                          {selectedPost.isBest ? <span className="boardCardBadge isBest">BEST</span> : null}
+                          <span className="boardCardMetaText">개추 {selectedPost.recommendationCount}</span>
+                          <span className="boardCardMetaText">답글 {selectedPost.replies.length}</span>
+                          {selectedPost.fileUrl ? <span className="boardCardMetaText">첨부 있음</span> : null}
                         </div>
                         <div className="boardAuthorLine">
-                          <strong>{post.authorName}</strong>
-                          <time>{formatDateTime(post.createdAt)}</time>
+                          <strong>{selectedPost.authorName}</strong>
+                          <time>{formatDateTime(selectedPost.createdAt)}</time>
                         </div>
-                        <h2>{post.title}</h2>
+                        <h2>{selectedPost.title}</h2>
                       </div>
                       <div className="powerRankingMemoButtons">
-                        <button type="button" className="isGhost" onClick={() => startPostEdit(post)}>
-                          수정
-                        </button>
                         <button
                           type="button"
-                          className="isGhost"
-                          disabled={submittingId === post.id}
-                          onClick={() => void handleDeletePost(post.id)}
+                          disabled={selectedPost.isRecommendedByCurrentUser || submittingId === `recommend-${selectedPost.id}`}
+                          onClick={() => void handleRecommendPost(selectedPost.id)}
                         >
-                          삭제
+                          {submittingId === `recommend-${selectedPost.id}` ? "반영 중..." : selectedPost.isRecommendedByCurrentUser ? "개추 완료" : "개추"}
                         </button>
+                        {user && selectedPost.userId === user.id ? (
+                          <>
+                            <button type="button" className="isGhost" onClick={() => startPostEdit(selectedPost)}>
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              className="isGhost"
+                              disabled={submittingId === selectedPost.id}
+                              onClick={() => void handleDeletePost(selectedPost.id)}
+                            >
+                              삭제
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     </header>
-                    <p className="boardCardBody">{post.content}</p>
-                    {post.fileUrl ? (
-                      <a href={post.fileUrl} target="_blank" rel="noreferrer" className="boardAttachment">
-                        첨부파일: {post.fileName || "다운로드"}
+                    <p className="boardCardBody">{selectedPost.content}</p>
+                    {selectedPost.fileUrl ? (
+                      <a href={selectedPost.fileUrl} target="_blank" rel="noreferrer" className="boardAttachment">
+                        첨부파일: {selectedPost.fileName || "다운로드"}
                       </a>
                     ) : null}
                   </>
@@ -620,82 +612,80 @@ const BoardPage = () => {
 
                 <section className="boardReplies">
                   <div className="boardReplyHead">
-                    <strong>답글 {post.replies.length}</strong>
+                    <strong>답글 {selectedPost.replies.length}</strong>
                   </div>
                   <ul className="boardReplyList">
-                    {post.replies.slice(0, replyVisibleCounts[post.id] ?? REPLY_PAGE_SIZE).map((reply) => (
-                      <li key={reply.id} className="boardReplyItem">
-                        {editingReplyId === reply.id && editingReplyDraft ? (
-                          <div className="boardEditBlock boardReplyEditBlock">
-                            <input
-                              type="password"
-                              value={editingReplyDraft.password}
-                              onChange={(event) =>
-                                setEditingReplyDraft((current) =>
-                                  current ? { ...current, password: event.target.value } : current
-                                )
-                              }
-                              placeholder="비밀번호"
-                            />
-                            <textarea
-                              value={editingReplyDraft.content}
-                              onChange={(event) =>
-                                setEditingReplyDraft((current) =>
-                                  current ? { ...current, content: event.target.value } : current
-                                )
-                              }
-                            />
-                            <div className="powerRankingMemoButtons">
-                              <button
-                                type="button"
-                                disabled={submittingId === reply.id}
-                                onClick={() => void handleUpdateReply(reply.id)}
-                              >
-                                저장
-                              </button>
-                              <button
-                                type="button"
-                                className="isGhost"
-                                onClick={() => {
-                                  setEditingReplyId(null);
-                                  setEditingReplyDraft(null);
-                                }}
-                              >
-                                취소
-                              </button>
+                    {selectedPost.replies
+                      .slice(0, replyVisibleCounts[selectedPost.id] ?? REPLY_PAGE_SIZE)
+                      .map((reply) => (
+                        <li key={reply.id} className="boardReplyItem">
+                          {editingReplyId === reply.id && editingReplyDraft ? (
+                            <div className="boardEditBlock boardReplyEditBlock">
+                              <input
+                                type="password"
+                                value={editingReplyDraft.password}
+                                onChange={(event) =>
+                                  setEditingReplyDraft((current) =>
+                                    current ? { ...current, password: event.target.value } : current
+                                  )
+                                }
+                                placeholder="비밀번호"
+                              />
+                              <textarea
+                                value={editingReplyDraft.content}
+                                onChange={(event) =>
+                                  setEditingReplyDraft((current) =>
+                                    current ? { ...current, content: event.target.value } : current
+                                  )
+                                }
+                              />
+                              <div className="powerRankingMemoButtons">
+                                <button
+                                  type="button"
+                                  disabled={submittingId === reply.id}
+                                  onClick={() => void handleUpdateReply(reply.id)}
+                                >
+                                  저장
+                                </button>
+                                <button
+                                  type="button"
+                                  className="isGhost"
+                                  onClick={() => {
+                                    setEditingReplyId(null);
+                                    setEditingReplyDraft(null);
+                                  }}
+                                >
+                                  취소
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="boardAuthorLine">
-                              <strong>{reply.authorName}</strong>
-                              <time>{formatDateTime(reply.createdAt)}</time>
-                            </div>
-                            <p>{reply.content}</p>
-                            <div className="powerRankingMemoButtons">
-                              <button
-                                type="button"
-                                className="isGhost"
-                                onClick={() => startReplyEdit(reply)}
-                              >
-                                수정
-                              </button>
-                              <button
-                                type="button"
-                                className="isGhost"
-                                disabled={submittingId === reply.id}
-                                onClick={() => void handleDeleteReply(reply.id)}
-                              >
-                                삭제
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </li>
-                    ))}
-                    {post.replies.length === 0 ? <li className="powerRankingMemoEmpty">첫 답글을 남겨보세요.</li> : null}
+                          ) : (
+                            <>
+                              <div className="boardAuthorLine">
+                                <strong>{reply.authorName}</strong>
+                                <time>{formatDateTime(reply.createdAt)}</time>
+                              </div>
+                              <p>{reply.content}</p>
+                              <div className="powerRankingMemoButtons">
+                                <button type="button" className="isGhost" onClick={() => startReplyEdit(reply)}>
+                                  수정
+                                </button>
+                                <button
+                                  type="button"
+                                  className="isGhost"
+                                  disabled={submittingId === reply.id}
+                                  onClick={() => void handleDeleteReply(reply.id)}
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    {selectedPost.replies.length === 0 ? <li className="powerRankingMemoEmpty">첫 답글을 남겨보세요.</li> : null}
                   </ul>
-                  {post.replies.length > (replyVisibleCounts[post.id] ?? REPLY_PAGE_SIZE) ? (
+                  {selectedPost.replies.length > (replyVisibleCounts[selectedPost.id] ?? REPLY_PAGE_SIZE) ? (
                     <div className="boardReplyMore">
                       <button
                         type="button"
@@ -703,7 +693,7 @@ const BoardPage = () => {
                         onClick={() =>
                           setReplyVisibleCounts((current) => ({
                             ...current,
-                            [post.id]: (current[post.id] ?? REPLY_PAGE_SIZE) + REPLY_PAGE_SIZE
+                            [selectedPost.id]: (current[selectedPost.id] ?? REPLY_PAGE_SIZE) + REPLY_PAGE_SIZE
                           }))
                         }
                       >
@@ -711,10 +701,9 @@ const BoardPage = () => {
                       </button>
                     </div>
                   ) : null}
-
                   <div className="boardReplyComposer">
                     {(() => {
-                      const replyDraft = replyDrafts[post.id] ?? emptyReplyDraft();
+                      const replyDraft = replyDrafts[selectedPost.id] ?? emptyReplyDraft();
                       return (
                         <>
                           <div className="boardComposerGrid">
@@ -723,13 +712,13 @@ const BoardPage = () => {
                               onChange={(event) =>
                                 setReplyDrafts((current) => ({
                                   ...current,
-                                  [post.id]: {
-                                    ...(current[post.id] ?? createReplyDraft()),
+                                  [selectedPost.id]: {
+                                    ...(current[selectedPost.id] ?? createReplyDraft()),
                                     authorName: event.target.value
                                   }
                                 }))
                               }
-                              placeholder="이름"
+                              placeholder="익명 이름"
                             />
                             <input
                               type="password"
@@ -737,8 +726,8 @@ const BoardPage = () => {
                               onChange={(event) =>
                                 setReplyDrafts((current) => ({
                                   ...current,
-                                  [post.id]: {
-                                    ...(current[post.id] ?? createReplyDraft()),
+                                  [selectedPost.id]: {
+                                    ...(current[selectedPost.id] ?? createReplyDraft()),
                                     password: event.target.value
                                   }
                                 }))
@@ -751,8 +740,8 @@ const BoardPage = () => {
                             onChange={(event) =>
                               setReplyDrafts((current) => ({
                                 ...current,
-                                [post.id]: {
-                                  ...(current[post.id] ?? createReplyDraft()),
+                                [selectedPost.id]: {
+                                  ...(current[selectedPost.id] ?? createReplyDraft()),
                                   content: event.target.value
                                 }
                               }))
@@ -763,8 +752,8 @@ const BoardPage = () => {
                             <button
                               type="button"
                               className="powerRankingVoteButton"
-                              disabled={submittingId === `reply-${post.id}`}
-                              onClick={() => void handleCreateReply(post.id)}
+                              disabled={submittingId === `reply-${selectedPost.id}`}
+                              onClick={() => void handleCreateReply(selectedPost.id)}
                             >
                               답글 등록
                             </button>
@@ -775,11 +764,8 @@ const BoardPage = () => {
                   </div>
                 </section>
                 </article>
-              );
-              })}
-              {posts.length === 0 ? <div className="powerRankingLoading">아직 등록된 게시글이 없습니다.</div> : null}
-            </div>
-            {posts.length > 0 ? (
+              ) : null}
+
               <nav className="boardPagination" aria-label="게시판 페이지">
                 <button
                   type="button"
@@ -826,7 +812,66 @@ const BoardPage = () => {
                   끝
                 </button>
               </nav>
-            ) : null}
+            </section>
+
+            <section className="boardSearchFooter">
+              <section className="boardComposer">
+                {!user ? <div className="powerRankingAlert">회원가입한 사람만 게시글을 작성할 수 있습니다.</div> : null}
+                <div className="boardComposerGrid">
+                  <input value={user?.nickname ?? "회원 전용"} placeholder="작성자" disabled />
+                  <input value={searchKeyword ? `검색어: ${searchKeyword}` : "전체 게시글"} placeholder="검색 상태" disabled />
+                </div>
+                <input
+                  value={postDraft.title}
+                  onChange={(event) => setPostDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="제목"
+                />
+                <textarea
+                  value={postDraft.content}
+                  onChange={(event) => setPostDraft((current) => ({ ...current, content: event.target.value }))}
+                  placeholder="내용을 입력해 주세요"
+                />
+                <div className="boardComposerFooter">
+                  <label className="boardFileField">
+                    <span>파일 첨부</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.zip,.hwp,.txt"
+                      onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <div className="boardComposerActions">
+                    <span className="boardFileName">{postDraft.file?.name ?? "선택된 파일 없음"}</span>
+                    <button
+                      type="button"
+                      className="powerRankingVoteButton"
+                      disabled={submittingId === "post-create" || !user}
+                      onClick={() => void handleCreatePost()}
+                    >
+                      글쓰기
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <div className="boardSearchBar boardSearchBarBottom">
+                <input
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="제목 또는 작성자명 검색"
+                />
+                <button
+                  type="button"
+                  className="powerRankingVoteButton"
+                  onClick={() => {
+                    setCurrentPage(1);
+                    setSearchKeyword(searchInput.trim());
+                  }}
+                >
+                  검색
+                </button>
+              </div>
+            </section>
           </>
         )}
       </div>

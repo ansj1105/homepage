@@ -1,10 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
-import type { PowerRankingNote, PowerRankingPeriod, PowerRankingPerson, PowerRankingVoteDelta } from "../types";
+import type {
+  PowerRankingEquipmentCode,
+  PowerRankingEquipmentInventoryItem,
+  PowerRankingEquipmentSlot,
+  PowerRankingEquippedItem,
+  PowerRankingEventLog,
+  PowerRankingInventoryItem,
+  PowerRankingItemCode,
+  PowerRankingNote,
+  PowerRankingPeriod,
+  PowerRankingPerson,
+  PowerRankingVoteDelta
+} from "../types";
 import { getOrCreateDeviceId } from "../utils/deviceId";
 
 type SortMode = "name" | "score";
+type VoteQueueItem = {
+  personId: string;
+  delta: PowerRankingVoteDelta;
+};
 
 const collator = new Intl.Collator("ko");
 const PROFILE_MAX_BYTES = 5 * 1024 * 1024;
@@ -29,6 +47,37 @@ const getPodiumLabel = (rank: number): string => {
   if (rank === 1) return "Champion";
   if (rank === 2) return "Runner Up";
   return "Top 3";
+};
+
+const getHonorRankLabel = (rank: number): string => {
+  if (rank === 1) return "1ST";
+  if (rank === 2) return "2ND";
+  return "3RD";
+};
+
+const getEventLabel = (event: PowerRankingEventLog): string => {
+  if (event.eventType === "vote_down") {
+    return `${event.actorNickname}님이 ${event.personName} 인기도를 내렸습니다.`;
+  }
+  if (event.eventType === "item_use") {
+    return `${event.actorNickname}님이 ${event.personName}에게 ${event.itemName ?? "아이템"}을 사용했습니다.`;
+  }
+  if (event.eventType === "item_drop") {
+    return `${event.actorNickname}님이 ${event.itemName ?? "아이템"}을 획득했습니다.`;
+  }
+  return `${event.actorNickname}님이 ${event.personName} 인기도를 올렸습니다.`;
+};
+
+const formatCountdown = (totalSeconds: number): string => {
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+const getSecondsUntilNextHour = (): number => {
+  const now = new Date();
+  return (59 - now.getMinutes()) * 60 + (60 - now.getSeconds());
 };
 
 const InteractiveHonorCard = ({
@@ -90,7 +139,7 @@ const InteractiveHonorCard = ({
       <div ref={overlayRef} className="powerRankingHonorOverlay" />
       <div className="powerRankingHonorInner">
         <div className="powerRankingHonorHeader">
-          <span className="powerRankingHonorMedal">#{rank}</span>
+          <span className="powerRankingHonorMedal">{getHonorRankLabel(rank)}</span>
           <span className="powerRankingPodiumLabel">{getPodiumLabel(rank)}</span>
         </div>
         <div className="powerRankingHonorProfile">
@@ -111,7 +160,7 @@ const InteractiveHonorCard = ({
         <div className="powerRankingHonorMeta">
           <div>
             <span>Score</span>
-            <strong>{person.score}</strong>
+            <strong className={person.score < 0 ? "isNegative" : undefined}>{person.score}</strong>
           </div>
           <div>
             <span>Memo</span>
@@ -124,6 +173,8 @@ const InteractiveHonorCard = ({
 };
 
 const PowerRankingPage = () => {
+  const navigate = useNavigate();
+  const { user } = useUserAuth();
   const [people, setPeople] = useState<PowerRankingPerson[]>([]);
   const [period, setPeriod] = useState<PowerRankingPeriod>("all");
   const [sortMode, setSortMode] = useState<SortMode>("score");
@@ -131,23 +182,44 @@ const PowerRankingPage = () => {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [submittingForId, setSubmittingForId] = useState<string | null>(null);
+  const [pendingVoteCounts, setPendingVoteCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [inventory, setInventory] = useState<PowerRankingInventoryItem[]>([]);
+  const [equipmentInventory, setEquipmentInventory] = useState<PowerRankingEquipmentInventoryItem[]>([]);
+  const [equippedItems, setEquippedItems] = useState<Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>>({});
+  const [eventLogs, setEventLogs] = useState<PowerRankingEventLog[]>([]);
+  const [rewardMessage, setRewardMessage] = useState("");
   const [memoVisibleCounts, setMemoVisibleCounts] = useState<Record<string, number>>({});
+  const [countdownSeconds, setCountdownSeconds] = useState(getSecondsUntilNextHour());
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
+  const previousRanksRef = useRef<Map<string, number>>(new Map());
+  const voteQueueRef = useRef<VoteQueueItem[]>([]);
+  const isProcessingVoteQueueRef = useRef(false);
 
   useEffect(() => {
-    document.title = "동연 파워랭킹";
+    document.title = "동아리연합회";
   }, []);
 
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
 
-    apiClient
-      .getPowerRanking(period)
-      .then((items) => {
+    Promise.all([
+      apiClient.getPowerRanking(period),
+      apiClient.getPowerRankingEvents(),
+      user ? apiClient.getPowerRankingInventory() : Promise.resolve([]),
+      user ? apiClient.getPowerRankingEquipment() : Promise.resolve({ inventory: [], equipped: {} })
+    ])
+      .then(([items, events, itemsInventory, equipment]) => {
         if (!isMounted) return;
+        previousRanksRef.current = new Map(people.map((person) => [person.id, person.rank]));
         setPeople(items);
+        setEventLogs(events);
+        setInventory(itemsInventory);
+        setEquipmentInventory(equipment.inventory);
+        setEquippedItems(equipment.equipped);
+        setLastUpdatedAt(new Date().toISOString());
         setErrorMessage("");
       })
       .catch((error: unknown) => {
@@ -163,7 +235,21 @@ const PowerRankingPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [period]);
+  }, [period, user]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCountdownSeconds(getSecondsUntilNextHour());
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const poller = window.setInterval(() => {
+      void Promise.all([refreshPeople(), refreshSideData()]);
+    }, 60_000);
+    return () => window.clearInterval(poller);
+  }, [period, user, people]);
 
   useEffect(() => {
     setMemoVisibleCounts((current) => {
@@ -199,6 +285,82 @@ const PowerRankingPage = () => {
   const podiumPeople = scoreOrderedPeople.slice(0, 3);
   const totalVotes = scoreOrderedPeople.reduce((sum, person) => sum + person.score, 0);
   const totalNotes = scoreOrderedPeople.reduce((sum, person) => sum + person.notes.length, 0);
+  const liveRankChanges = useMemo(
+    () =>
+      scoreOrderedPeople
+        .map((person) => {
+          const previousRank = previousRanksRef.current.get(person.id) ?? person.rank;
+          const delta = previousRank - person.rank;
+          return {
+            id: person.id,
+            name: person.name,
+            rank: person.rank,
+            delta
+          };
+        })
+        .filter((item) => item.delta !== 0)
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+        .slice(0, 5),
+    [scoreOrderedPeople]
+  );
+  const projectedRisers = useMemo(
+    () =>
+      scoreOrderedPeople
+        .map((person, index) => {
+          if (index === 0) return null;
+          const above = scoreOrderedPeople[index - 1];
+          return {
+            id: person.id,
+            name: person.name,
+            currentRank: person.rank,
+            targetRank: above.rank,
+            gap: above.score - person.score
+          };
+        })
+        .filter((item): item is { id: string; name: string; currentRank: number; targetRank: number; gap: number } =>
+          Boolean(item && item.gap >= 0)
+        )
+        .sort((a, b) => a.gap - b.gap || a.currentRank - b.currentRank)
+        .slice(0, 4),
+    [scoreOrderedPeople]
+  );
+  const projectedFallers = useMemo(
+    () =>
+      scoreOrderedPeople
+        .map((person, index) => {
+          if (index === scoreOrderedPeople.length - 1) return null;
+          const below = scoreOrderedPeople[index + 1];
+          return {
+            id: person.id,
+            name: person.name,
+            currentRank: person.rank,
+            nextRank: below.rank,
+            gap: person.score - below.score
+          };
+        })
+        .filter((item): item is { id: string; name: string; currentRank: number; nextRank: number; gap: number } =>
+          Boolean(item && item.gap >= 0)
+        )
+        .sort((a, b) => a.gap - b.gap || a.currentRank - b.currentRank)
+        .slice(0, 4),
+    [scoreOrderedPeople]
+  );
+  const inventoryByCode = useMemo(
+    () =>
+      inventory.reduce<Record<string, PowerRankingInventoryItem>>((accumulator, item) => {
+        accumulator[item.code] = item;
+        return accumulator;
+      }, {}),
+    [inventory]
+  );
+  const downvoteLogs = useMemo(
+    () => eventLogs.filter((event) => event.eventType === "vote_down").slice(0, 10),
+    [eventLogs]
+  );
+  const itemUsageLogs = useMemo(
+    () => eventLogs.filter((event) => event.eventType === "item_use" || event.eventType === "item_drop").slice(0, 10),
+    [eventLogs]
+  );
 
   const updatePerson = (updated: PowerRankingPerson) => {
     setPeople((current) => current.map((person) => (person.id === updated.id ? updated : person)));
@@ -230,24 +392,155 @@ const PowerRankingPage = () => {
     );
   };
 
+  const refreshSideData = async () => {
+    const eventsPromise = apiClient
+      .getPowerRankingEvents()
+      .then(setEventLogs)
+      .catch(() => undefined);
+    const inventoryPromise = user
+      ? apiClient
+          .getPowerRankingInventory()
+          .then(setInventory)
+          .catch(() => setInventory([]))
+      : Promise.resolve(setInventory([]));
+    const equipmentPromise = user
+      ? apiClient
+          .getPowerRankingEquipment()
+          .then((equipment) => {
+            setEquipmentInventory(equipment.inventory);
+            setEquippedItems(equipment.equipped);
+          })
+          .catch(() => {
+            setEquipmentInventory([]);
+            setEquippedItems({});
+          })
+      : Promise.resolve().then(() => {
+          setEquipmentInventory([]);
+          setEquippedItems({});
+        });
+
+    await Promise.all([eventsPromise, inventoryPromise, equipmentPromise]);
+  };
+
   const refreshPeople = async () => {
     const items = await apiClient.getPowerRanking(period);
+    previousRanksRef.current = new Map(people.map((person) => [person.id, person.rank]));
     setPeople(items);
+    setLastUpdatedAt(new Date().toISOString());
+  };
+
+  const adjustPendingVoteCount = (personId: string, delta: PowerRankingVoteDelta, amount: 1 | -1) => {
+    const key = `${personId}:${delta}`;
+    setPendingVoteCounts((current) => {
+      const nextValue = Math.max(0, (current[key] ?? 0) + amount);
+      if (nextValue === 0) {
+        const { [key]: _removed, ...rest } = current;
+        return rest;
+      }
+      return {
+        ...current,
+        [key]: nextValue
+      };
+    });
+  };
+
+  const processVoteQueue = async () => {
+    if (isProcessingVoteQueueRef.current) {
+      return;
+    }
+
+    isProcessingVoteQueueRef.current = true;
+    try {
+      while (voteQueueRef.current.length > 0) {
+        const currentVote = voteQueueRef.current.shift();
+        if (!currentVote) {
+          break;
+        }
+
+        try {
+          const result = await apiClient.submitPowerRankingVote(currentVote.personId, {
+            deviceId: getOrCreateDeviceId(),
+            delta: currentVote.delta,
+            period
+          });
+          updatePerson(result.person);
+          await refreshPeople();
+          if (result.droppedItem) {
+            setRewardMessage(`${result.droppedItem.name} 획득! 1% 드롭에 당첨되었습니다.`);
+            await refreshSideData();
+          } else if (result.droppedEquipment) {
+            setRewardMessage(`${result.droppedEquipment.name} 장비 획득! 내 장비에서 바로 착용할 수 있습니다.`);
+            await refreshSideData();
+          }
+          setSortMode("score");
+        } catch (error) {
+          setErrorMessage(error instanceof Error ? error.message : "랭킹을 반영하지 못했습니다.");
+        } finally {
+          adjustPendingVoteCount(currentVote.personId, currentVote.delta, -1);
+        }
+      }
+    } finally {
+      isProcessingVoteQueueRef.current = false;
+    }
   };
 
   const handleVoteAction = async (personId: string, delta: PowerRankingVoteDelta) => {
-    setSubmittingForId(`${personId}-${delta}`);
+    if (!user) {
+      setErrorMessage("회원가입 이후 이용가능합니다.");
+      navigate("/dongyeon-login");
+      return;
+    }
     setErrorMessage("");
+    voteQueueRef.current.push({ personId, delta });
+    adjustPendingVoteCount(personId, delta, 1);
+    void processVoteQueue();
+  };
+
+  const handleUseItem = async (personId: string, itemCode: PowerRankingItemCode) => {
+    if (!user) {
+      setErrorMessage("회원가입 이후 이용가능합니다.");
+      navigate("/dongyeon-login");
+      return;
+    }
+    setSubmittingForId(`item-${personId}-${itemCode}`);
+    setErrorMessage("");
+    setRewardMessage("");
     try {
-      await apiClient.submitPowerRankingVote(personId, {
-        deviceId: getOrCreateDeviceId(),
-        delta,
+      const result = await apiClient.usePowerRankingItem({
+        personId,
+        itemCode,
         period
       });
-      await refreshPeople();
+      updatePerson(result.person);
+      setInventory(result.inventory);
+      await refreshSideData();
+      setRewardMessage(`${result.usedItem.name} 사용이 반영되었습니다.`);
       setSortMode("score");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "랭킹을 반영하지 못했습니다.");
+      setErrorMessage(error instanceof Error ? error.message : "아이템을 사용하지 못했습니다.");
+    } finally {
+      setSubmittingForId(null);
+    }
+  };
+
+  const handleEquipEquipment = async (equipmentCode: PowerRankingEquipmentCode) => {
+    if (!user) {
+      setErrorMessage("회원가입 이후 이용가능합니다.");
+      navigate("/dongyeon-login");
+      return;
+    }
+    setSubmittingForId(`equip-${equipmentCode}`);
+    setErrorMessage("");
+    setRewardMessage("");
+    try {
+      const equipment = await apiClient.equipPowerRankingEquipment({
+        equipmentCode
+      });
+      setEquipmentInventory(equipment.inventory);
+      setEquippedItems(equipment.equipped);
+      setRewardMessage("장비 착용이 반영되었습니다.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "장비를 착용하지 못했습니다.");
     } finally {
       setSubmittingForId(null);
     }
@@ -343,12 +636,17 @@ const PowerRankingPage = () => {
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
-        <CommunityTopBar />
+        <CommunityTopBar
+          equipmentInventory={equipmentInventory}
+          equippedItems={equippedItems}
+          onEquipEquipment={handleEquipEquipment}
+          equipSubmittingCode={submittingForId?.startsWith("equip-") ? submittingForId.replace("equip-", "") : null}
+        />
 
         <header className="powerRankingHero powerRankingHeroMaple">
           <div className="powerRankingHeroCopy">
             <p className="powerRankingEyebrow">World Ranking</p>
-            <h1>동연 월드 랭킹</h1>
+            <h1>동아리연합회</h1>
             <p className="powerRankingLead">
               메이플스토리 랭킹 페이지처럼 상단 하이라이트와 순위표 중심으로 재구성했습니다.
               투표와 메모는 각 순위 행의 상세 패널에서 바로 관리할 수 있습니다.
@@ -421,11 +719,72 @@ const PowerRankingPage = () => {
         </header>
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+        {rewardMessage ? <div className="powerRankingRewardBanner">{rewardMessage}</div> : null}
 
         {isLoading ? (
           <div className="powerRankingLoading">목록을 불러오는 중입니다.</div>
         ) : (
           <>
+            <section className="powerRankingDashboardSection" aria-label="실시간 랭킹 대시보드">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Live Dashboard</p>
+                  <h2>실시간 등락 대시보드</h2>
+                </div>
+                <p className="powerRankingSectionHint">
+                  다음 갱신까지 {formatCountdown(countdownSeconds)} | 마지막 확인 {lastUpdatedAt ? formatDateTime(lastUpdatedAt) : "-"}
+                </p>
+              </div>
+
+              <div className="powerRankingDashboardGrid">
+                <article className="powerRankingDashboardCard">
+                  <span>다음 랭킹 스냅샷</span>
+                  <strong>{formatCountdown(countdownSeconds)}</strong>
+                  <p>1시간 기준 대시보드 타이머입니다. 목록은 1분마다 자동으로 재조회됩니다.</p>
+                </article>
+
+                <article className="powerRankingDashboardCard">
+                  <span>실시간 등락</span>
+                  <ul className="powerRankingDashboardList">
+                    {liveRankChanges.length === 0 ? (
+                      <li>최근 감지된 순위 변동이 없습니다.</li>
+                    ) : (
+                      liveRankChanges.map((item) => (
+                        <li key={item.id}>
+                          <strong>{item.name}</strong>
+                          <span>{item.delta > 0 ? `▲ ${item.delta}` : `▼ ${Math.abs(item.delta)}`}</span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </article>
+
+                <article className="powerRankingDashboardCard">
+                  <span>예상 상승 순위</span>
+                  <ul className="powerRankingDashboardList">
+                    {projectedRisers.map((item) => (
+                      <li key={item.id}>
+                        <strong>{item.name}</strong>
+                        <span>{item.currentRank}위 → {item.targetRank}위 · 격차 {item.gap}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+
+                <article className="powerRankingDashboardCard">
+                  <span>예상 하락 순위</span>
+                  <ul className="powerRankingDashboardList">
+                    {projectedFallers.map((item) => (
+                      <li key={item.id}>
+                        <strong>{item.name}</strong>
+                        <span>{item.currentRank}위 → {item.nextRank}위 · 격차 {item.gap}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+            </section>
+
             <section className="powerRankingPodiumSection" aria-label="명예의 전당">
               <div className="powerRankingSectionHead">
                 <div>
@@ -445,6 +804,83 @@ const PowerRankingPage = () => {
               </div>
             </section>
 
+            <section className="powerRankingInventorySection" aria-label="보유 아이템">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Item Inventory</p>
+                  <h2>유저 카드 아이템</h2>
+                </div>
+                <p className="powerRankingSectionHint">
+                  올리기나 내리기 반영 시 1% 확률로 아이템을 획득합니다.
+                </p>
+              </div>
+
+              <div className="powerRankingInventoryGrid">
+                {inventory.length === 0 ? (
+                  <article className="powerRankingInventoryEmpty">
+                    로그인 후 랭킹 액션을 반영하면 아이템이 드롭됩니다.
+                  </article>
+                ) : (
+                  inventory.map((item) => (
+                    <article key={item.code} className="powerRankingInventoryCard">
+                      <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
+                      <div className="powerRankingInventoryBody">
+                        <strong>{item.name}</strong>
+                        <p>{item.description}</p>
+                        <span>보유 수량 {item.quantity}</span>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="powerRankingLogSection" aria-label="랭킹 기록 조회">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Action Log</p>
+                  <h2>인기도 하락 / 아이템 사용 기록</h2>
+                </div>
+                <p className="powerRankingSectionHint">
+                  최근 인기도 내림 기록과 사용자 아이템 사용 내역을 확인할 수 있습니다.
+                </p>
+              </div>
+
+              <div className="powerRankingLogGrid">
+                <article className="powerRankingLogCard">
+                  <strong>인기도 내림 기록</strong>
+                  <ul className="powerRankingLogList">
+                    {downvoteLogs.length === 0 ? (
+                      <li>최근 기록이 없습니다.</li>
+                    ) : (
+                      downvoteLogs.map((event) => (
+                        <li key={event.id}>
+                          <p>{getEventLabel(event)}</p>
+                          <time>{formatDateTime(event.createdAt)}</time>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </article>
+
+                <article className="powerRankingLogCard">
+                  <strong>아이템 획득 / 사용 기록</strong>
+                  <ul className="powerRankingLogList">
+                    {itemUsageLogs.length === 0 ? (
+                      <li>최근 기록이 없습니다.</li>
+                    ) : (
+                      itemUsageLogs.map((event) => (
+                        <li key={event.id}>
+                          <p>{getEventLabel(event)}</p>
+                          <time>{formatDateTime(event.createdAt)}</time>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </article>
+              </div>
+            </section>
+
             <section className="powerRankingBoardSection" aria-label="랭킹 보드">
               <div className="powerRankingSectionHead">
                 <div>
@@ -452,7 +888,7 @@ const PowerRankingPage = () => {
                   <h2>{period === "all" ? "전체 순위표" : period === "weekly" ? "주간 순위표" : "일간 순위표"}</h2>
                 </div>
                 <p className="powerRankingSectionHint">
-                  디바이스 기준 하루 최대 1000회까지 반영되며, 최고와 인기도 내리기를 모두 사용할 수 있습니다.
+                  디바이스 기준 하루 최대 1000회까지 반영되며, 클릭은 큐에 쌓여 비동기로 순차 처리됩니다.
                 </p>
               </div>
 
@@ -469,8 +905,12 @@ const PowerRankingPage = () => {
                   {orderedPeople.map((person) => {
                     const officialRank = person.rank;
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
-                    const isUpVoting = submittingForId === `${person.id}-1`;
-                    const isDownVoting = submittingForId === `${person.id}--1`;
+                    const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
+                    const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
+                    const blanketItem = inventoryByCode["byeokbangjun-blanket"];
+                    const loveItem = inventoryByCode["seoeuntaek-love"];
+                    const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
+                    const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
 
                     return (
                       <details
@@ -508,7 +948,7 @@ const PowerRankingPage = () => {
 
                           <div className="powerRankingRowScore">
                             <span className="powerRankingRowLabel">점수</span>
-                            <strong>{person.score}</strong>
+                            <strong className={person.score < 0 ? "isNegative" : undefined}>{person.score}</strong>
                           </div>
 
                           <div className="powerRankingRowNotes">
@@ -549,20 +989,41 @@ const PowerRankingPage = () => {
                               <button
                                 type="button"
                                 className="powerRankingVoteButton"
-                                disabled={isUpVoting || isDownVoting}
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
-                                {isUpVoting ? "반영 중..." : "▲ 최고 +1"}
+                                {upQueueCount > 0 ? `▲ 올리기 (${upQueueCount})` : "▲ 올리기"}
                               </button>
                               <button
                                 type="button"
                                 className="powerRankingDownvoteButton"
-                                disabled={isUpVoting || isDownVoting}
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
-                                {isDownVoting ? "반영 중..." : "▼ 인기도 내리기"}
+                                {downQueueCount > 0 ? `▼ 내리기 (${downQueueCount})` : "▼ 내리기"}
                               </button>
                             </div>
+                          </div>
+
+                          <div className="powerRankingItemActions">
+                            <button
+                              type="button"
+                              className="powerRankingItemButton"
+                              disabled={!blanketItem || blanketItem.quantity < 1 || isUsingBlanket}
+                              onClick={() => void handleUseItem(person.id, "byeokbangjun-blanket")}
+                            >
+                              {isUsingBlanket
+                                ? "사용 중..."
+                                : `벽방준의 담요 ${blanketItem ? `x${blanketItem.quantity}` : "x0"}`}
+                            </button>
+                            <button
+                              type="button"
+                              className="powerRankingItemButton isPositive"
+                              disabled={!loveItem || loveItem.quantity < 1 || isUsingLove}
+                              onClick={() => void handleUseItem(person.id, "seoeuntaek-love")}
+                            >
+                              {isUsingLove
+                                ? "사용 중..."
+                                : `서은택의 사랑 ${loveItem ? `x${loveItem.quantity}` : "x0"}`}
+                            </button>
                           </div>
 
                           <div className="powerRankingMemoComposer">

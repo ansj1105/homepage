@@ -9,13 +9,30 @@ import type {
   MainPageSettings,
   PublicSiteSettings,
   NoticeItem,
+  PowerRankingEquipmentCode,
+  PowerRankingEquipmentInventoryItem,
+  PowerRankingEquipmentSlot,
+  PowerRankingEquipmentState,
+  PowerRankingEquippedItem,
+  PowerRankingEventLog,
+  PowerRankingEventType,
+  PowerRankingInventoryItem,
+  PowerRankingItemCode,
+  PowerRankingEquipRequest,
+  PowerRankingItemUseRequest,
   PowerRankingNote,
   PowerRankingPeriod,
   PowerRankingPerson,
   PowerRankingVoteDelta,
+  PowerRankingVoteResponse,
   PowerRankingVoteRequest,
   ResourceItem,
-  SiteContent
+  SiteContent,
+  TodayVisitorRequest,
+  TodayVisitorResponse,
+  UserLoginRequest,
+  UserProfile,
+  UserSignupRequest
 } from "../../src/types";
 
 export interface AdminLoginRequest {
@@ -49,10 +66,14 @@ export interface PowerRankingNoteUpdateRequest {
 }
 
 export interface PowerRankingVoteActionRequest extends PowerRankingVoteRequest {}
+export interface PowerRankingItemUsePayload extends PowerRankingItemUseRequest {}
+export interface PowerRankingEquipPayload extends PowerRankingEquipRequest {}
+export interface TodayVisitorPayload extends TodayVisitorRequest {}
+
+export interface UserSignupPayload extends UserSignupRequest {}
+export interface UserLoginPayload extends UserLoginRequest {}
 
 export interface BoardPostCreateRequest {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
   fileUrl?: string;
@@ -62,14 +83,8 @@ export interface BoardPostCreateRequest {
 }
 
 export interface BoardPostUpdateRequest {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
-}
-
-export interface BoardPostDeleteRequest {
-  password: string;
 }
 
 export interface BoardReplyCreateRequest {
@@ -210,8 +225,48 @@ export interface PowerRankingNoteRow {
 export interface PowerRankingVoteRow {
   id: string;
   person_id: string;
+  user_id?: string | null;
   device_id: string;
   delta: PowerRankingVoteDelta;
+  created_at: string;
+}
+
+export interface PowerRankingUserItemRow {
+  id: string;
+  user_id: string;
+  item_code: PowerRankingItemCode;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PowerRankingEquipmentInventoryRow {
+  id: string;
+  user_id: string;
+  equipment_code: PowerRankingEquipmentCode;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PowerRankingEquippedRow {
+  user_id: string;
+  slot_code: PowerRankingEquipmentSlot;
+  equipment_code: PowerRankingEquipmentCode;
+  equipped_at: string;
+  updated_at: string;
+}
+
+export interface PowerRankingEventLogRow {
+  id: string;
+  event_type: PowerRankingEventType;
+  actor_user_id: string | null;
+  actor_nickname: string | null;
+  actor_device_id: string;
+  person_id: string;
+  person_name: string;
+  delta: number;
+  item_code: PowerRankingItemCode | null;
   created_at: string;
 }
 
@@ -221,11 +276,51 @@ export interface PowerRankingPeriodMeta {
   params: string[];
 }
 
+export interface UserRow {
+  id: string;
+  username: string;
+  password_hash: string;
+  name: string;
+  nickname: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserSessionRow {
+  id: string;
+  user_id: string;
+  device_id: string;
+  refresh_token_hash: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+  last_used_at: string;
+}
+
+export type UserItem = UserProfile;
+
 export type PowerRankingPersonWithNotes = PowerRankingPerson;
 export type PowerRankingNoteItem = PowerRankingNote;
+export type PowerRankingInventoryEntry = PowerRankingInventoryItem;
+export type PowerRankingEventEntry = PowerRankingEventLog;
+export type PowerRankingVoteResult = PowerRankingVoteResponse;
+export type PowerRankingEquipmentInventoryEntry = PowerRankingEquipmentInventoryItem;
+export type PowerRankingEquippedEntry = PowerRankingEquippedItem;
+export type PowerRankingEquipmentStatus = PowerRankingEquipmentState;
+export type TodayVisitorStats = TodayVisitorResponse;
+
+export interface VisitorDailyVisitRow {
+  id: string;
+  visit_date: string;
+  device_id: string;
+  first_path: string;
+  first_visited_at: string;
+  last_visited_at: string;
+}
 
 export interface BoardPostRow {
   id: string;
+  user_id: string | null;
   author_name: string;
   password: string;
   title: string;
@@ -234,6 +329,8 @@ export interface BoardPostRow {
   file_name: string;
   file_size: string;
   file_mime_type: string;
+  recommendation_count: number;
+  is_recommended_by_current_user?: boolean;
   created_at: string;
   updated_at: string;
 }

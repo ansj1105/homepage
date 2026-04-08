@@ -1,14 +1,73 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiClient } from "../../api/client";
+import CommunityTopBar from "../../components/CommunityTopBar";
 import { defaultMainPageContent } from "../../data/mainPageDefaults";
 import { PublicHeader } from "../../pages/public/PublicHeader";
 import { MarkdownBlock } from "../../pages/public/MarkdownBlock";
-import type { MainPageContent } from "../../types";
+import type { MainPageContent, PowerRankingPerson } from "../../types";
 import "./legacy-main.css";
+
+const getInitials = (name: string): string => name.slice(0, 2) || "DY";
+
+const getPodiumLabel = (rank: number): string => {
+  if (rank === 1) return "Champion";
+  if (rank === 2) return "Runner Up";
+  return "Top 3";
+};
+
+const MainHonorCard = ({ person, rank }: { person: PowerRankingPerson; rank: number }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateY = (x - centerX) / 20;
+      const rotateX = (centerY - y) / 20;
+      container.style.transform = `perspective(960px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    };
+
+    const handleMouseLeave = () => {
+      container.style.transform = "";
+    };
+
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+  return (
+    <article ref={containerRef} className={`legacy-main-honor-card rank-${rank}`}>
+      <div className="legacy-main-honor-head">
+        <span className="legacy-main-honor-rank">#{rank}</span>
+        <span className="legacy-main-honor-label">{getPodiumLabel(rank)}</span>
+      </div>
+      <div className="legacy-main-honor-avatar">
+        {person.profileImageUrl ? (
+          <img src={person.profileImageUrl} alt={`${person.name} 프로필`} />
+        ) : (
+          <div className="legacy-main-honor-fallback">{getInitials(person.name)}</div>
+        )}
+      </div>
+      <strong>{person.name}</strong>
+      <p>현재 점수 {person.score}</p>
+    </article>
+  );
+};
 
 const LegacyMainPage = () => {
   const [mainPage, setMainPage] = useState<MainPageContent>(defaultMainPageContent);
+  const [topRankingPeople, setTopRankingPeople] = useState<PowerRankingPerson[]>([]);
   const [slideIndex, setSlideIndex] = useState(0);
   const orderedSlides = useMemo(
     () => [...mainPage.slides].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -33,6 +92,15 @@ const LegacyMainPage = () => {
   }, []);
 
   useEffect(() => {
+    apiClient
+      .getPowerRanking("all")
+      .then((items) => setTopRankingPeople(items.slice(0, 3)))
+      .catch(() => {
+        setTopRankingPeople([]);
+      });
+  }, []);
+
+  useEffect(() => {
     if (orderedSlides.length === 0) return;
     const timer = window.setInterval(() => {
       setSlideIndex((prev) => (prev + 1) % orderedSlides.length);
@@ -49,12 +117,15 @@ const LegacyMainPage = () => {
 
   return (
     <div className="legacy-main-root">
+      <div className="legacy-main-community-shell">
+        <CommunityTopBar />
+      </div>
       <PublicHeader />
 
       <main className="legacy-main-content">
         <section
           className="legacy-main-hero"
-          style={{ backgroundImage: `url(${currentSlide})` }}
+          style={{ backgroundImage: `linear-gradient(135deg, rgba(6, 8, 12, 0.66), rgba(6, 8, 12, 0.36)), url(/assets/main/office-lounge-wallpaper.svg)` }}
           aria-label="메인 비주얼"
         >
           <div className="legacy-main-hero-dim" />
@@ -94,6 +165,18 @@ const LegacyMainPage = () => {
                 aria-label={`슬라이드 ${idx + 1}`}
                 onClick={() => setSlideIndex(idx)}
               />
+            ))}
+          </div>
+        </section>
+
+        <section className="legacy-main-hall">
+          <div className="legacy-main-section-intro">
+            <p>Hall Of Fame</p>
+            <h2>명예의 전당</h2>
+          </div>
+          <div className="legacy-main-hall-grid">
+            {topRankingPeople.map((person, index) => (
+              <MainHonorCard key={person.id} person={person} rank={index + 1} />
             ))}
           </div>
         </section>

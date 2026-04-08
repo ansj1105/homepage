@@ -1,4 +1,6 @@
 import { Pool } from "pg";
+import { powerRankingEquipmentCatalog, powerRankingEquipmentCodes } from "../../src/data/powerRankingEquipment";
+import { powerRankingItemCatalog, powerRankingItemCodes } from "../../src/data/powerRankingItems";
 import { defaultCmsPages } from "../../src/data/cmsPageDefaults";
 import { defaultMainPageContent } from "../../src/data/mainPageDefaults";
 import { defaultPublicSiteSettings } from "../../src/data/siteSettingsDefaults";
@@ -11,11 +13,23 @@ import type {
   MainPageContent,
   MainPageSettings,
   NoticeItem,
+  PowerRankingEquipmentCode,
+  PowerRankingEquipmentInventoryItem,
+  PowerRankingEquipmentSlot,
+  PowerRankingEquipmentState,
+  PowerRankingEquippedItem,
+  PowerRankingEventLog,
+  PowerRankingInventoryItem,
+  PowerRankingItemCode,
+  PowerRankingItemUseResponse,
   PowerRankingNote,
   PowerRankingPerson,
+  PowerRankingVoteResponse,
   PublicSiteSettings,
   ResourceItem,
-  SiteContent
+  SiteContent,
+  TodayVisitorResponse,
+  UserProfile
 } from "../../src/types";
 import type {
   InquiryCreatePayload,
@@ -27,12 +41,19 @@ import type {
   MainPageSettingsRow,
   MainPageSlideRow,
   NoticeRow,
+  PowerRankingEquippedRow,
+  PowerRankingEquipmentInventoryRow,
+  PowerRankingEventLogRow,
   PowerRankingNoteRow,
   PowerRankingPeriodMeta,
   PowerRankingPersonRow,
+  PowerRankingUserItemRow,
   PowerRankingVoteRow,
   PublicSiteSettingsRow,
-  ResourceRow
+  ResourceRow,
+  UserRow,
+  VisitorDailyVisitRow,
+  UserSessionRow
 } from "./types";
 
 const resourceTypes = ["Catalog", "White Paper", "Certificate", "Case Study"] as const;
@@ -116,6 +137,55 @@ const mapPowerRankingPersonRow = (row: PowerRankingPersonRow): Omit<PowerRanking
   updatedAt: row.updated_at
 });
 
+const mapPowerRankingInventoryRow = (row: PowerRankingUserItemRow): PowerRankingInventoryItem => {
+  const item = powerRankingItemCatalog[row.item_code];
+  return {
+    ...item,
+    quantity: row.quantity,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+};
+
+const mapPowerRankingEventLogRow = (row: PowerRankingEventLogRow): PowerRankingEventLog => {
+  const item = row.item_code ? powerRankingItemCatalog[row.item_code] : null;
+  return {
+    id: row.id,
+    eventType: row.event_type,
+    actorUserId: row.actor_user_id,
+    actorNickname: row.actor_nickname ?? "알 수 없음",
+    actorDeviceId: row.actor_device_id,
+    personId: row.person_id,
+    personName: row.person_name,
+    delta: row.delta,
+    itemCode: row.item_code,
+    itemName: item?.name ?? null,
+    itemImageUrl: item?.imageUrl ?? null,
+    createdAt: row.created_at
+  };
+};
+
+const mapPowerRankingEquipmentInventoryRow = (
+  row: PowerRankingEquipmentInventoryRow
+): PowerRankingEquipmentInventoryItem => {
+  const equipment = powerRankingEquipmentCatalog[row.equipment_code];
+  return {
+    ...equipment,
+    quantity: row.quantity,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+};
+
+const mapPowerRankingEquippedRow = (row: PowerRankingEquippedRow): PowerRankingEquippedItem => {
+  const equipment = powerRankingEquipmentCatalog[row.equipment_code];
+  return {
+    ...equipment,
+    equippedAt: row.equipped_at,
+    updatedAt: row.updated_at
+  };
+};
+
 const mapBoardReplyRow = (row: BoardReplyRow): BoardReply => ({
   id: row.id,
   postId: row.post_id,
@@ -127,6 +197,7 @@ const mapBoardReplyRow = (row: BoardReplyRow): BoardReply => ({
 
 const mapBoardPostRow = (row: BoardPostRow): Omit<BoardPost, "replies"> => ({
   id: row.id,
+  userId: row.user_id,
   authorName: row.author_name,
   title: row.title,
   content: row.content,
@@ -134,12 +205,25 @@ const mapBoardPostRow = (row: BoardPostRow): Omit<BoardPost, "replies"> => ({
   fileName: row.file_name,
   fileSize: Number(row.file_size ?? "0"),
   fileMimeType: row.file_mime_type,
+  recommendationCount: row.recommendation_count,
+  isBest: row.recommendation_count >= 5 && Date.now() - new Date(row.created_at).getTime() <= 14 * 24 * 60 * 60 * 1000,
+  isRecommendedByCurrentUser: Boolean(row.is_recommended_by_current_user),
   createdAt: row.created_at,
   updatedAt: row.updated_at
 });
 
+const mapUserRow = (row: UserRow): UserProfile => ({
+  id: row.id,
+  username: row.username,
+  name: row.name,
+  nickname: row.nickname,
+  createdAt: row.created_at
+});
+
 const passwordMismatchError = () => new Error("Invalid password");
 const powerRankingDailyActionLimit = 1000;
+const powerRankingDropRate = 0.01;
+const powerRankingEquipmentDropRate = 0.01;
 
 const getPowerRankingPeriodMeta = (period: "all" | "weekly" | "daily"): PowerRankingPeriodMeta => {
   if (period === "daily") {
@@ -193,6 +277,177 @@ const loadPowerRankingPersonByPeriod = async (
 ): Promise<PowerRankingPerson | null> => {
   const people = await listPowerRankingPeople(period);
   return people.find((person) => person.id === personId) ?? null;
+};
+
+const listPowerRankingInventoryByUserId = async (userId: string): Promise<PowerRankingInventoryItem[]> => {
+  const result = await pool.query<PowerRankingUserItemRow>(
+    `SELECT id, user_id, item_code, quantity, created_at, updated_at
+     FROM power_ranking_user_items
+     WHERE user_id = $1
+       AND quantity > 0
+     ORDER BY updated_at DESC, created_at DESC`,
+    [userId]
+  );
+  return result.rows.map(mapPowerRankingInventoryRow);
+};
+
+const logPowerRankingEvent = async (
+  actorUserId: string | null,
+  actorDeviceId: string,
+  personId: string,
+  eventType: PowerRankingEventLog["eventType"],
+  delta: number,
+  itemCode?: PowerRankingItemCode | null
+): Promise<void> => {
+  await pool.query(
+    `INSERT INTO power_ranking_event_logs (actor_user_id, actor_device_id, person_id, event_type, delta, item_code)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [actorUserId, actorDeviceId, personId, eventType, delta, itemCode ?? null]
+  );
+};
+
+const grantPowerRankingItem = async (
+  userId: string,
+  itemCode: PowerRankingItemCode
+): Promise<PowerRankingInventoryItem> => {
+  const result = await pool.query<PowerRankingUserItemRow>(
+    `INSERT INTO power_ranking_user_items (user_id, item_code, quantity)
+     VALUES ($1, $2, 1)
+     ON CONFLICT (user_id, item_code)
+     DO UPDATE SET quantity = power_ranking_user_items.quantity + 1, updated_at = NOW()
+     RETURNING id, user_id, item_code, quantity, created_at, updated_at`,
+    [userId, itemCode]
+  );
+  return mapPowerRankingInventoryRow(result.rows[0]);
+};
+
+const drawRandomPowerRankingItemCode = (): PowerRankingItemCode => {
+  const index = Math.floor(Math.random() * powerRankingItemCodes.length);
+  return powerRankingItemCodes[index] as PowerRankingItemCode;
+};
+
+const drawRandomPowerRankingEquipmentCode = (): PowerRankingEquipmentCode => {
+  const index = Math.floor(Math.random() * powerRankingEquipmentCodes.length);
+  return powerRankingEquipmentCodes[index] as PowerRankingEquipmentCode;
+};
+
+const listPowerRankingEquipmentInventoryByUserId = async (
+  userId: string
+): Promise<PowerRankingEquipmentInventoryItem[]> => {
+  const result = await pool.query<PowerRankingEquipmentInventoryRow>(
+    `SELECT id, user_id, equipment_code, quantity, created_at, updated_at
+     FROM power_ranking_user_equipment_inventory
+     WHERE user_id = $1
+       AND quantity > 0
+     ORDER BY updated_at DESC, created_at DESC`,
+    [userId]
+  );
+  return result.rows.map(mapPowerRankingEquipmentInventoryRow);
+};
+
+const listPowerRankingEquippedByUserId = async (
+  userId: string
+): Promise<PowerRankingEquipmentState["equipped"]> => {
+  const result = await pool.query<PowerRankingEquippedRow>(
+    `SELECT user_id, slot_code, equipment_code, equipped_at, updated_at
+     FROM power_ranking_user_equipped
+     WHERE user_id = $1
+     ORDER BY updated_at DESC`,
+    [userId]
+  );
+  return result.rows.reduce<PowerRankingEquipmentState["equipped"]>((accumulator, row) => {
+    accumulator[row.slot_code] = mapPowerRankingEquippedRow(row);
+    return accumulator;
+  }, {});
+};
+
+const grantPowerRankingEquipment = async (
+  userId: string,
+  equipmentCode: PowerRankingEquipmentCode
+): Promise<PowerRankingEquipmentInventoryItem> => {
+  const result = await pool.query<PowerRankingEquipmentInventoryRow>(
+    `INSERT INTO power_ranking_user_equipment_inventory (user_id, equipment_code, quantity)
+     VALUES ($1, $2, 1)
+     ON CONFLICT (user_id, equipment_code)
+     DO UPDATE SET quantity = power_ranking_user_equipment_inventory.quantity + 1, updated_at = NOW()
+     RETURNING id, user_id, equipment_code, quantity, created_at, updated_at`,
+    [userId, equipmentCode]
+  );
+  return result.rows.map(mapPowerRankingEquipmentInventoryRow)[0];
+};
+
+const getPowerRankingActionModifier = async (
+  userId: string | null | undefined,
+  delta: number
+): Promise<{ finalDelta: number; consumableDropRate: number; equipmentDropRate: number }> => {
+  let finalDelta = delta;
+  let consumableDropRate = powerRankingDropRate;
+  let equipmentDropRate = powerRankingEquipmentDropRate;
+
+  if (!userId) {
+    return { finalDelta, consumableDropRate, equipmentDropRate };
+  }
+
+  const equipped = await listPowerRankingEquippedByUserId(userId);
+  const equippedItems = Object.values(equipped);
+  if (equippedItems.length === 0) {
+    return { finalDelta, consumableDropRate, equipmentDropRate };
+  }
+
+  const isPositive = delta > 0;
+  const hasCheerCrown = equippedItems.some((item) => item.code === "crown-of-cheers");
+  const hasMidnightSlacks = equippedItems.some((item) => item.code === "midnight-slacks");
+  if ((isPositive && hasCheerCrown) || (!isPositive && hasMidnightSlacks)) {
+    finalDelta *= 2;
+  }
+
+  if (isPositive && equippedItems.some((item) => item.code === "commander-jacket")) {
+    finalDelta += 1;
+  }
+  if (!isPositive && equippedItems.some((item) => item.code === "wave-denim")) {
+    finalDelta -= 1;
+  }
+  if (equippedItems.some((item) => item.code === "titan-gauntlet")) {
+    finalDelta += isPositive ? 1 : -1;
+  }
+
+  if (equippedItems.some((item) => item.code === "mint-beret")) {
+    consumableDropRate += 0.015;
+  }
+  if (equippedItems.some((item) => item.code === "ribbon-cardigan")) {
+    consumableDropRate += 0.01;
+    equipmentDropRate += 0.01;
+  }
+  if (equippedItems.some((item) => item.code === "aurora-skirt")) {
+    equipmentDropRate += 0.015;
+  }
+  if (equippedItems.some((item) => item.code === "crystal-sneakers")) {
+    consumableDropRate += 0.01;
+  }
+  if (equippedItems.some((item) => item.code === "ember-heels")) {
+    equipmentDropRate += 0.01;
+  }
+  if (equippedItems.some((item) => item.code === "pulse-gloves")) {
+    consumableDropRate += 0.008;
+    equipmentDropRate += 0.008;
+  }
+
+  const firstActionBonusCandidates = new Set(["star-visor", "thunder-boots"]);
+  if (equippedItems.some((item) => firstActionBonusCandidates.has(item.code))) {
+    const dailyCountResult = await pool.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count
+       FROM power_ranking_votes
+       WHERE user_id = $1
+         AND created_at >= NOW() - INTERVAL '1 day'`,
+      [userId]
+    );
+    const dailyCount = Number(dailyCountResult.rows[0]?.count ?? "0");
+    if (dailyCount === 0) {
+      finalDelta += isPositive ? 5 : -5;
+    }
+  }
+
+  return { finalDelta, consumableDropRate, equipmentDropRate };
 };
 
 const mapMainPageSettingsRow = (row: MainPageSettingsRow): MainPageSettings => ({
@@ -539,8 +794,9 @@ export const changePowerRankingScore = async (
   personId: string,
   deviceId: string,
   delta: 1 | -1,
-  period: "all" | "weekly" | "daily"
-): Promise<PowerRankingPerson | null> => {
+  period: "all" | "weekly" | "daily",
+  userId?: string | null
+): Promise<PowerRankingVoteResponse | null> => {
   const personResult = await pool.query<{ id: string }>(
     "SELECT id FROM power_ranking_people WHERE id = $1 LIMIT 1",
     [personId]
@@ -561,13 +817,239 @@ export const changePowerRankingScore = async (
     throw new Error("하루 최대 1000회까지만 반영할 수 있습니다.");
   }
 
+  const modifier = await getPowerRankingActionModifier(userId ?? null, delta);
+
   await pool.query<PowerRankingVoteRow>(
-    `INSERT INTO power_ranking_votes (person_id, device_id, delta)
-     VALUES ($1, $2, $3)`,
-    [personId, deviceId, delta]
+    `INSERT INTO power_ranking_votes (person_id, user_id, device_id, delta)
+     VALUES ($1, $2, $3, $4)`,
+    [personId, userId ?? null, deviceId, modifier.finalDelta]
   );
 
-  return loadPowerRankingPersonByPeriod(personId, period);
+  await logPowerRankingEvent(
+    userId ?? null,
+    deviceId,
+    personId,
+    delta > 0 ? "vote_up" : "vote_down",
+    modifier.finalDelta
+  );
+
+  let droppedItem: PowerRankingInventoryItem | null = null;
+  let droppedEquipment: PowerRankingEquipmentInventoryItem | null = null;
+  if (userId && Math.random() < modifier.consumableDropRate) {
+    const itemCode = drawRandomPowerRankingItemCode();
+    droppedItem = await grantPowerRankingItem(userId, itemCode);
+    await logPowerRankingEvent(userId, deviceId, personId, "item_drop", 0, itemCode);
+  }
+  if (userId && Math.random() < modifier.equipmentDropRate) {
+    const equipmentCode = drawRandomPowerRankingEquipmentCode();
+    droppedEquipment = await grantPowerRankingEquipment(userId, equipmentCode);
+  }
+
+  const person = await loadPowerRankingPersonByPeriod(personId, period);
+  if (!person) {
+    return null;
+  }
+
+  return {
+    person,
+    droppedItem,
+    droppedEquipment
+  };
+};
+
+export const listPowerRankingInventory = async (userId: string): Promise<PowerRankingInventoryItem[]> =>
+  listPowerRankingInventoryByUserId(userId);
+
+export const listPowerRankingEquipmentState = async (
+  userId: string
+): Promise<PowerRankingEquipmentState> => ({
+  inventory: await listPowerRankingEquipmentInventoryByUserId(userId),
+  equipped: await listPowerRankingEquippedByUserId(userId)
+});
+
+export const listPowerRankingEventLogs = async (limit = 40): Promise<PowerRankingEventLog[]> => {
+  const safeLimit = Math.max(1, Math.min(limit, 100));
+  const result = await pool.query<PowerRankingEventLogRow>(
+    `SELECT
+       logs.id,
+       logs.event_type,
+       logs.actor_user_id,
+       users.nickname AS actor_nickname,
+       logs.actor_device_id,
+       logs.person_id,
+       people.name AS person_name,
+       logs.delta,
+       logs.item_code,
+       logs.created_at
+     FROM power_ranking_event_logs logs
+     JOIN power_ranking_people people ON people.id = logs.person_id
+     LEFT JOIN app_users users ON users.id = logs.actor_user_id
+     ORDER BY logs.created_at DESC
+     LIMIT $1`,
+    [safeLimit]
+  );
+  return result.rows.map(mapPowerRankingEventLogRow);
+};
+
+export const usePowerRankingItem = async (
+  userId: string,
+  deviceId: string,
+  personId: string,
+  itemCode: PowerRankingItemCode,
+  period: "all" | "weekly" | "daily"
+): Promise<PowerRankingItemUseResponse | null> => {
+  const item = powerRankingItemCatalog[itemCode];
+  if (!item) {
+    throw new Error("사용할 수 없는 아이템입니다.");
+  }
+
+  const personResult = await pool.query<{ id: string }>(
+    "SELECT id FROM power_ranking_people WHERE id = $1 LIMIT 1",
+    [personId]
+  );
+  if (!personResult.rows[0]) {
+    return null;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const inventoryResult = await client.query<PowerRankingUserItemRow>(
+      `SELECT id, user_id, item_code, quantity, created_at, updated_at
+       FROM power_ranking_user_items
+       WHERE user_id = $1
+         AND item_code = $2
+       FOR UPDATE`,
+      [userId, itemCode]
+    );
+    const inventoryRow = inventoryResult.rows[0];
+    if (!inventoryRow || inventoryRow.quantity <= 0) {
+      throw new Error("보유한 아이템이 없습니다.");
+    }
+
+    await client.query(
+      `UPDATE power_ranking_user_items
+       SET quantity = quantity - 1, updated_at = NOW()
+       WHERE id = $1`,
+      [inventoryRow.id]
+    );
+
+    const equipped = await listPowerRankingEquippedByUserId(userId);
+    let itemDelta = item.effectDelta;
+    if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
+      itemDelta += item.effectDelta > 0 ? 20 : -20;
+    }
+    if (Object.values(equipped).some((equipment) => equipment.code === "silk-gloves")) {
+      itemDelta += item.effectDelta > 0 ? 10 : -10;
+    }
+
+    await client.query<PowerRankingVoteRow>(
+      `INSERT INTO power_ranking_votes (person_id, user_id, device_id, delta)
+       VALUES ($1, $2, $3, $4)`,
+      [personId, userId, deviceId, itemDelta]
+    );
+
+    await client.query(
+      `INSERT INTO power_ranking_event_logs (actor_user_id, actor_device_id, person_id, event_type, delta, item_code)
+       VALUES ($1, $2, $3, 'item_use', $4, $5)`,
+      [userId, deviceId, personId, itemDelta, itemCode]
+    );
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  const person = await loadPowerRankingPersonByPeriod(personId, period);
+  if (!person) {
+    return null;
+  }
+
+  return {
+    person,
+    inventory: await listPowerRankingInventoryByUserId(userId),
+    usedItem: {
+      ...item,
+      quantity: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  };
+};
+
+export const equipPowerRankingEquipment = async (
+  userId: string,
+  equipmentCode: PowerRankingEquipmentCode
+): Promise<PowerRankingEquipmentState> => {
+  const equipment = powerRankingEquipmentCatalog[equipmentCode];
+  if (!equipment) {
+    throw new Error("착용할 수 없는 장비입니다.");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const inventoryResult = await client.query<PowerRankingEquipmentInventoryRow>(
+      `SELECT id, user_id, equipment_code, quantity, created_at, updated_at
+       FROM power_ranking_user_equipment_inventory
+       WHERE user_id = $1
+         AND equipment_code = $2
+       FOR UPDATE`,
+      [userId, equipmentCode]
+    );
+    const inventoryRow = inventoryResult.rows[0];
+    if (!inventoryRow || inventoryRow.quantity < 1) {
+      throw new Error("보유한 장비가 없습니다.");
+    }
+
+    const currentEquippedResult = await client.query<PowerRankingEquippedRow>(
+      `SELECT user_id, slot_code, equipment_code, equipped_at, updated_at
+       FROM power_ranking_user_equipped
+       WHERE user_id = $1
+         AND slot_code = $2
+       FOR UPDATE`,
+      [userId, equipment.slot]
+    );
+    const currentEquipped = currentEquippedResult.rows[0];
+
+    await client.query(
+      `UPDATE power_ranking_user_equipment_inventory
+       SET quantity = quantity - 1, updated_at = NOW()
+       WHERE id = $1`,
+      [inventoryRow.id]
+    );
+
+    if (currentEquipped) {
+      await client.query(
+        `INSERT INTO power_ranking_user_equipment_inventory (user_id, equipment_code, quantity)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, equipment_code)
+         DO UPDATE SET quantity = power_ranking_user_equipment_inventory.quantity + 1, updated_at = NOW()`,
+        [userId, currentEquipped.equipment_code]
+      );
+    }
+
+    await client.query(
+      `INSERT INTO power_ranking_user_equipped (user_id, slot_code, equipment_code)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, slot_code)
+       DO UPDATE SET equipment_code = EXCLUDED.equipment_code, updated_at = NOW(), equipped_at = NOW()`,
+      [userId, equipment.slot, equipmentCode]
+    );
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  return listPowerRankingEquipmentState(userId);
 };
 
 export const updatePowerRankingProfileImage = async (
@@ -627,6 +1109,112 @@ export const deletePowerRankingNote = async (noteId: string): Promise<boolean> =
   return (result.rowCount ?? 0) > 0;
 };
 
+export const createUserAccount = async (
+  username: string,
+  passwordHash: string,
+  name: string,
+  nickname: string
+): Promise<UserProfile> => {
+  const result = await pool.query<UserRow>(
+    `INSERT INTO app_users (username, password_hash, name, nickname)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, username, password_hash, name, nickname, created_at, updated_at`,
+    [username, passwordHash, name, nickname]
+  );
+  return mapUserRow(result.rows[0]);
+};
+
+export const findUserByUsername = async (username: string): Promise<UserRow | null> => {
+  const result = await pool.query<UserRow>(
+    `SELECT id, username, password_hash, name, nickname, created_at, updated_at
+     FROM app_users
+     WHERE username = $1
+     LIMIT 1`,
+    [username]
+  );
+  return result.rows[0] ?? null;
+};
+
+export const findUserById = async (userId: string): Promise<UserProfile | null> => {
+  const result = await pool.query<UserRow>(
+    `SELECT id, username, password_hash, name, nickname, created_at, updated_at
+     FROM app_users
+     WHERE id = $1
+     LIMIT 1`,
+    [userId]
+  );
+  return result.rows[0] ? mapUserRow(result.rows[0]) : null;
+};
+
+export const createUserSession = async (
+  userId: string,
+  deviceId: string,
+  refreshTokenHash: string,
+  expiresAt: Date
+): Promise<UserSessionRow> => {
+  const result = await pool.query<UserSessionRow>(
+    `INSERT INTO app_user_sessions (user_id, device_id, refresh_token_hash, expires_at)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, user_id, device_id, refresh_token_hash, expires_at, created_at, updated_at, last_used_at`,
+    [userId, deviceId, refreshTokenHash, expiresAt.toISOString()]
+  );
+  return result.rows[0];
+};
+
+export const findUserSessionByRefreshToken = async (
+  refreshTokenHash: string
+): Promise<UserSessionRow | null> => {
+  const result = await pool.query<UserSessionRow>(
+    `SELECT id, user_id, device_id, refresh_token_hash, expires_at, created_at, updated_at, last_used_at
+     FROM app_user_sessions
+     WHERE refresh_token_hash = $1
+       AND expires_at > NOW()
+     LIMIT 1`,
+    [refreshTokenHash]
+  );
+  return result.rows[0] ?? null;
+};
+
+export const findUserSessionById = async (sessionId: string): Promise<UserSessionRow | null> => {
+  const result = await pool.query<UserSessionRow>(
+    `SELECT id, user_id, device_id, refresh_token_hash, expires_at, created_at, updated_at, last_used_at
+     FROM app_user_sessions
+     WHERE id = $1
+       AND expires_at > NOW()
+     LIMIT 1`,
+    [sessionId]
+  );
+  return result.rows[0] ?? null;
+};
+
+export const rotateUserSessionRefreshToken = async (
+  sessionId: string,
+  refreshTokenHash: string,
+  expiresAt: Date
+): Promise<UserSessionRow | null> => {
+  const result = await pool.query<UserSessionRow>(
+    `UPDATE app_user_sessions
+     SET refresh_token_hash = $2, expires_at = $3, updated_at = NOW(), last_used_at = NOW()
+     WHERE id = $1
+     RETURNING id, user_id, device_id, refresh_token_hash, expires_at, created_at, updated_at, last_used_at`,
+    [sessionId, refreshTokenHash, expiresAt.toISOString()]
+  );
+  return result.rows[0] ?? null;
+};
+
+export const touchUserSession = async (sessionId: string): Promise<void> => {
+  await pool.query(
+    `UPDATE app_user_sessions
+     SET last_used_at = NOW(), updated_at = NOW()
+     WHERE id = $1`,
+    [sessionId]
+  );
+};
+
+export const deleteUserSessionByRefreshToken = async (refreshTokenHash: string): Promise<void> => {
+  await pool.query(`DELETE FROM app_user_sessions WHERE refresh_token_hash = $1`, [refreshTokenHash]);
+};
+
 const getBoardPostRowById = async (postId: string): Promise<import("./types").BoardPostRow | null> => {
   const result = await pool.query<import("./types").BoardPostRow>(
     `SELECT id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at
@@ -670,11 +1258,48 @@ const loadBoardRepliesByPostIds = async (postIds: string[]): Promise<Map<string,
   return repliesByPost;
 };
 
-export const listBoardPosts = async (): Promise<BoardPost[]> => {
+export const listBoardPosts = async (
+  search = "",
+  currentUserId?: string | null
+): Promise<BoardPost[]> => {
+  const keyword = search.trim();
   const postsResult = await pool.query<import("./types").BoardPostRow>(
-    `SELECT id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at
-     FROM board_posts
-     ORDER BY created_at DESC`
+    `SELECT
+       p.id,
+       p.user_id,
+       p.author_name,
+       p.password,
+       p.title,
+       p.content,
+       p.file_url,
+       p.file_name,
+       p.file_size,
+       p.file_mime_type,
+       p.recommendation_count,
+       EXISTS (
+         SELECT 1
+         FROM board_post_recommendations r
+         WHERE r.post_id = p.id
+           AND r.user_id = $2
+       ) AS is_recommended_by_current_user,
+       p.created_at,
+       p.updated_at
+     FROM board_posts p
+     WHERE (
+       $1 = ''
+       OR p.title ILIKE '%' || $1 || '%'
+       OR p.author_name ILIKE '%' || $1 || '%'
+     )
+     ORDER BY
+       CASE
+         WHEN p.recommendation_count >= 5
+          AND p.created_at >= NOW() - INTERVAL '14 days'
+         THEN 0
+         ELSE 1
+       END ASC,
+       p.recommendation_count DESC,
+       p.created_at DESC`,
+    [keyword, currentUserId ?? null]
   );
   const repliesByPost = await loadBoardRepliesByPostIds(postsResult.rows.map((row) => row.id));
   return postsResult.rows.map((row) => ({
@@ -684,8 +1309,8 @@ export const listBoardPosts = async (): Promise<BoardPost[]> => {
 };
 
 export const createBoardPost = async (
+  userId: string,
   authorName: string,
-  password: string,
   title: string,
   content: string,
   fileUrl = "",
@@ -695,19 +1320,18 @@ export const createBoardPost = async (
 ): Promise<BoardPost> => {
   const result = await pool.query<import("./types").BoardPostRow>(
     `INSERT INTO board_posts (
-        author_name, password, title, content, file_url, file_name, file_size, file_mime_type
+        user_id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, recommendation_count
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at`,
-    [authorName, password, title, content, fileUrl, fileName, fileSize, fileMimeType]
+     VALUES ($1, $2, '', $3, $4, $5, $6, $7, $8, 0)
+     RETURNING id, user_id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, recommendation_count, FALSE AS is_recommended_by_current_user, created_at, updated_at`,
+    [userId, authorName, title, content, fileUrl, fileName, fileSize, fileMimeType]
   );
   return { ...mapBoardPostRow(result.rows[0]), replies: [] };
 };
 
 export const updateBoardPost = async (
   postId: string,
-  authorName: string,
-  password: string,
+  userId: string,
   title: string,
   content: string
 ): Promise<BoardPost | null> => {
@@ -715,15 +1339,15 @@ export const updateBoardPost = async (
   if (!existing) {
     return null;
   }
-  if (existing.password !== password) {
-    throw passwordMismatchError();
+  if (existing.user_id !== userId) {
+    throw new Error("본인 게시글만 수정할 수 있습니다.");
   }
   const result = await pool.query<import("./types").BoardPostRow>(
     `UPDATE board_posts
-     SET author_name = $2, title = $3, content = $4, updated_at = NOW()
+     SET title = $2, content = $3, updated_at = NOW()
      WHERE id = $1
-     RETURNING id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at`,
-    [postId, authorName, title, content]
+     RETURNING id, user_id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, recommendation_count, FALSE AS is_recommended_by_current_user, created_at, updated_at`,
+    [postId, title, content]
   );
   const repliesByPost = await loadBoardRepliesByPostIds([postId]);
   return {
@@ -732,16 +1356,65 @@ export const updateBoardPost = async (
   };
 };
 
-export const deleteBoardPost = async (postId: string, password: string): Promise<boolean> => {
+export const deleteBoardPost = async (postId: string, userId: string): Promise<boolean> => {
   const existing = await getBoardPostRowById(postId);
   if (!existing) {
     return false;
   }
-  if (existing.password !== password) {
-    throw passwordMismatchError();
+  if (existing.user_id !== userId) {
+    throw new Error("본인 게시글만 삭제할 수 있습니다.");
   }
   const result = await pool.query("DELETE FROM board_posts WHERE id = $1", [postId]);
   return (result.rowCount ?? 0) > 0;
+};
+
+export const recommendBoardPost = async (
+  postId: string,
+  userId: string
+): Promise<BoardPost | null> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const postResult = await client.query<BoardPostRow>(
+      `SELECT id, user_id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, recommendation_count, created_at, updated_at
+       FROM board_posts
+       WHERE id = $1
+       FOR UPDATE`,
+      [postId]
+    );
+    const post = postResult.rows[0];
+    if (!post) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+
+    await client.query(
+      `INSERT INTO board_post_recommendations (post_id, user_id)
+       VALUES ($1, $2)`,
+      [postId, userId]
+    );
+    const updatedResult = await client.query<BoardPostRow>(
+      `UPDATE board_posts
+       SET recommendation_count = recommendation_count + 1, updated_at = NOW()
+       WHERE id = $1
+       RETURNING id, user_id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, recommendation_count, TRUE AS is_recommended_by_current_user, created_at, updated_at`,
+      [postId]
+    );
+    await client.query("COMMIT");
+    const repliesByPost = await loadBoardRepliesByPostIds([postId]);
+    return {
+      ...mapBoardPostRow(updatedResult.rows[0]),
+      replies: repliesByPost.get(postId) ?? []
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    if ((error as { code?: string }).code === "23505") {
+      throw new Error("이미 개추한 게시글입니다.");
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 export const createBoardReply = async (
@@ -1096,6 +1769,38 @@ export const markAllInquiriesAsRead = async (): Promise<number> => {
     "UPDATE inquiries SET is_read = TRUE WHERE is_read = FALSE"
   );
   return result.rowCount ?? 0;
+};
+
+export const trackTodayVisitor = async (
+  deviceId: string,
+  path: string
+): Promise<TodayVisitorResponse> => {
+  await pool.query(
+    `INSERT INTO visitor_daily_visits (visit_date, device_id, first_path)
+     VALUES (CURRENT_DATE, $1, $2)
+     ON CONFLICT (visit_date, device_id)
+     DO UPDATE SET last_visited_at = NOW()`,
+    [deviceId, path]
+  );
+  const result = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+     FROM visitor_daily_visits
+     WHERE visit_date = CURRENT_DATE`
+  );
+  return {
+    todayVisitors: Number(result.rows[0]?.count ?? "0")
+  };
+};
+
+export const getTodayVisitorCount = async (): Promise<TodayVisitorResponse> => {
+  const result = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+     FROM visitor_daily_visits
+     WHERE visit_date = CURRENT_DATE`
+  );
+  return {
+    todayVisitors: Number(result.rows[0]?.count ?? "0")
+  };
 };
 
 export const closePool = async (): Promise<void> => {

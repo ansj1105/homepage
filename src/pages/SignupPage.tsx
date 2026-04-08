@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 
 type SignupForm = {
@@ -18,15 +20,18 @@ const createInitialForm = (): SignupForm => ({
 });
 
 const SignupPage = () => {
+  const navigate = useNavigate();
+  const { signup } = useUserAuth();
   const [form, setForm] = useState<SignupForm>(createInitialForm);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     document.title = "회원가입";
   }, []);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
@@ -52,7 +57,21 @@ const SignupPage = () => {
       return;
     }
 
-    setSuccessMessage("회원가입 폼 입력이 완료되었습니다. 실제 가입 저장 API는 다음 단계에서 연결하면 됩니다.");
+    setSubmitting(true);
+    try {
+      await signup({
+        username: form.username.trim(),
+        password: form.password,
+        name: form.name.trim(),
+        nickname: form.nickname.trim()
+      });
+      setSuccessMessage("회원가입이 완료되었습니다.");
+      navigate("/dongyeon-power-ranking");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "회원가입에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -116,8 +135,8 @@ const SignupPage = () => {
                 placeholder="닉네임"
               />
             </label>
-            <button type="submit" className="powerRankingVoteButton">
-              회원가입
+            <button type="submit" className="powerRankingVoteButton" disabled={submitting}>
+              {submitting ? "가입 중..." : "회원가입"}
             </button>
           </form>
         </section>

@@ -3,12 +3,13 @@ import type { PublicSiteSettings } from "../types";
 
 const yonseiFaviconUrl = "https://www.yonsei.ac.kr/favicon.ico";
 const yonseiOgImageUrl = "https://yonsei.ac.kr/Web-home/_UI/images/img_symbol.png";
+const baeknongHallBannerUrl = "/assets/sub/baeknong-hall-sign-banner.svg";
 
 export const defaultPublicSiteSettings: PublicSiteSettings = {
   routeMeta: [
     {
       route: "/",
-      title: "동연 파워랭킹",
+      title: "동아리연합회",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
       subBannerImageUrl: ""
@@ -18,42 +19,42 @@ export const defaultPublicSiteSettings: PublicSiteSettings = {
       title: "신호텍 주식회사 회사소개",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/sub01_-hoe-sa-so-gae_011499426360.jpg"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/application",
       title: "신호텍 주식회사 Application",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/hero/main_011500862913.jpg"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/product",
       title: "신호텍 주식회사 제품",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/sub01_-hoe-sa-so-gae_011499426360.jpg"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/solution",
       title: "신호텍 주식회사 광학솔루션",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/section/main_part02_bg02.png"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/inquiry",
       title: "신호텍 주식회사 제품문의",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/sub04_-je-pum-mun-ui_011499678045.jpg"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/notice",
       title: "신호텍 주식회사 NOTICES",
       faviconUrl: yonseiFaviconUrl,
       ogImageUrl: yonseiOgImageUrl,
-      subBannerImageUrl: "/assets/legacy/images/sub05_-gong-ji-sa-hang_011499515027.jpg"
+      subBannerImageUrl: baeknongHallBannerUrl
     },
     {
       route: "/asgasdg124af/admin",

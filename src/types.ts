@@ -204,11 +204,135 @@ export interface PowerRankingNote {
 
 export type PowerRankingPeriod = "all" | "weekly" | "daily";
 export type PowerRankingVoteDelta = 1 | -1;
+export type PowerRankingItemCode = "byeokbangjun-blanket" | "seoeuntaek-love";
+export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
+export type PowerRankingEquipmentSlot = "head" | "top" | "bottom" | "shoes" | "gloves";
+export type PowerRankingEquipmentCode =
+  | "crown-of-cheers"
+  | "star-visor"
+  | "mint-beret"
+  | "commander-jacket"
+  | "ribbon-cardigan"
+  | "golden-harness"
+  | "midnight-slacks"
+  | "wave-denim"
+  | "aurora-skirt"
+  | "thunder-boots"
+  | "crystal-sneakers"
+  | "ember-heels"
+  | "titan-gauntlet"
+  | "silk-gloves"
+  | "pulse-gloves";
 
 export interface PowerRankingVoteRequest {
   deviceId: string;
   delta: PowerRankingVoteDelta;
   period: PowerRankingPeriod;
+}
+
+export interface PowerRankingItemCatalogEntry {
+  code: PowerRankingItemCode;
+  name: string;
+  description: string;
+  effectDelta: number;
+  imageUrl: string;
+}
+
+export interface PowerRankingEquipmentCatalogEntry {
+  code: PowerRankingEquipmentCode;
+  slot: PowerRankingEquipmentSlot;
+  name: string;
+  description: string;
+  imageUrl: string;
+  effectSummary: string;
+}
+
+export interface PowerRankingEquipmentInventoryItem extends PowerRankingEquipmentCatalogEntry {
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PowerRankingEquippedItem extends PowerRankingEquipmentCatalogEntry {
+  equippedAt: string;
+  updatedAt: string;
+}
+
+export interface PowerRankingEquipmentState {
+  inventory: PowerRankingEquipmentInventoryItem[];
+  equipped: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
+}
+
+export interface PowerRankingInventoryItem extends PowerRankingItemCatalogEntry {
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PowerRankingEventLog {
+  id: string;
+  eventType: PowerRankingEventType;
+  actorUserId: string | null;
+  actorNickname: string;
+  actorDeviceId: string;
+  personId: string;
+  personName: string;
+  delta: number;
+  itemCode: PowerRankingItemCode | null;
+  itemName: string | null;
+  itemImageUrl: string | null;
+  createdAt: string;
+}
+
+export interface PowerRankingVoteResponse {
+  person: PowerRankingPerson;
+  droppedItem: PowerRankingInventoryItem | null;
+  droppedEquipment: PowerRankingEquipmentInventoryItem | null;
+}
+
+export interface PowerRankingItemUseRequest {
+  personId: string;
+  itemCode: PowerRankingItemCode;
+  period: PowerRankingPeriod;
+}
+
+export interface PowerRankingItemUseResponse {
+  person: PowerRankingPerson;
+  inventory: PowerRankingInventoryItem[];
+  usedItem: PowerRankingInventoryItem;
+}
+
+export interface PowerRankingEquipRequest {
+  equipmentCode: PowerRankingEquipmentCode;
+}
+
+export interface TodayVisitorRequest {
+  deviceId: string;
+  path: string;
+}
+
+export interface TodayVisitorResponse {
+  todayVisitors: number;
+}
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  name: string;
+  nickname: string;
+  createdAt: string;
+}
+
+export interface UserSignupRequest {
+  username: string;
+  password: string;
+  name: string;
+  nickname: string;
+}
+
+export interface UserLoginRequest {
+  username: string;
+  password: string;
 }
 
 export interface PowerRankingPerson {
@@ -233,6 +357,7 @@ export interface BoardReply {
 
 export interface BoardPost {
   id: string;
+  userId: string | null;
   authorName: string;
   title: string;
   content: string;
@@ -240,14 +365,15 @@ export interface BoardPost {
   fileName: string;
   fileSize: number;
   fileMimeType: string;
+  recommendationCount: number;
+  isBest: boolean;
+  isRecommendedByCurrentUser: boolean;
   createdAt: string;
   updatedAt: string;
   replies: BoardReply[];
 }
 
 export interface BoardPostCreateRequest {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
   fileUrl?: string;
@@ -257,14 +383,8 @@ export interface BoardPostCreateRequest {
 }
 
 export interface BoardPostUpdateRequest {
-  authorName: string;
-  password: string;
   title: string;
   content: string;
-}
-
-export interface BoardPostDeleteRequest {
-  password: string;
 }
 
 export interface BoardReplyCreateRequest {

@@ -3,6 +3,12 @@
   background: #0f1219;
 }
 
+.legacy-main-community-shell {
+  width: min(1240px, 94vw);
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
 .legacy-main-header {
   position: fixed;
   top: 0;
@@ -296,6 +302,107 @@
   background-position: center;
   background-size: cover;
   position: relative;
+}
+
+.legacy-main-hall {
+  width: min(1240px, 94vw);
+  margin: 32px auto 0;
+  padding-bottom: 12px;
+}
+
+.legacy-main-hall-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.legacy-main-honor-card {
+  min-height: 320px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(16px);
+  transition: transform 0.14s ease, box-shadow 0.18s ease;
+}
+
+.legacy-main-honor-card.rank-1 {
+  background:
+    radial-gradient(circle at top, rgba(255, 217, 120, 0.28), transparent 30%),
+    linear-gradient(180deg, rgba(255, 247, 214, 0.18), rgba(255, 223, 143, 0.08));
+}
+
+.legacy-main-honor-card.rank-2 {
+  background:
+    radial-gradient(circle at top, rgba(178, 220, 255, 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(220, 236, 255, 0.16), rgba(170, 193, 225, 0.08));
+}
+
+.legacy-main-honor-card.rank-3 {
+  background:
+    radial-gradient(circle at top, rgba(255, 190, 153, 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(255, 231, 214, 0.16), rgba(206, 151, 118, 0.08));
+}
+
+.legacy-main-honor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.legacy-main-honor-rank,
+.legacy-main-honor-label {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.24);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.legacy-main-honor-avatar {
+  display: grid;
+  place-items: center;
+  margin: 28px 0 18px;
+}
+
+.legacy-main-honor-avatar img,
+.legacy-main-honor-fallback {
+  width: 118px;
+  height: 118px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  object-fit: cover;
+}
+
+.legacy-main-honor-fallback {
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.legacy-main-honor-card strong {
+  display: block;
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: -0.05em;
+}
+
+.legacy-main-honor-card p {
+  margin: 8px 0 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
 }
 
 .legacy-main-hero-dim {
@@ -773,7 +880,8 @@
 
   .legacy-main-hero-panel,
   .legacy-main-trust-grid,
-  .legacy-main-about-grid {
+  .legacy-main-about-grid,
+  .legacy-main-hall-grid {
     grid-template-columns: 1fr;
   }
 

@@ -5,8 +5,11 @@ import { defaultPublicSiteSettings } from "./data/siteSettingsDefaults";
 import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import BoardPage from "./pages/BoardPage";
+import EquipmentPage from "./pages/EquipmentPage";
+import LoginPage from "./pages/LoginPage";
 import PowerRankingPage from "./pages/PowerRankingPage";
 import SignupPage from "./pages/SignupPage";
+import { VisitorProvider } from "./visitor/VisitorContext";
 import {
   ApplicationDetailPage,
   ApplicationListPage,
@@ -119,62 +122,68 @@ const SiteMetaController = () => {
 
 const App = () => (
   <BrowserRouter>
-    <SiteMetaController />
-    <Routes>
-      <Route path="/" element={<PowerRankingPage />} />
-      <Route path="/main" element={<MainPage />} />
-      <Route path="/power-ranking" element={<PowerRankingPage />} />
-      <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
-      <Route path="/board" element={<BoardPage />} />
-      <Route path="/dongyeon-board" element={<BoardPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/dongyeon-signup" element={<SignupPage />} />
-      <Route path="/asgasdg124af/admin" element={<AdminPage />} />
-      <Route path="/admin" element={<Navigate to="/asgasdg124af/admin" replace />} />
+    <VisitorProvider>
+      <SiteMetaController />
+      <Routes>
+        <Route path="/" element={<PowerRankingPage />} />
+        <Route path="/main" element={<MainPage />} />
+        <Route path="/power-ranking" element={<PowerRankingPage />} />
+        <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
+        <Route path="/board" element={<BoardPage />} />
+        <Route path="/dongyeon-board" element={<BoardPage />} />
+        <Route path="/equipment" element={<EquipmentPage />} />
+        <Route path="/dongyeon-equipment" element={<EquipmentPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dongyeon-login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/dongyeon-signup" element={<SignupPage />} />
+        <Route path="/asgasdg124af/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<Navigate to="/asgasdg124af/admin" replace />} />
 
-      <Route path="/" element={<PublicLayout />}>
-        <Route path="company">
-          <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<CompanyOverviewPage />} />
-          <Route path="partner" element={<CompanyPartnerPage />} />
-          <Route path="location" element={<CompanyLocationPage />} />
-          <Route path="ceo" element={<Navigate to="/company/overview" replace />} />
-          <Route path="vision" element={<Navigate to="/company/overview" replace />} />
+        <Route path="/" element={<PublicLayout />}>
+          <Route path="company">
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<CompanyOverviewPage />} />
+            <Route path="partner" element={<CompanyPartnerPage />} />
+            <Route path="location" element={<CompanyLocationPage />} />
+            <Route path="ceo" element={<Navigate to="/company/overview" replace />} />
+            <Route path="vision" element={<Navigate to="/company/overview" replace />} />
+          </Route>
+
+          <Route path="partner">
+            <Route path="core" element={<Navigate to="/company/partner" replace />} />
+          </Route>
+
+          <Route path="application">
+            <Route index element={<ApplicationListPage />} />
+            <Route path=":applicationId" element={<ApplicationDetailPage />} />
+          </Route>
+
+          <Route path="product">
+            <Route index element={<ProductCategoryListPage />} />
+            <Route path=":categorySlug" element={<ProductCategoryPage />} />
+            <Route path=":categorySlug/:itemSlug" element={<ProductItemPage />} />
+          </Route>
+
+          <Route path="solution">
+            <Route index element={<SolutionListPage />} />
+            <Route path=":solutionId" element={<SolutionDetailPage />} />
+          </Route>
+
+          <Route path="inquiry">
+            <Route index element={<Navigate to="quote" replace />} />
+            <Route path="quote" element={<QuoteInquiryPage />} />
+            <Route path="test-demo" element={<TestDemoPage />} />
+            <Route path="library" element={<InquiryLibraryPage />} />
+            <Route path="library/:resourceId" element={<InquiryLibraryDetailPage />} />
+          </Route>
+
+          <Route path="notice" element={<NoticePage />} />
+          <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
-
-        <Route path="partner">
-          <Route path="core" element={<Navigate to="/company/partner" replace />} />
-        </Route>
-
-        <Route path="application">
-          <Route index element={<ApplicationListPage />} />
-          <Route path=":applicationId" element={<ApplicationDetailPage />} />
-        </Route>
-
-        <Route path="product">
-          <Route index element={<ProductCategoryListPage />} />
-          <Route path=":categorySlug" element={<ProductCategoryPage />} />
-          <Route path=":categorySlug/:itemSlug" element={<ProductItemPage />} />
-        </Route>
-
-        <Route path="solution">
-          <Route index element={<SolutionListPage />} />
-          <Route path=":solutionId" element={<SolutionDetailPage />} />
-        </Route>
-
-        <Route path="inquiry">
-          <Route index element={<Navigate to="quote" replace />} />
-          <Route path="quote" element={<QuoteInquiryPage />} />
-          <Route path="test-demo" element={<TestDemoPage />} />
-          <Route path="library" element={<InquiryLibraryPage />} />
-          <Route path="library/:resourceId" element={<InquiryLibraryDetailPage />} />
-        </Route>
-
-        <Route path="notice" element={<NoticePage />} />
-        <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </VisitorProvider>
   </BrowserRouter>
 );
 

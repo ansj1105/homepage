@@ -2,6 +2,8 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { ZodError } from "zod";
 import { createToken, verifyToken } from "./auth";
 import {
+  createUserAccount,
+  createUserSession,
   createCmsPage,
   createBoardPost,
   createBoardReply,
@@ -16,12 +18,20 @@ import {
   deleteNotice,
   deletePowerRankingNote,
   deleteResource,
+  deleteUserSessionByRefreshToken,
+  findUserById,
+  findUserByUsername,
+  findUserSessionById,
+  findUserSessionByRefreshToken,
   getCmsPageBySlug,
   getMainPageContent,
   getPublicSiteSettings,
   getContent,
   changePowerRankingScore,
-  updatePowerRankingProfileImage,
+  equipPowerRankingEquipment,
+  listPowerRankingEquipmentState,
+  listPowerRankingEventLogs,
+  listPowerRankingInventory,
   listBoardPosts,
   listCmsPages,
   listInquiries,
@@ -32,19 +42,25 @@ import {
   listNotices,
   listResources,
   saveContent,
+  recommendBoardPost,
+  trackTodayVisitor,
+  getTodayVisitorCount,
   updateBoardPost,
   updateBoardReply,
   updatePowerRankingNote,
   updateInquiryStatus,
   updateCmsPage,
   updateNotice,
-  updateResource
+  updatePowerRankingProfileImage,
+  updateResource,
+  rotateUserSessionRefreshToken,
+  touchUserSession,
+  usePowerRankingItem
 } from "./db";
 import { getUploadMaxBytes, getUploadRoot, storeUploadFile } from "./uploads";
 import {
   parseCmsPageUpsert,
   parseBoardPostCreate,
-  parseBoardPostDelete,
   parseBoardPostUpdate,
   parseBoardReplyCreate,
   parseBoardReplyDelete,
@@ -54,16 +70,33 @@ import {
   parseLogin,
   parseMainPageUpsert,
   parseNoticeUpsert,
+  parsePowerRankingEquip,
+  parsePowerRankingItemUse,
   parsePowerRankingNoteCreate,
   parsePowerRankingNoteUpdate,
   parsePowerRankingVoteAction,
+  parseTodayVisitor,
   parsePublicSiteSettingsUpsert,
   parseResourceUpsert,
-  parseSiteContent
+  parseSiteContent,
+  parseUserLogin,
+  parseUserSignup
 } from "./validators";
+import {
+  createRefreshToken,
+  createUserAccessToken,
+  getAccessLifetimeMs,
+  getRefreshLifetimeMs,
+  hashPassword,
+  hashRefreshToken,
+  verifyPassword,
+  verifyUserAccessToken
+} from "./userAuth";
 
 const adminUser = process.env.ADMIN_USERNAME ?? "admin";
 const adminPassword = process.env.ADMIN_PASSWORD ?? "change-me";
+const accessCookieName = "user_access_token";
+const refreshCookieName = "user_refresh_token";
 
 const getTokenFromRequest = (req: Request): string | null => {
   const header = req.header("authorization");
@@ -97,6 +130,70 @@ const getPowerRankingPeriod = (value: unknown): "all" | "weekly" | "daily" => {
 const getRequestDeviceId = (req: Request): string =>
   (req.header("x-device-id") ?? "").trim();
 
+const parseCookies = (req: Request): Record<string, string> =>
+  (req.header("cookie") ?? "")
+    .split(";")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .reduce<Record<string, string>>((accumulator, pair) => {
+      const separatorIndex = pair.indexOf("=");
+      if (separatorIndex === -1) {
+        return accumulator;
+      }
+      const key = pair.slice(0, separatorIndex).trim();
+      const value = pair.slice(separatorIndex + 1).trim();
+      accumulator[key] = decodeURIComponent(value);
+      return accumulator;
+    }, {});
+
+const appendCookie = (
+  res: Response,
+  name: string,
+  value: string,
+  maxAgeMs: number,
+  options?: { clear?: boolean }
+) => {
+  const parts = [
+    `${name}=${options?.clear ? "" : encodeURIComponent(value)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    options?.clear ? "Max-Age=0" : `Max-Age=${Math.floor(maxAgeMs / 1000)}`
+  ];
+  if (process.env.NODE_ENV === "production") {
+    parts.push("Secure");
+  }
+  res.append("Set-Cookie", parts.join("; "));
+};
+
+const setUserAuthCookies = (res: Response, accessToken: string, refreshToken: string) => {
+  appendCookie(res, accessCookieName, accessToken, getAccessLifetimeMs());
+  appendCookie(res, refreshCookieName, refreshToken, getRefreshLifetimeMs());
+};
+
+const clearUserAuthCookies = (res: Response) => {
+  appendCookie(res, accessCookieName, "", 0, { clear: true });
+  appendCookie(res, refreshCookieName, "", 0, { clear: true });
+};
+
+const resolveAuthenticatedUser = async (req: Request) => {
+  const cookies = parseCookies(req);
+  const accessToken = cookies[accessCookieName];
+  if (!accessToken) {
+    return null;
+  }
+  const payload = verifyUserAccessToken(accessToken);
+  if (!payload) {
+    return null;
+  }
+  const session = await findUserSessionById(payload.sid);
+  if (!session || session.user_id !== payload.sub || session.device_id !== getRequestDeviceId(req)) {
+    return null;
+  }
+  await touchUserSession(payload.sid);
+  return findUserById(payload.sub);
+};
+
 const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
   const token = getTokenFromRequest(req);
   if (!token || !verifyToken(token)) {
@@ -107,8 +204,12 @@ const requireAdmin = (req: Request, res: Response, next: NextFunction): void => 
 };
 
 const corsMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const origin = process.env.CORS_ORIGIN ?? "*";
-  res.header("Access-Control-Allow-Origin", origin);
+  const configuredOrigin = process.env.CORS_ORIGIN ?? "*";
+  const requestOrigin = req.header("origin");
+  const resolvedOrigin =
+    configuredOrigin === "*" && requestOrigin ? requestOrigin : configuredOrigin;
+  res.header("Access-Control-Allow-Origin", resolvedOrigin);
+  res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, X-File-Name, X-File-Type, X-Device-Id"
@@ -132,6 +233,10 @@ const errorMiddleware = (
     return;
   }
   if (err instanceof Error) {
+    if ((err as Error & { message?: string; code?: string }).code === "23505") {
+      res.status(409).json({ message: "이미 사용 중인 아이디 또는 닉네임입니다." });
+      return;
+    }
     if ((err as Error & { name?: string }).name === "PayloadTooLargeError") {
       res.status(413).json({ message: "Uploaded file is too large." });
       return;
@@ -167,6 +272,25 @@ export const createApp = () => {
     res.json({ ok: true });
   });
 
+  app.get("/api/visitors/today", async (_req, res, next) => {
+    try {
+      const result = await getTodayVisitorCount();
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/visitors/track", async (req, res, next) => {
+    try {
+      const payload = parseTodayVisitor(req.body);
+      const result = await trackTodayVisitor(payload.deviceId, payload.path);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.post("/api/auth/login", (req, res) => {
     const payload = parseLogin(req.body);
     if (payload.username !== adminUser || payload.password !== adminPassword) {
@@ -174,6 +298,147 @@ export const createApp = () => {
       return;
     }
     res.json({ token: createToken(payload.username) });
+  });
+
+  app.post("/api/users/signup", async (req, res, next) => {
+    try {
+      const payload = parseUserSignup(req.body);
+      const deviceId = getRequestDeviceId(req);
+      if (!deviceId) {
+        res.status(400).json({ message: "Device ID is required" });
+        return;
+      }
+
+      const passwordHash = await hashPassword(payload.password);
+      const user = await createUserAccount(
+        payload.username.trim(),
+        passwordHash,
+        payload.name.trim(),
+        payload.nickname.trim()
+      );
+
+      const refreshToken = createRefreshToken();
+      const refreshTokenHash = hashRefreshToken(refreshToken);
+      const session = await createUserSession(
+        user.id,
+        deviceId,
+        refreshTokenHash,
+        new Date(Date.now() + getRefreshLifetimeMs())
+      );
+      const accessToken = createUserAccessToken(user.id, session.id);
+      setUserAuthCookies(res, accessToken, refreshToken);
+      res.status(201).json(user);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/users/login", async (req, res, next) => {
+    try {
+      const payload = parseUserLogin(req.body);
+      const deviceId = getRequestDeviceId(req);
+      if (!deviceId) {
+        res.status(400).json({ message: "Device ID is required" });
+        return;
+      }
+
+      const userRow = await findUserByUsername(payload.username.trim());
+      if (!userRow || !(await verifyPassword(payload.password, userRow.password_hash))) {
+        res.status(401).json({ message: "아이디 또는 비밀번호가 올바르지 않습니다." });
+        return;
+      }
+
+      const user = await findUserById(userRow.id);
+      if (!user) {
+        res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+        return;
+      }
+
+      const refreshToken = createRefreshToken();
+      const refreshTokenHash = hashRefreshToken(refreshToken);
+      const session = await createUserSession(
+        user.id,
+        deviceId,
+        refreshTokenHash,
+        new Date(Date.now() + getRefreshLifetimeMs())
+      );
+      const accessToken = createUserAccessToken(user.id, session.id);
+      setUserAuthCookies(res, accessToken, refreshToken);
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/users/me", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/users/refresh", async (req, res, next) => {
+    try {
+      const deviceId = getRequestDeviceId(req);
+      const cookies = parseCookies(req);
+      const refreshToken = cookies[refreshCookieName];
+      if (!refreshToken || !deviceId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const session = await findUserSessionByRefreshToken(hashRefreshToken(refreshToken));
+      if (!session || session.device_id !== deviceId) {
+        clearUserAuthCookies(res);
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const user = await findUserById(session.user_id);
+      if (!user) {
+        clearUserAuthCookies(res);
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const nextRefreshToken = createRefreshToken();
+      const rotated = await rotateUserSessionRefreshToken(
+        session.id,
+        hashRefreshToken(nextRefreshToken),
+        new Date(Date.now() + getRefreshLifetimeMs())
+      );
+      if (!rotated) {
+        clearUserAuthCookies(res);
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const accessToken = createUserAccessToken(user.id, rotated.id);
+      setUserAuthCookies(res, accessToken, nextRefreshToken);
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/users/logout", async (req, res, next) => {
+    try {
+      const cookies = parseCookies(req);
+      const refreshToken = cookies[refreshCookieName];
+      if (refreshToken) {
+        await deleteUserSessionByRefreshToken(hashRefreshToken(refreshToken));
+      }
+      clearUserAuthCookies(res);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/api/content", async (_req, res, next) => {
@@ -212,9 +477,48 @@ export const createApp = () => {
     }
   });
 
+  app.get("/api/power-ranking/inventory", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const items = await listPowerRankingInventory(user.id);
+      res.json(items);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/power-ranking/equipment", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const equipment = await listPowerRankingEquipmentState(user.id);
+      res.json(equipment);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/power-ranking/events", async (_req, res, next) => {
+    try {
+      const events = await listPowerRankingEventLogs(60);
+      res.json(events);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/board/posts", async (_req, res, next) => {
     try {
-      const posts = await listBoardPosts();
+      const currentUser = await resolveAuthenticatedUser(_req);
+      const search = typeof _req.query.search === "string" ? _req.query.search : "";
+      const posts = await listBoardPosts(search, currentUser?.id);
       res.json(posts);
     } catch (error) {
       next(error);
@@ -223,10 +527,15 @@ export const createApp = () => {
 
   app.post("/api/board/posts", async (req, res, next) => {
     try {
+      const currentUser = await resolveAuthenticatedUser(req);
+      if (!currentUser) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
       const payload = parseBoardPostCreate(req.body);
       const created = await createBoardPost(
-        payload.authorName,
-        payload.password,
+        currentUser.id,
+        currentUser.nickname,
         payload.title,
         payload.content,
         payload.fileUrl ?? "",
@@ -242,12 +551,16 @@ export const createApp = () => {
 
   app.put("/api/board/posts/:postId", async (req, res, next) => {
     try {
+      const currentUser = await resolveAuthenticatedUser(req);
+      if (!currentUser) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
       const postId = getParamValue(req.params.postId);
       const payload = parseBoardPostUpdate(req.body);
       const updated = await updateBoardPost(
         postId,
-        payload.authorName,
-        payload.password,
+        currentUser.id,
         payload.title,
         payload.content
       );
@@ -263,14 +576,37 @@ export const createApp = () => {
 
   app.delete("/api/board/posts/:postId", async (req, res, next) => {
     try {
+      const currentUser = await resolveAuthenticatedUser(req);
+      if (!currentUser) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
       const postId = getParamValue(req.params.postId);
-      const payload = parseBoardPostDelete(req.body);
-      const deleted = await deleteBoardPost(postId, payload.password);
+      const deleted = await deleteBoardPost(postId, currentUser.id);
       if (!deleted) {
         res.status(404).json({ message: "Board post not found" });
         return;
       }
       res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/board/posts/:postId/recommend", async (req, res, next) => {
+    try {
+      const currentUser = await resolveAuthenticatedUser(req);
+      if (!currentUser) {
+        res.status(401).json({ message: "로그인 이후 이용가능합니다." });
+        return;
+      }
+      const postId = getParamValue(req.params.postId);
+      const updated = await recommendBoardPost(postId, currentUser.id);
+      if (!updated) {
+        res.status(404).json({ message: "Board post not found" });
+        return;
+      }
+      res.json(updated);
     } catch (error) {
       next(error);
     }
@@ -331,12 +667,59 @@ export const createApp = () => {
       const personId = getParamValue(req.params.personId);
       const payload = parsePowerRankingVoteAction(req.body);
       const deviceId = payload.deviceId || getRequestDeviceId(req);
-      const updated = await changePowerRankingScore(personId, deviceId, payload.delta, payload.period);
+      const currentUser = await resolveAuthenticatedUser(req);
+      const updated = await changePowerRankingScore(
+        personId,
+        deviceId,
+        payload.delta,
+        payload.period,
+        currentUser?.id
+      );
       if (!updated) {
         res.status(404).json({ message: "Ranking target not found" });
         return;
       }
       res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/power-ranking/items/use", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parsePowerRankingItemUse(req.body);
+      const result = await usePowerRankingItem(
+        user.id,
+        getRequestDeviceId(req),
+        payload.personId,
+        payload.itemCode,
+        payload.period
+      );
+      if (!result) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/power-ranking/equipment/equip", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parsePowerRankingEquip(req.body);
+      const equipment = await equipPowerRankingEquipment(user.id, payload.equipmentCode);
+      res.json(equipment);
     } catch (error) {
       next(error);
     }

@@ -60,6 +60,7 @@ body {
 
 .communityTopBar {
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -131,6 +132,145 @@ body {
 
 .communityTopBarLink.isGhost {
   background: transparent;
+}
+
+.communityTopBarUser {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+}
+
+.communityTopBarVisitor {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.communityTopBarEquipment {
+  position: relative;
+}
+
+.communityTopBarEquipmentPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  width: min(860px, 88vw);
+  padding: 16px;
+  border: 1px solid rgba(15, 50, 95, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 16px 36px rgba(16, 36, 63, 0.14);
+}
+
+.communityTopBarEquipmentSlots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.communityTopBarEquipmentSlot {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 10px;
+  background: #f7faff;
+}
+
+.communityTopBarEquipmentSlot > span {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.communityTopBarEquipmentSlot p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.communityTopBarEquipmentSlotItem {
+  display: grid;
+  gap: 6px;
+}
+
+.communityTopBarEquipmentSlotItem img {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  background: #fff;
+}
+
+.communityTopBarEquipmentSlotItem strong {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.communityTopBarEquipmentSlotItem small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.communityTopBarEquipmentInventory {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.communityTopBarEquipmentCard {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.communityTopBarEquipmentCard img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  background: #f7faff;
+}
+
+.communityTopBarEquipmentCard strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.communityTopBarEquipmentCard p,
+.communityTopBarEquipmentEmpty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.communityTopBarEquipmentCard span {
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .powerRankingShell {
@@ -477,6 +617,55 @@ body {
   box-shadow: var(--shadow);
 }
 
+.boardSearchBar,
+.boardBestSection {
+  margin-bottom: 18px;
+}
+
+.boardSearchBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.boardSearchFooter {
+  display: grid;
+  gap: 18px;
+}
+
+.boardSearchBarBottom {
+  width: min(900px, 100%);
+  margin: 0 auto;
+}
+
+.boardBestGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.boardBestCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.boardBestCard strong {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.boardBestCard p,
+.boardBestCard span {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .boardComposer {
   display: grid;
   gap: 14px;
@@ -554,6 +743,82 @@ body {
   gap: 18px;
 }
 
+.boardListShell {
+  overflow: hidden;
+  border: 1px solid rgba(15, 50, 95, 0.12);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.boardTableHeader,
+.boardTableRow {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1.8fr) 140px 110px 90px 90px;
+  align-items: center;
+  gap: 12px;
+}
+
+.boardTableHeader {
+  padding: 14px 18px;
+  border-bottom: 2px solid #31438d;
+  background: #f8f8fb;
+  color: #3e4a6d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.boardTableList {
+  display: grid;
+}
+
+.boardTableRow {
+  width: 100%;
+  padding: 13px 18px;
+  border: 0;
+  border-bottom: 1px solid rgba(15, 50, 95, 0.08);
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.boardTableRow:hover,
+.boardTableRow.isSelected {
+  background: #f4f7ff;
+}
+
+.boardTableTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.boardTableTitle strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.boardTableTitle em {
+  font-style: normal;
+  color: #d13b00;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.boardTableTitle b {
+  color: #31438d;
+  font-size: 12px;
+}
+
+.boardDetailCard {
+  border-radius: 0;
+}
+
 .boardListToolbar {
   display: flex;
   align-items: center;
@@ -612,6 +877,11 @@ body {
 .boardCardBadge {
   background: #13233c;
   color: #ffffff;
+}
+
+.boardCardBadge.isBest {
+  background: linear-gradient(180deg, #f4d88a, #d5a64a);
+  color: #3d2600;
 }
 
 .boardCardMetaText {
@@ -808,6 +1078,17 @@ body {
     width: 100%;
   }
 
+  .communityTopBarEquipmentPanel {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .communityTopBarEquipmentSlots,
+  .communityTopBarEquipmentInventory {
+    grid-template-columns: 1fr;
+  }
+
   .communityTopBarLink {
     width: 100%;
   }
@@ -915,6 +1196,26 @@ body {
   .boardListToolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .boardSearchBar,
+  .boardBestGrid,
+  .boardComposerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .boardTableHeader {
+    display: none;
+  }
+
+  .boardTableRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .boardTableRow > span:not(.boardTableTitle) {
+    color: var(--muted);
+    font-size: 12px;
   }
 
   .boardPaginationCompact {
@@ -3963,7 +4264,7 @@ dl::after {
 .company-shell-hero {
   background-image:
     linear-gradient(120deg, rgba(16, 36, 63, 0.62), rgba(15, 50, 95, 0.48)),
-    url("/assets/legacy/images/sub01_-hoe-sa-so-gae_011499426360.jpg");
+    url("/assets/sub/baeknong-hall-sign-banner.svg");
   background-position: center;
   background-size: cover;
   min-height: 220px;
@@ -5215,7 +5516,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 
 .powerRankingPageMaple {
   background:
-    linear-gradient(180deg, #0f1624 0%, #141e30 22%, #e8edf4 22%, #e8edf4 100%);
+    linear-gradient(180deg, rgba(10, 15, 24, 0.94) 0%, rgba(16, 23, 35, 0.92) 16%, rgba(232, 237, 244, 0.96) 16%, #e8edf4 100%),
+    linear-gradient(180deg, rgba(10, 15, 24, 0.28), rgba(10, 15, 24, 0.28)),
+    url("/assets/sub/baeknong-hall-sign-banner.svg");
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: 100% 100%, 100% 320px, cover;
+  background-position: center top, center top, center top;
 }
 
 .powerRankingPageMaple .powerRankingShell {
@@ -5239,6 +5545,18 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   color: #f6f8fc;
 }
 
+.powerRankingPageMaple .communityTopBarUser {
+  color: #f6f8fc;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.powerRankingPageMaple .communityTopBarVisitor {
+  color: #f6f8fc;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .powerRankingPageMaple .communityTopBarLink {
   border-color: rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
@@ -5260,6 +5578,35 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   background: transparent;
 }
 
+.powerRankingPageMaple .communityTopBarEquipmentPanel {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(9, 14, 26, 0.96);
+}
+
+.powerRankingPageMaple .communityTopBarEquipmentSlot,
+.powerRankingPageMaple .communityTopBarEquipmentCard {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.powerRankingPageMaple .communityTopBarEquipmentSlot > span,
+.powerRankingPageMaple .communityTopBarEquipmentCard span {
+  color: #7fd5ff;
+}
+
+.powerRankingPageMaple .communityTopBarEquipmentSlot p,
+.powerRankingPageMaple .communityTopBarEquipmentSlotItem small,
+.powerRankingPageMaple .communityTopBarEquipmentCard p,
+.powerRankingPageMaple .communityTopBarEquipmentEmpty {
+  color: rgba(246, 248, 252, 0.7);
+}
+
+.powerRankingPageMaple .communityTopBarEquipmentSlotItem img,
+.powerRankingPageMaple .communityTopBarEquipmentCard img {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .powerRankingPageMaple .powerRankingHeroMaple {
   align-items: stretch;
   gap: 28px;
@@ -5271,6 +5618,81 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
     linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 38%),
     linear-gradient(180deg, rgba(15, 23, 38, 0.96), rgba(25, 37, 57, 0.94));
   box-shadow: 0 16px 36px rgba(6, 10, 19, 0.24);
+}
+
+.powerRankingPageMaple .boardHero {
+  align-items: stretch;
+}
+
+.powerRankingPageMaple .boardMetaPanel {
+  justify-items: start;
+  min-width: min(100%, 320px);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.powerRankingPageMaple .boardMetaPanel strong {
+  color: #f7fbff;
+}
+
+.powerRankingPageMaple .boardMetaPanel span {
+  color: rgba(247, 251, 255, 0.76);
+}
+
+.powerRankingPageMaple .boardSearchBar input,
+.powerRankingPageMaple .boardComposer input,
+.powerRankingPageMaple .boardComposer textarea,
+.powerRankingPageMaple .boardEditBlock input,
+.powerRankingPageMaple .boardEditBlock textarea,
+.powerRankingPageMaple .boardReplyComposer input,
+.powerRankingPageMaple .boardReplyComposer textarea {
+  border-color: rgba(15, 50, 95, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.powerRankingPageMaple .boardBestCard,
+.powerRankingPageMaple .boardComposer,
+.powerRankingPageMaple .boardCard,
+.powerRankingPageMaple .boardListShell {
+  border-color: rgba(16, 36, 63, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
+  box-shadow: 0 14px 32px rgba(16, 36, 63, 0.08);
+}
+
+.powerRankingPageMaple .boardTableHeader {
+  border-bottom-color: rgba(49, 67, 141, 0.22);
+  background: linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(239, 244, 251, 0.98));
+}
+
+.powerRankingPageMaple .boardTableRow {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.powerRankingPageMaple .boardTableRow:hover,
+.powerRankingPageMaple .boardTableRow.isSelected {
+  background: rgba(232, 239, 250, 0.92);
+}
+
+.powerRankingPageMaple .boardDetailCard,
+.powerRankingPageMaple .boardSearchFooter {
+  margin-top: 18px;
+}
+
+.powerRankingPageMaple .boardReplyItem {
+  border-radius: 10px;
+  background: rgba(246, 249, 253, 0.96);
+}
+
+.powerRankingPageMaple .boardPagination {
+  margin-top: 20px;
+}
+
+.powerRankingPageMaple .boardSuccess {
+  border-radius: 10px;
 }
 
 .powerRankingPageMaple .powerRankingHeroCopy {
@@ -5421,8 +5843,178 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingPodiumSection,
+.powerRankingPageMaple .powerRankingDashboardSection,
+.powerRankingPageMaple .powerRankingInventorySection,
+.powerRankingPageMaple .powerRankingLogSection,
 .powerRankingPageMaple .powerRankingBoardSection {
   margin-top: 30px;
+}
+
+.powerRankingPageMaple .powerRankingRewardBanner {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(173, 124, 18, 0.2);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 251, 231, 0.98), rgba(255, 243, 205, 0.94));
+  color: #5a3b00;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .powerRankingDashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.powerRankingPageMaple .powerRankingDashboardCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
+  box-shadow: 0 14px 32px rgba(16, 36, 63, 0.08);
+}
+
+.powerRankingPageMaple .powerRankingDashboardCard > span {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.powerRankingPageMaple .powerRankingDashboardCard > strong {
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.powerRankingPageMaple .powerRankingDashboardCard > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.powerRankingPageMaple .powerRankingDashboardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.powerRankingPageMaple .powerRankingDashboardList li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.88);
+}
+
+.powerRankingPageMaple .powerRankingDashboardList li strong {
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
+.powerRankingPageMaple .powerRankingDashboardList li span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.powerRankingPageMaple .powerRankingInventoryGrid,
+.powerRankingPageMaple .powerRankingLogGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.powerRankingPageMaple .powerRankingInventoryCard,
+.powerRankingPageMaple .powerRankingInventoryEmpty,
+.powerRankingPageMaple .powerRankingLogCard {
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
+  box-shadow: 0 14px 32px rgba(16, 36, 63, 0.08);
+}
+
+.powerRankingPageMaple .powerRankingInventoryCard {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  align-items: center;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEmpty,
+.powerRankingPageMaple .powerRankingLogCard {
+  padding: 18px;
+}
+
+.powerRankingPageMaple .powerRankingInventoryImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  background: #f6f9fd;
+}
+
+.powerRankingPageMaple .powerRankingInventoryBody {
+  display: grid;
+  gap: 6px;
+}
+
+.powerRankingPageMaple .powerRankingInventoryBody strong,
+.powerRankingPageMaple .powerRankingLogCard > strong {
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingPageMaple .powerRankingInventoryBody p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.powerRankingPageMaple .powerRankingInventoryBody span {
+  color: #17314f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .powerRankingLogList {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.powerRankingPageMaple .powerRankingLogList li {
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.92);
+}
+
+.powerRankingPageMaple .powerRankingLogList p {
+  margin: 0;
+  color: #17314f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.powerRankingPageMaple .powerRankingLogList time {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .powerRankingPageMaple .powerRankingPodiumGrid {
@@ -5438,8 +6030,13 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   --honor-spec-b: rgba(91, 197, 255, 0.24);
   --honor-spec-c: rgba(185, 136, 255, 0.24);
   --honor-line: rgba(255, 255, 255, 0.82);
+  --honor-rank-bg: linear-gradient(180deg, rgba(13, 23, 39, 0.96), rgba(33, 51, 78, 0.92));
+  --honor-rank-color: var(--honor-line);
+  --honor-rank-shadow: rgba(10, 18, 32, 0.18);
+  --honor-name-color: #122948;
+  --honor-name-shadow: rgba(255, 255, 255, 0.24);
   position: relative;
-  min-height: 360px;
+  min-height: 430px;
   border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 12px;
   overflow: hidden;
@@ -5479,27 +6076,28 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 .powerRankingPageMaple .powerRankingHonorCard::before {
   z-index: 0;
   background:
-    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.76), transparent 22%),
-    radial-gradient(circle at 82% 10%, var(--honor-glow), transparent 26%),
+    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.88), transparent 28%),
+    radial-gradient(circle at 82% 10%, var(--honor-glow), transparent 34%),
+    radial-gradient(circle at 50% 52%, rgba(255, 255, 255, 0.3), transparent 36%),
     linear-gradient(
       115deg,
-      transparent 0 22%,
-      var(--honor-spec-a) 28%,
-      transparent 34%,
-      var(--honor-spec-b) 42%,
+      transparent 0 18%,
+      var(--honor-spec-a) 24%,
+      transparent 32%,
+      var(--honor-spec-b) 40%,
       transparent 48%,
       var(--honor-spec-c) 58%,
-      transparent 66%
+      transparent 70%
     ),
     repeating-linear-gradient(
       125deg,
       rgba(255, 255, 255, 0.18) 0 3px,
       rgba(255, 255, 255, 0.02) 3px 10px
     );
-  background-size: 160% 160%, 140% 140%, 220% 220%, auto;
-  background-position: 50% 50%, 50% 50%, 50% 50%, center;
+  background-size: 190% 190%, 180% 180%, 150% 150%, 260% 260%, auto;
+  background-position: 50% 50%, 50% 50%, 50% 50%, 50% 50%, center;
   mix-blend-mode: screen;
-  opacity: 0.88;
+  opacity: 0.98;
 }
 
 .powerRankingPageMaple .powerRankingHonorCard::after {
@@ -5514,29 +6112,44 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 
 .powerRankingPageMaple .powerRankingHonorRank1 {
   --honor-base: linear-gradient(180deg, #fff7cb 0%, #fff5d8 44%, #f1d596 100%);
-  --honor-glow: rgba(255, 220, 117, 0.65);
+  --honor-glow: rgba(255, 220, 117, 0.82);
   --honor-spec-a: rgba(255, 104, 125, 0.28);
   --honor-spec-b: rgba(111, 205, 255, 0.3);
   --honor-spec-c: rgba(193, 136, 255, 0.28);
   --honor-line: rgba(255, 249, 224, 0.9);
+  --honor-rank-bg: linear-gradient(180deg, #fff5bf, #e0a83f);
+  --honor-rank-color: #4f2d00;
+  --honor-rank-shadow: rgba(173, 119, 18, 0.34);
+  --honor-name-color: #6f4700;
+  --honor-name-shadow: rgba(255, 245, 194, 0.9);
 }
 
 .powerRankingPageMaple .powerRankingHonorRank2 {
   --honor-base: linear-gradient(180deg, #edf3ff 0%, #eef5ff 44%, #c9d7ea 100%);
-  --honor-glow: rgba(178, 219, 255, 0.54);
+  --honor-glow: rgba(178, 219, 255, 0.72);
   --honor-spec-a: rgba(137, 104, 255, 0.22);
   --honor-spec-b: rgba(111, 216, 255, 0.26);
   --honor-spec-c: rgba(255, 173, 221, 0.22);
   --honor-line: rgba(242, 247, 255, 0.9);
+  --honor-rank-bg: linear-gradient(180deg, #f6f8fd, #a8b8d5);
+  --honor-rank-color: #324968;
+  --honor-rank-shadow: rgba(103, 125, 162, 0.28);
+  --honor-name-color: #425979;
+  --honor-name-shadow: rgba(255, 255, 255, 0.9);
 }
 
 .powerRankingPageMaple .powerRankingHonorRank3 {
   --honor-base: linear-gradient(180deg, #ffe7d7 0%, #fff0e2 44%, #ddb292 100%);
-  --honor-glow: rgba(255, 192, 143, 0.56);
+  --honor-glow: rgba(255, 192, 143, 0.76);
   --honor-spec-a: rgba(255, 132, 95, 0.24);
   --honor-spec-b: rgba(255, 223, 126, 0.24);
   --honor-spec-c: rgba(123, 196, 255, 0.2);
   --honor-line: rgba(255, 241, 232, 0.88);
+  --honor-rank-bg: linear-gradient(180deg, #f7d1b1, #ba7448);
+  --honor-rank-color: #fff4ea;
+  --honor-rank-shadow: rgba(129, 72, 34, 0.3);
+  --honor-name-color: #81471d;
+  --honor-name-shadow: rgba(255, 233, 219, 0.88);
 }
 
 .powerRankingPageMaple .powerRankingHonorOverlay {
@@ -5550,18 +6163,18 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   background:
     linear-gradient(
       115deg,
-      transparent 18%,
-      rgba(255, 245, 205, 0.34) 26%,
-      rgba(255, 255, 255, 0.96) 33%,
-      rgba(139, 220, 255, 0.86) 38%,
-      rgba(255, 120, 168, 0.54) 43%,
-      rgba(188, 129, 255, 0.56) 48%,
-      transparent 56%
+      transparent 10%,
+      rgba(255, 245, 205, 0.42) 20%,
+      rgba(255, 255, 255, 1) 29%,
+      rgba(139, 220, 255, 0.92) 36%,
+      rgba(255, 120, 168, 0.62) 43%,
+      rgba(188, 129, 255, 0.64) 50%,
+      transparent 64%
     ),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.34), transparent 42%);
-  background-size: 210% 210%, 130% 130%;
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.44), transparent 48%);
+  background-size: 280% 280%, 170% 170%;
   background-position: 50% 50%;
-  filter: brightness(1.12) saturate(1.18) opacity(0.82);
+  filter: brightness(1.18) saturate(1.24) opacity(0.9);
   transition:
     background-position 120ms ease,
     filter 120ms ease,
@@ -5573,9 +6186,9 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   z-index: 2;
   display: grid;
   align-content: start;
-  gap: 18px;
+  gap: 24px;
   height: 100%;
-  padding: 22px;
+  padding: 24px 22px 28px;
 }
 
 .powerRankingPageMaple .powerRankingHonorHeader {
@@ -5591,18 +6204,20 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  min-height: 40px;
-  padding: 0 14px;
+  min-width: 74px;
+  min-height: 46px;
+  padding: 0 18px;
   border-radius: 6px;
-  background: linear-gradient(180deg, rgba(13, 23, 39, 0.96), rgba(33, 51, 78, 0.92));
-  color: var(--honor-line);
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  background: var(--honor-rank-bg);
+  color: var(--honor-rank-color);
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 10px 20px rgba(10, 18, 32, 0.18);
+    0 12px 24px var(--honor-rank-shadow);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
 .powerRankingPageMaple .powerRankingHonorProfile {
@@ -5615,8 +6230,8 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 
 .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileImage,
 .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileFallback {
-  width: 116px;
-  height: 116px;
+  width: 148px;
+  height: 148px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.44);
   box-shadow:
@@ -5633,9 +6248,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingHonorBody strong {
+  color: var(--honor-name-color);
+  font-family: "Georgia", "Times New Roman", serif;
   font-size: 32px;
   line-height: 1.05;
   letter-spacing: -0.06em;
+  text-shadow: 0 2px 10px var(--honor-name-shadow);
 }
 
 .powerRankingPageMaple .powerRankingHonorBody p {
@@ -5680,6 +6298,11 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   font-size: 28px;
   line-height: 1;
   letter-spacing: -0.05em;
+}
+
+.powerRankingPageMaple .powerRankingHonorMeta strong.isNegative,
+.powerRankingPageMaple .powerRankingRowScore strong.isNegative {
+  color: #b42332;
 }
 
 .powerRankingPageMaple .powerRankingPodiumCard {
@@ -5949,6 +6572,36 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   min-width: 128px;
 }
 
+.powerRankingPageMaple .powerRankingItemActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.powerRankingPageMaple .powerRankingItemButton {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(135, 73, 31, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff1df, #ffe1bf);
+  color: #784312;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.powerRankingPageMaple .powerRankingItemButton.isPositive {
+  border-color: rgba(155, 39, 95, 0.14);
+  background: linear-gradient(180deg, #ffe4ee, #ffcddd);
+  color: #982056;
+}
+
+.powerRankingPageMaple .powerRankingItemButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .powerRankingPageMaple .powerRankingMemoList {
   gap: 12px;
 }
@@ -6012,7 +6665,13 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 @media (max-width: 1100px) {
+  .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingStats,
+  .powerRankingPageMaple .powerRankingInventoryGrid,
+  .powerRankingPageMaple .powerRankingLogGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .powerRankingPageMaple .powerRankingPodiumGrid {
     grid-template-columns: 1fr;
   }
@@ -6038,9 +6697,16 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
     border-radius: 10px;
   }
 
+  .powerRankingPageMaple .powerRankingControlPanel {
+    min-width: 100%;
+  }
+
   .powerRankingPageMaple .powerRankingHeroActions,
+  .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingStats,
-  .powerRankingPageMaple .powerRankingDetailActions {
+  .powerRankingPageMaple .powerRankingDetailActions,
+  .powerRankingPageMaple .powerRankingInventoryGrid,
+  .powerRankingPageMaple .powerRankingLogGrid {
     grid-template-columns: 1fr;
   }
 
@@ -6051,6 +6717,10 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 
   .powerRankingPageMaple .powerRankingSectionHead h2 {
     font-size: 28px;
+  }
+
+  .powerRankingPageMaple .powerRankingPeriodActions {
+    grid-template-columns: 1fr;
   }
 
   .powerRankingPageMaple .powerRankingBoard {
@@ -6107,16 +6777,27 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
     display: grid;
   }
 
+  .powerRankingPageMaple .powerRankingVoteActions,
+  .powerRankingPageMaple .powerRankingItemActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .powerRankingPageMaple .powerRankingProfileUpload,
   .powerRankingPageMaple .powerRankingBackLink,
   .powerRankingPageMaple .powerRankingVoteButton,
-  .powerRankingPageMaple .powerRankingMemoComposer button {
+  .powerRankingPageMaple .powerRankingMemoComposer button,
+  .powerRankingPageMaple .powerRankingItemButton {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (max-width: 560px) {
+  .powerRankingPageMaple {
+    background-size: 100% 100%, 100% 260px, cover;
+  }
+
   .powerRankingPageMaple .powerRankingHero h1 {
     font-size: clamp(30px, 12vw, 42px);
   }
@@ -6132,23 +6813,36 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   }
 
   .powerRankingPageMaple .powerRankingHonorCard {
-    min-height: 320px;
+    min-height: 360px;
     border-radius: 10px;
   }
 
   .powerRankingPageMaple .powerRankingHonorInner {
-    padding: 18px;
+    gap: 18px;
+    padding: 18px 16px 22px;
   }
 
   .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileImage,
   .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileFallback {
-    width: 92px;
-    height: 92px;
+    width: 128px;
+    height: 128px;
     border-radius: 8px;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorMedal {
+    min-width: 66px;
+    min-height: 42px;
+    padding: 0 14px;
+    font-size: 16px;
   }
 
   .powerRankingPageMaple .powerRankingHonorBody strong {
     font-size: 28px;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorMeta {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .powerRankingPageMaple .powerRankingPodiumCard strong {
@@ -6169,5 +6863,65 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   .powerRankingPageMaple .powerRankingMemoButtons {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .powerRankingRowDetail {
+    padding: 0 12px 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .powerRankingPageMaple .powerRankingShell {
+    width: calc(100vw - 16px);
+    padding-top: 16px;
+  }
+
+  .powerRankingPageMaple .communityTopBar {
+    padding: 12px;
+  }
+
+  .powerRankingPageMaple .powerRankingHeroMaple {
+    gap: 18px;
+    padding: 18px 14px;
+  }
+
+  .powerRankingPageMaple .powerRankingStatCard,
+  .powerRankingPageMaple .powerRankingDashboardCard,
+  .powerRankingPageMaple .powerRankingInventoryCard,
+  .powerRankingPageMaple .powerRankingLogCard {
+    padding: 14px;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorCard {
+    min-height: 338px;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileImage,
+  .powerRankingPageMaple .powerRankingHonorProfile .powerRankingProfileFallback {
+    width: 112px;
+    height: 112px;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorBody strong {
+    font-size: 24px;
+  }
+
+  .powerRankingPageMaple .powerRankingRowSummary {
+    padding: 14px 12px;
+  }
+
+  .powerRankingPageMaple .powerRankingRowIdentity {
+    gap: 10px;
+  }
+
+  .powerRankingPageMaple .powerRankingRowAvatar .powerRankingProfileImage,
+  .powerRankingPageMaple .powerRankingRowAvatar .powerRankingProfileFallback {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .powerRankingPageMaple .powerRankingRowIdentityText strong {
+    font-size: 18px;
   }
 }

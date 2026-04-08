@@ -2,7 +2,6 @@ import type {
   CmsPage,
   BoardPost,
   BoardPostCreateRequest,
-  BoardPostDeleteRequest,
   BoardPostUpdateRequest,
   BoardReply,
   BoardReplyCreateRequest,
@@ -12,26 +11,64 @@ import type {
   InquiryItem,
   MainPageContent,
   NoticeItem,
+  PowerRankingEquipmentState,
+  PowerRankingEquipRequest,
+  PowerRankingEventLog,
+  PowerRankingInventoryItem,
+  PowerRankingItemUseRequest,
+  PowerRankingItemUseResponse,
   PowerRankingNote,
   PowerRankingPeriod,
   PowerRankingPerson,
+  PowerRankingVoteResponse,
   PowerRankingVoteRequest,
   PublicSiteSettings,
   ResourceItem,
   SiteContent,
+  TodayVisitorRequest,
+  TodayVisitorResponse,
+  UserLoginRequest,
+  UserProfile,
+  UserSignupRequest,
   UploadedFileResponse
 } from "../types";
 import { getOrCreateDeviceId } from "../utils/deviceId";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
+let refreshPromise: Promise<void> | null = null;
+
+const refreshUserSession = async (): Promise<void> => {
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${apiBase}/api/users/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Device-Id": getOrCreateDeviceId()
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Refresh failed: ${response.status}`);
+        }
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+};
 
 const request = async <T>(
   path: string,
   options?: RequestInit,
-  token?: string
+  token?: string,
+  allowRefresh = true
 ): Promise<T> => {
   const response = await fetch(`${apiBase}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       "X-Device-Id": getOrCreateDeviceId(),
@@ -39,6 +76,18 @@ const request = async <T>(
       ...(options?.headers ?? {})
     }
   });
+
+  if (
+    response.status === 401 &&
+    allowRefresh &&
+    path !== "/api/users/refresh" &&
+    path !== "/api/users/login" &&
+    path !== "/api/users/signup" &&
+    path !== "/api/users/logout"
+  ) {
+    await refreshUserSession();
+    return request<T>(path, options, token, false);
+  }
 
   if (!response.ok) {
     let message = `Request failed: ${response.status}`;
@@ -61,17 +110,50 @@ const request = async <T>(
 };
 
 export const apiClient = {
+  signupUser: (payload: UserSignupRequest) =>
+    request<UserProfile>("/api/users/signup", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  loginUser: (payload: UserLoginRequest) =>
+    request<UserProfile>("/api/users/login", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  getCurrentUser: () => request<UserProfile>("/api/users/me", { method: "GET" }),
+  refreshCurrentUser: () => request<UserProfile>("/api/users/refresh", { method: "POST" }, undefined, false),
+  logoutUser: () => request<void>("/api/users/logout", { method: "POST" }, undefined, false),
+  getTodayVisitors: () => request<TodayVisitorResponse>("/api/visitors/today"),
+  trackTodayVisitor: (payload: TodayVisitorRequest) =>
+    request<TodayVisitorResponse>("/api/visitors/track", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
   getContent: () => request<SiteContent>("/api/content"),
   getCmsPage: (slug: string) => request<CmsPage>(`/api/cms-pages/${slug}`),
   getPublicSettings: () => request<PublicSiteSettings>("/api/settings/public"),
   getMainPage: () => request<MainPageContent>("/api/main-page"),
   getPowerRanking: (period: PowerRankingPeriod) =>
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
-  getBoardPosts: () => request<BoardPost[]>("/api/board/posts"),
+  getPowerRankingInventory: () => request<PowerRankingInventoryItem[]>("/api/power-ranking/inventory"),
+  getPowerRankingEquipment: () => request<PowerRankingEquipmentState>("/api/power-ranking/equipment"),
+  getPowerRankingEvents: () => request<PowerRankingEventLog[]>("/api/power-ranking/events"),
+  getBoardPosts: (search = "") =>
+    request<BoardPost[]>(`/api/board/posts?search=${encodeURIComponent(search)}`),
   getResources: () => request<ResourceItem[]>("/api/resources"),
   getNotices: () => request<NoticeItem[]>("/api/notices"),
   submitPowerRankingVote: (personId: string, payload: PowerRankingVoteRequest) =>
-    request<PowerRankingPerson>(`/api/power-ranking/${personId}/votes`, {
+    request<PowerRankingVoteResponse>(`/api/power-ranking/${personId}/votes`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  usePowerRankingItem: (payload: PowerRankingItemUseRequest) =>
+    request<PowerRankingItemUseResponse>("/api/power-ranking/items/use", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  equipPowerRankingEquipment: (payload: PowerRankingEquipRequest) =>
+    request<PowerRankingEquipmentState>("/api/power-ranking/equipment/equip", {
       method: "POST",
       body: JSON.stringify(payload)
     }),
@@ -108,10 +190,13 @@ export const apiClient = {
       method: "PUT",
       body: JSON.stringify(payload)
     }),
-  deleteBoardPost: (postId: string, password: string) =>
+  deleteBoardPost: (postId: string) =>
     request<void>(`/api/board/posts/${postId}`, {
-      method: "DELETE",
-      body: JSON.stringify({ password } satisfies BoardPostDeleteRequest)
+      method: "DELETE"
+    }),
+  recommendBoardPost: (postId: string) =>
+    request<BoardPost>(`/api/board/posts/${postId}/recommend`, {
+      method: "POST"
     }),
   createBoardReply: (postId: string, payload: BoardReplyCreateRequest) =>
     request<BoardReply>(`/api/board/posts/${postId}/replies`, {
@@ -136,8 +221,10 @@ export const apiClient = {
   uploadPowerRankingProfileImage: async (file: File) => {
     const response = await fetch(`${apiBase}/api/uploads/power-ranking-profile`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/octet-stream",
+        "X-Device-Id": getOrCreateDeviceId(),
         "X-File-Name": encodeURIComponent(file.name),
         "X-File-Type": file.type || "application/octet-stream"
       },
@@ -152,8 +239,10 @@ export const apiClient = {
   uploadBoardAttachment: async (file: File) => {
     const response = await fetch(`${apiBase}/api/uploads/board`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/octet-stream",
+        "X-Device-Id": getOrCreateDeviceId(),
         "X-File-Name": encodeURIComponent(file.name),
         "X-File-Type": file.type || "application/octet-stream"
       },
@@ -168,8 +257,10 @@ export const apiClient = {
   uploadInquiryAttachment: async (file: File) => {
     const response = await fetch(`${apiBase}/api/uploads/inquiry`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/octet-stream",
+        "X-Device-Id": getOrCreateDeviceId(),
         "X-File-Name": encodeURIComponent(file.name),
         "X-File-Type": file.type || "application/octet-stream"
       },

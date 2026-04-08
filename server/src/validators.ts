@@ -2,7 +2,6 @@ import { z } from "zod";
 import type {
   AdminLoginRequest,
   BoardPostCreateRequest,
-  BoardPostDeleteRequest,
   BoardPostUpdateRequest,
   BoardReplyCreateRequest,
   BoardReplyDeleteRequest,
@@ -16,7 +15,9 @@ import type {
   PowerRankingVoteActionRequest,
   PublicSiteSettingsUpsertRequest,
   NoticeUpsertRequest,
-  ResourceUpsertRequest
+  ResourceUpsertRequest,
+  UserLoginPayload,
+  UserSignupPayload
 } from "./types";
 
 const heroSlideSchema = z.object({
@@ -177,11 +178,50 @@ const powerRankingVoteActionSchema = z.object({
   period: z.enum(["all", "weekly", "daily"])
 });
 
-const boardPasswordSchema = z.string().trim().min(1).max(80);
+const powerRankingItemUseSchema = z.object({
+  personId: z.string().uuid(),
+  itemCode: z.enum(["byeokbangjun-blanket", "seoeuntaek-love"]),
+  period: z.enum(["all", "weekly", "daily"])
+});
+
+const powerRankingEquipSchema = z.object({
+  equipmentCode: z.enum([
+    "crown-of-cheers",
+    "star-visor",
+    "mint-beret",
+    "commander-jacket",
+    "ribbon-cardigan",
+    "golden-harness",
+    "midnight-slacks",
+    "wave-denim",
+    "aurora-skirt",
+    "thunder-boots",
+    "crystal-sneakers",
+    "ember-heels",
+    "titan-gauntlet",
+    "silk-gloves",
+    "pulse-gloves"
+  ])
+});
+
+const todayVisitorSchema = z.object({
+  deviceId: z.string().trim().min(12).max(120),
+  path: z.string().trim().min(1).max(300)
+});
+
+const userSignupSchema = z.object({
+  username: z.string().trim().min(4).max(40),
+  password: z.string().min(8).max(120),
+  name: z.string().trim().min(1).max(40),
+  nickname: z.string().trim().min(2).max(40)
+});
+
+const userLoginSchema = z.object({
+  username: z.string().trim().min(1).max(40),
+  password: z.string().min(1).max(120)
+});
 
 const boardPostCreateSchema = z.object({
-  authorName: z.string().trim().min(1).max(40),
-  password: boardPasswordSchema,
   title: z.string().trim().min(1).max(120),
   content: z.string().trim().min(1).max(4000),
   fileUrl: z.string().default(""),
@@ -191,15 +231,11 @@ const boardPostCreateSchema = z.object({
 });
 
 const boardPostUpdateSchema = z.object({
-  authorName: z.string().trim().min(1).max(40),
-  password: boardPasswordSchema,
   title: z.string().trim().min(1).max(120),
   content: z.string().trim().min(1).max(4000)
 });
 
-const boardPostDeleteSchema = z.object({
-  password: boardPasswordSchema
-});
+const boardPasswordSchema = z.string().trim().min(1).max(80);
 
 const boardReplyCreateSchema = z.object({
   authorName: z.string().trim().min(1).max(40),
@@ -329,12 +365,18 @@ export const parsePowerRankingNoteUpdate = (value: unknown): PowerRankingNoteUpd
   powerRankingNoteSchema.parse(value);
 export const parsePowerRankingVoteAction = (value: unknown): PowerRankingVoteActionRequest =>
   powerRankingVoteActionSchema.parse(value);
+export const parsePowerRankingItemUse = (value: unknown): import("./types").PowerRankingItemUsePayload =>
+  powerRankingItemUseSchema.parse(value);
+export const parsePowerRankingEquip = (value: unknown): import("./types").PowerRankingEquipPayload =>
+  powerRankingEquipSchema.parse(value);
+export const parseTodayVisitor = (value: unknown): import("./types").TodayVisitorPayload =>
+  todayVisitorSchema.parse(value);
+export const parseUserSignup = (value: unknown): UserSignupPayload => userSignupSchema.parse(value);
+export const parseUserLogin = (value: unknown): UserLoginPayload => userLoginSchema.parse(value);
 export const parseBoardPostCreate = (value: unknown): BoardPostCreateRequest =>
   boardPostCreateSchema.parse(value);
 export const parseBoardPostUpdate = (value: unknown): BoardPostUpdateRequest =>
   boardPostUpdateSchema.parse(value);
-export const parseBoardPostDelete = (value: unknown): BoardPostDeleteRequest =>
-  boardPostDeleteSchema.parse(value);
 export const parseBoardReplyCreate = (value: unknown): BoardReplyCreateRequest =>
   boardReplyCreateSchema.parse(value);
 export const parseBoardReplyUpdate = (value: unknown): BoardReplyUpdateRequest =>
