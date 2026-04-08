@@ -5542,7 +5542,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple {
-  background: #e8edf4;
+  background-color: #e8edf4;
+  background-image: url("/assets/main/office-lounge-wallpaper-photo.jpg");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .powerRankingPageMaple .powerRankingShell {
