@@ -1,9 +1,19 @@
 import type {
   CmsPage,
+  BoardPost,
+  BoardPostCreateRequest,
+  BoardPostDeleteRequest,
+  BoardPostUpdateRequest,
+  BoardReply,
+  BoardReplyCreateRequest,
+  BoardReplyDeleteRequest,
+  BoardReplyUpdateRequest,
   InquiryCreateRequest,
   InquiryItem,
   MainPageContent,
   NoticeItem,
+  PowerRankingNote,
+  PowerRankingPerson,
   PublicSiteSettings,
   ResourceItem,
   SiteContent,
@@ -51,13 +61,104 @@ export const apiClient = {
   getCmsPage: (slug: string) => request<CmsPage>(`/api/cms-pages/${slug}`),
   getPublicSettings: () => request<PublicSiteSettings>("/api/settings/public"),
   getMainPage: () => request<MainPageContent>("/api/main-page"),
+  getPowerRanking: () => request<PowerRankingPerson[]>("/api/power-ranking"),
+  getBoardPosts: () => request<BoardPost[]>("/api/board/posts"),
   getResources: () => request<ResourceItem[]>("/api/resources"),
   getNotices: () => request<NoticeItem[]>("/api/notices"),
+  incrementPowerRanking: (personId: string) =>
+    request<PowerRankingPerson>(`/api/power-ranking/${personId}/votes`, {
+      method: "POST"
+    }),
+  createPowerRankingNote: (personId: string, content: string) =>
+    request<PowerRankingNote>(`/api/power-ranking/${personId}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ content })
+    }),
+  updatePowerRankingNote: (noteId: string, content: string) =>
+    request<PowerRankingNote>(`/api/power-ranking/notes/${noteId}`, {
+      method: "PUT",
+      body: JSON.stringify({ content })
+    }),
+  deletePowerRankingNote: (noteId: string) =>
+    request<void>(`/api/power-ranking/notes/${noteId}`, {
+      method: "DELETE"
+    }),
+  updatePowerRankingProfileImage: (personId: string, profileImageUrl: string) =>
+    request<PowerRankingPerson>(`/api/power-ranking/${personId}/profile-image`, {
+      method: "PUT",
+      body: JSON.stringify({ profileImageUrl })
+    }),
+  deletePowerRankingProfileImage: (personId: string) =>
+    request<PowerRankingPerson>(`/api/power-ranking/${personId}/profile-image`, {
+      method: "DELETE"
+    }),
+  createBoardPost: (payload: BoardPostCreateRequest) =>
+    request<BoardPost>("/api/board/posts", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  updateBoardPost: (postId: string, payload: BoardPostUpdateRequest) =>
+    request<BoardPost>(`/api/board/posts/${postId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    }),
+  deleteBoardPost: (postId: string, password: string) =>
+    request<void>(`/api/board/posts/${postId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ password } satisfies BoardPostDeleteRequest)
+    }),
+  createBoardReply: (postId: string, payload: BoardReplyCreateRequest) =>
+    request<BoardReply>(`/api/board/posts/${postId}/replies`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  updateBoardReply: (replyId: string, payload: BoardReplyUpdateRequest) =>
+    request<BoardReply>(`/api/board/replies/${replyId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    }),
+  deleteBoardReply: (replyId: string, password: string) =>
+    request<void>(`/api/board/replies/${replyId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ password } satisfies BoardReplyDeleteRequest)
+    }),
   submitInquiry: (payload: InquiryCreateRequest) =>
     request<InquiryItem>("/api/inquiries", {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  uploadPowerRankingProfileImage: async (file: File) => {
+    const response = await fetch(`${apiBase}/api/uploads/power-ranking-profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "X-File-Name": encodeURIComponent(file.name),
+        "X-File-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message || `Upload failed: ${response.status}`);
+    }
+    return (await response.json()) as UploadedFileResponse;
+  },
+  uploadBoardAttachment: async (file: File) => {
+    const response = await fetch(`${apiBase}/api/uploads/board`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "X-File-Name": encodeURIComponent(file.name),
+        "X-File-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(body.message || `Upload failed: ${response.status}`);
+    }
+    return (await response.json()) as UploadedFileResponse;
+  },
   uploadInquiryAttachment: async (file: File) => {
     const response = await fetch(`${apiBase}/api/uploads/inquiry`, {
       method: "POST",

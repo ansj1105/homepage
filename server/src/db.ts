@@ -4,28 +4,55 @@ import { defaultMainPageContent } from "../../src/data/mainPageDefaults";
 import { defaultPublicSiteSettings } from "../../src/data/siteSettingsDefaults";
 import { initialSiteContent, notices as seedNotices, resources as seedResources } from "../../src/data/siteData";
 import type {
+  BoardPost,
+  BoardReply,
   CmsPage,
   InquiryItem,
   MainPageContent,
   MainPageSettings,
   NoticeItem,
+  PowerRankingNote,
+  PowerRankingPerson,
   PublicSiteSettings,
   ResourceItem,
   SiteContent
 } from "../../src/types";
 import type {
   InquiryCreatePayload,
+  BoardPostRow,
+  BoardReplyRow,
   CmsPageRow,
   InquiryRow,
   MainPageApplicationCardRow,
   MainPageSettingsRow,
   MainPageSlideRow,
   NoticeRow,
+  PowerRankingNoteRow,
+  PowerRankingPersonRow,
   PublicSiteSettingsRow,
   ResourceRow
 } from "./types";
 
 const resourceTypes = ["Catalog", "White Paper", "Certificate", "Case Study"] as const;
+const powerRankingSeedNames = [
+  "강동혁",
+  "권유진",
+  "김다슬",
+  "김민규",
+  "김태훈",
+  "박병준",
+  "서은택",
+  "신승아",
+  "안서정",
+  "이태수",
+  "장서현",
+  "장수희",
+  "전준우",
+  "정유찬",
+  "천건호",
+  "최수형",
+  "최영웅"
+];
 
 const parsePort = (value: string | undefined, fallback: number): number => {
   const parsed = Number(value);
@@ -69,6 +96,47 @@ const mapInquiryRow = (row: InquiryRow): InquiryItem => ({
   isRead: row.is_read,
   createdAt: row.created_at
 });
+
+const mapPowerRankingNoteRow = (row: PowerRankingNoteRow): PowerRankingNote => ({
+  id: row.id,
+  personId: row.person_id,
+  content: row.content,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at
+});
+
+const mapPowerRankingPersonRow = (row: PowerRankingPersonRow): Omit<PowerRankingPerson, "notes"> => ({
+  id: row.id,
+  name: row.name,
+  profileImageUrl: row.profile_image_url,
+  score: row.score,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at
+});
+
+const mapBoardReplyRow = (row: BoardReplyRow): BoardReply => ({
+  id: row.id,
+  postId: row.post_id,
+  authorName: row.author_name,
+  content: row.content,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at
+});
+
+const mapBoardPostRow = (row: BoardPostRow): Omit<BoardPost, "replies"> => ({
+  id: row.id,
+  authorName: row.author_name,
+  title: row.title,
+  content: row.content,
+  fileUrl: row.file_url,
+  fileName: row.file_name,
+  fileSize: Number(row.file_size ?? "0"),
+  fileMimeType: row.file_mime_type,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at
+});
+
+const passwordMismatchError = () => new Error("Invalid password");
 
 const mapMainPageSettingsRow = (row: MainPageSettingsRow): MainPageSettings => ({
   heroCopyTop: row.hero_copy_top,
@@ -262,6 +330,15 @@ export const seedDatabaseIfNeeded = async (): Promise<void> => {
       );
     }
   }
+
+  for (const name of powerRankingSeedNames) {
+    await pool.query(
+      `INSERT INTO power_ranking_people (name)
+       VALUES ($1)
+       ON CONFLICT (name) DO NOTHING`,
+      [name]
+    );
+  }
 };
 
 export const getContent = async (): Promise<SiteContent> => {
@@ -354,6 +431,299 @@ export const updateCmsPage = async (
 
 export const deleteCmsPage = async (slug: string): Promise<boolean> => {
   const result = await pool.query("DELETE FROM cms_pages WHERE slug = $1", [slug]);
+  return (result.rowCount ?? 0) > 0;
+};
+
+export const listPowerRankingPeople = async (): Promise<PowerRankingPerson[]> => {
+  const [peopleResult, notesResult] = await Promise.all([
+    pool.query<PowerRankingPersonRow>(
+      `SELECT id, name, profile_image_url, score, created_at, updated_at
+       FROM power_ranking_people
+       ORDER BY name ASC`
+    ),
+    pool.query<PowerRankingNoteRow>(
+      `SELECT id, person_id, content, created_at, updated_at
+       FROM power_ranking_notes
+       ORDER BY created_at DESC`
+    )
+  ]);
+
+  const notesByPerson = new Map<string, PowerRankingNote[]>();
+  for (const row of notesResult.rows) {
+    const note = mapPowerRankingNoteRow(row);
+    const current = notesByPerson.get(note.personId) ?? [];
+    current.push(note);
+    notesByPerson.set(note.personId, current);
+  }
+
+  return peopleResult.rows.map((row) => ({
+    ...mapPowerRankingPersonRow(row),
+    notes: notesByPerson.get(row.id) ?? []
+  }));
+};
+
+export const incrementPowerRankingScore = async (personId: string): Promise<PowerRankingPerson | null> => {
+  const result = await pool.query<PowerRankingPersonRow>(
+    `UPDATE power_ranking_people
+     SET score = score + 1, updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, name, profile_image_url, score, created_at, updated_at`,
+    [personId]
+  );
+  if (!result.rows[0]) {
+    return null;
+  }
+
+  const notesResult = await pool.query<PowerRankingNoteRow>(
+    `SELECT id, person_id, content, created_at, updated_at
+     FROM power_ranking_notes
+     WHERE person_id = $1
+     ORDER BY created_at DESC`,
+    [personId]
+  );
+
+  return {
+    ...mapPowerRankingPersonRow(result.rows[0]),
+    notes: notesResult.rows.map(mapPowerRankingNoteRow)
+  };
+};
+
+export const updatePowerRankingProfileImage = async (
+  personId: string,
+  profileImageUrl: string
+): Promise<PowerRankingPerson | null> => {
+  const result = await pool.query<PowerRankingPersonRow>(
+    `UPDATE power_ranking_people
+     SET profile_image_url = $2, updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, name, profile_image_url, score, created_at, updated_at`,
+    [personId, profileImageUrl]
+  );
+  if (!result.rows[0]) {
+    return null;
+  }
+
+  const notesResult = await pool.query<PowerRankingNoteRow>(
+    `SELECT id, person_id, content, created_at, updated_at
+     FROM power_ranking_notes
+     WHERE person_id = $1
+     ORDER BY created_at DESC`,
+    [personId]
+  );
+
+  return {
+    ...mapPowerRankingPersonRow(result.rows[0]),
+    notes: notesResult.rows.map(mapPowerRankingNoteRow)
+  };
+};
+
+export const createPowerRankingNote = async (
+  personId: string,
+  content: string
+): Promise<PowerRankingNote | null> => {
+  const personResult = await pool.query<{ id: string }>(
+    "SELECT id FROM power_ranking_people WHERE id = $1 LIMIT 1",
+    [personId]
+  );
+  if (!personResult.rows[0]) {
+    return null;
+  }
+
+  const result = await pool.query<PowerRankingNoteRow>(
+    `INSERT INTO power_ranking_notes (person_id, content)
+     VALUES ($1, $2)
+     RETURNING id, person_id, content, created_at, updated_at`,
+    [personId, content]
+  );
+  return mapPowerRankingNoteRow(result.rows[0]);
+};
+
+export const updatePowerRankingNote = async (
+  noteId: string,
+  content: string
+): Promise<PowerRankingNote | null> => {
+  const result = await pool.query<PowerRankingNoteRow>(
+    `UPDATE power_ranking_notes
+     SET content = $2, updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, person_id, content, created_at, updated_at`,
+    [noteId, content]
+  );
+  return result.rows[0] ? mapPowerRankingNoteRow(result.rows[0]) : null;
+};
+
+export const deletePowerRankingNote = async (noteId: string): Promise<boolean> => {
+  const result = await pool.query("DELETE FROM power_ranking_notes WHERE id = $1", [noteId]);
+  return (result.rowCount ?? 0) > 0;
+};
+
+const getBoardPostRowById = async (postId: string): Promise<import("./types").BoardPostRow | null> => {
+  const result = await pool.query<import("./types").BoardPostRow>(
+    `SELECT id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at
+     FROM board_posts
+     WHERE id = $1
+     LIMIT 1`,
+    [postId]
+  );
+  return result.rows[0] ?? null;
+};
+
+const getBoardReplyRowById = async (replyId: string): Promise<BoardReplyRow | null> => {
+  const result = await pool.query<BoardReplyRow>(
+    `SELECT id, post_id, author_name, password, content, created_at, updated_at
+     FROM board_replies
+     WHERE id = $1
+     LIMIT 1`,
+    [replyId]
+  );
+  return result.rows[0] ?? null;
+};
+
+const loadBoardRepliesByPostIds = async (postIds: string[]): Promise<Map<string, BoardReply[]>> => {
+  if (postIds.length === 0) {
+    return new Map();
+  }
+  const result = await pool.query<BoardReplyRow>(
+    `SELECT id, post_id, author_name, password, content, created_at, updated_at
+     FROM board_replies
+     WHERE post_id = ANY($1::uuid[])
+     ORDER BY created_at ASC`,
+    [postIds]
+  );
+  const repliesByPost = new Map<string, BoardReply[]>();
+  for (const row of result.rows) {
+    const reply = mapBoardReplyRow(row);
+    const current = repliesByPost.get(reply.postId) ?? [];
+    current.push(reply);
+    repliesByPost.set(reply.postId, current);
+  }
+  return repliesByPost;
+};
+
+export const listBoardPosts = async (): Promise<BoardPost[]> => {
+  const postsResult = await pool.query<import("./types").BoardPostRow>(
+    `SELECT id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at
+     FROM board_posts
+     ORDER BY created_at DESC`
+  );
+  const repliesByPost = await loadBoardRepliesByPostIds(postsResult.rows.map((row) => row.id));
+  return postsResult.rows.map((row) => ({
+    ...mapBoardPostRow(row),
+    replies: repliesByPost.get(row.id) ?? []
+  }));
+};
+
+export const createBoardPost = async (
+  authorName: string,
+  password: string,
+  title: string,
+  content: string,
+  fileUrl = "",
+  fileName = "",
+  fileSize = 0,
+  fileMimeType = ""
+): Promise<BoardPost> => {
+  const result = await pool.query<import("./types").BoardPostRow>(
+    `INSERT INTO board_posts (
+        author_name, password, title, content, file_url, file_name, file_size, file_mime_type
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at`,
+    [authorName, password, title, content, fileUrl, fileName, fileSize, fileMimeType]
+  );
+  return { ...mapBoardPostRow(result.rows[0]), replies: [] };
+};
+
+export const updateBoardPost = async (
+  postId: string,
+  authorName: string,
+  password: string,
+  title: string,
+  content: string
+): Promise<BoardPost | null> => {
+  const existing = await getBoardPostRowById(postId);
+  if (!existing) {
+    return null;
+  }
+  if (existing.password !== password) {
+    throw passwordMismatchError();
+  }
+  const result = await pool.query<import("./types").BoardPostRow>(
+    `UPDATE board_posts
+     SET author_name = $2, title = $3, content = $4, updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, author_name, password, title, content, file_url, file_name, file_size, file_mime_type, created_at, updated_at`,
+    [postId, authorName, title, content]
+  );
+  const repliesByPost = await loadBoardRepliesByPostIds([postId]);
+  return {
+    ...mapBoardPostRow(result.rows[0]),
+    replies: repliesByPost.get(postId) ?? []
+  };
+};
+
+export const deleteBoardPost = async (postId: string, password: string): Promise<boolean> => {
+  const existing = await getBoardPostRowById(postId);
+  if (!existing) {
+    return false;
+  }
+  if (existing.password !== password) {
+    throw passwordMismatchError();
+  }
+  const result = await pool.query("DELETE FROM board_posts WHERE id = $1", [postId]);
+  return (result.rowCount ?? 0) > 0;
+};
+
+export const createBoardReply = async (
+  postId: string,
+  authorName: string,
+  password: string,
+  content: string
+): Promise<BoardReply | null> => {
+  const post = await getBoardPostRowById(postId);
+  if (!post) {
+    return null;
+  }
+  const result = await pool.query<BoardReplyRow>(
+    `INSERT INTO board_replies (post_id, author_name, password, content)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, post_id, author_name, password, content, created_at, updated_at`,
+    [postId, authorName, password, content]
+  );
+  return mapBoardReplyRow(result.rows[0]);
+};
+
+export const updateBoardReply = async (
+  replyId: string,
+  password: string,
+  content: string
+): Promise<BoardReply | null> => {
+  const existing = await getBoardReplyRowById(replyId);
+  if (!existing) {
+    return null;
+  }
+  if (existing.password !== password) {
+    throw passwordMismatchError();
+  }
+  const result = await pool.query<BoardReplyRow>(
+    `UPDATE board_replies
+     SET content = $2, updated_at = NOW()
+     WHERE id = $1
+     RETURNING id, post_id, author_name, password, content, created_at, updated_at`,
+    [replyId, content]
+  );
+  return mapBoardReplyRow(result.rows[0]);
+};
+
+export const deleteBoardReply = async (replyId: string, password: string): Promise<boolean> => {
+  const existing = await getBoardReplyRowById(replyId);
+  if (!existing) {
+    return false;
+  }
+  if (existing.password !== password) {
+    throw passwordMismatchError();
+  }
+  const result = await pool.query("DELETE FROM board_replies WHERE id = $1", [replyId]);
   return (result.rowCount ?? 0) > 0;
 };
 

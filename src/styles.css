@@ -50,6 +50,626 @@ body {
     var(--bg);
 }
 
+.powerRankingPage {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(10, 127, 134, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(243, 134, 46, 0.18), transparent 24%),
+    #eef4fb;
+}
+
+.communityTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding: 16px 18px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 16px 36px rgba(16, 36, 63, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.communityTopBarBrand {
+  display: grid;
+  gap: 4px;
+}
+
+.communityTopBarBrand p {
+  margin: 0;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.communityTopBarBrand strong {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.communityTopBarNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.communityTopBarLink {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid #bfd0e1;
+  border-radius: 999px;
+  color: var(--ink);
+  background: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.communityTopBarLink:hover {
+  transform: translateY(-1px);
+  border-color: #96b3d0;
+  background: #eef4fb;
+}
+
+.communityTopBarLink.isActive {
+  border-color: var(--brand-deep);
+  background: var(--brand-deep);
+  color: #fff;
+}
+
+.communityTopBarLink.isGhost {
+  background: transparent;
+}
+
+.powerRankingShell {
+  width: min(1180px, 92vw);
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.powerRankingHero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 28px;
+}
+
+.boardHero {
+  align-items: flex-start;
+}
+
+.powerRankingEyebrow {
+  margin: 0 0 10px;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.powerRankingHero h1 {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 66px);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.powerRankingLead {
+  max-width: 640px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.powerRankingHeroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.powerRankingSortButton,
+.powerRankingBackLink,
+.powerRankingVoteButton,
+.powerRankingMemoComposer button,
+.powerRankingMemoButtons button {
+  border: 1px solid #bfd0e1;
+  background: #ffffff;
+  color: #17314f;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.powerRankingSortButton,
+.powerRankingBackLink {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.powerRankingSortButton.isActive,
+.powerRankingVoteButton,
+.powerRankingMemoComposer button {
+  background: var(--brand-deep);
+  border-color: var(--brand-deep);
+  color: #ffffff;
+}
+
+.powerRankingAlert,
+.powerRankingLoading {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 50, 95, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.boardSuccess {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(25, 117, 95, 0.15);
+  background: rgba(233, 248, 243, 0.94);
+  color: #0f5b47;
+  box-shadow: var(--shadow);
+}
+
+.powerRankingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.powerRankingCard {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.powerRankingCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.powerRankingProfileBlock {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.powerRankingProfileImage,
+.powerRankingProfileFallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  flex: 0 0 auto;
+}
+
+.powerRankingProfileImage {
+  object-fit: cover;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  background: #dfe8f3;
+}
+
+.powerRankingProfileFallback {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--brand-deep), var(--brand));
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.powerRankingRank {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.powerRankingCard h2 {
+  margin: 8px 0 0;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingScoreBlock {
+  display: grid;
+  justify-items: end;
+  min-width: 88px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: #edf4fb;
+}
+
+.powerRankingScoreBlock strong {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.powerRankingScoreBlock span {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.powerRankingActions {
+  display: flex;
+}
+
+.powerRankingProfileActions {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.powerRankingProfileUpload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #bfd0e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #17314f;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.powerRankingProfileUpload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.powerRankingVoteButton {
+  min-height: 42px;
+  padding: 0 18px;
+}
+
+.powerRankingMemoComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.powerRankingMemoComposer input,
+.powerRankingMemoEdit input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.powerRankingMemoComposer button {
+  min-width: 108px;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.powerRankingMemoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.powerRankingMemoItem,
+.powerRankingMemoEmpty {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.powerRankingMemoContent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.powerRankingMemoBullet {
+  width: 8px;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.powerRankingMemoContent p,
+.powerRankingMemoEmpty {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.powerRankingMemoContent time {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.powerRankingMemoButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.powerRankingMemoButtons button {
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.powerRankingMemoButtons .isGhost {
+  background: transparent;
+}
+
+.powerRankingMemoEdit {
+  display: grid;
+  gap: 10px;
+}
+
+.boardMetaPanel {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.boardMetaPanel strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.boardMetaPanel span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.boardComposer,
+.boardCard {
+  margin-bottom: 18px;
+  padding: 22px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.boardComposer {
+  display: grid;
+  gap: 14px;
+}
+
+.boardComposer input,
+.boardComposer textarea,
+.boardEditBlock input,
+.boardEditBlock textarea,
+.boardReplyComposer input,
+.boardReplyComposer textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+.boardComposer input,
+.boardEditBlock input,
+.boardReplyComposer input {
+  min-height: 44px;
+}
+
+.boardComposer textarea,
+.boardEditBlock textarea,
+.boardReplyComposer textarea {
+  min-height: 140px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+}
+
+.boardComposerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.boardComposerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.boardFileField {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.boardFileField input {
+  max-width: 340px;
+}
+
+.boardComposerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boardFileName {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.boardList {
+  display: grid;
+  gap: 18px;
+}
+
+.boardCardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.boardAuthorLine {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.boardAuthorLine strong {
+  font-size: 18px;
+}
+
+.boardAuthorLine time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.boardCard h2 {
+  margin: 8px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.boardCardBody {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.75;
+  color: #24364f;
+}
+
+.boardAttachment {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 127, 134, 0.18);
+  color: var(--brand-deep);
+  text-decoration: none;
+  font-weight: 700;
+  background: rgba(10, 127, 134, 0.08);
+}
+
+.boardReplies {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(15, 50, 95, 0.08);
+}
+
+.boardReplyHead {
+  margin-bottom: 12px;
+  color: var(--brand-deep);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.boardReplyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.boardReplyItem {
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.boardReplyItem p {
+  margin: 10px 0 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.boardReplyComposer {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.boardReplyComposerActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.boardEditBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.boardReplyEditBlock {
+  padding: 0;
+  background: transparent;
+}
+
+.boardCard .powerRankingMemoButtons button,
+.boardReplyItem .powerRankingMemoButtons button {
+  min-height: 36px;
+}
+
+.boardCard .powerRankingMemoButtons .isGhost,
+.boardReplyItem .powerRankingMemoButtons .isGhost {
+  background: transparent;
+}
+
 a {
   color: inherit;
 }

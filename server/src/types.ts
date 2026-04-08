@@ -1,4 +1,6 @@
 import type {
+  BoardPost,
+  BoardReply,
   InquiryCreateRequest,
   InquiryItem,
   CmsPage,
@@ -7,6 +9,8 @@ import type {
   MainPageSettings,
   PublicSiteSettings,
   NoticeItem,
+  PowerRankingNote,
+  PowerRankingPerson,
   ResourceItem,
   SiteContent
 } from "../../src/types";
@@ -31,6 +35,51 @@ export interface NoticeUpsertRequest {
 
 export interface InquiryStatusRequest {
   status: InquiryItem["status"];
+}
+
+export interface PowerRankingNoteCreateRequest {
+  content: string;
+}
+
+export interface PowerRankingNoteUpdateRequest {
+  content: string;
+}
+
+export interface BoardPostCreateRequest {
+  authorName: string;
+  password: string;
+  title: string;
+  content: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileMimeType?: string;
+}
+
+export interface BoardPostUpdateRequest {
+  authorName: string;
+  password: string;
+  title: string;
+  content: string;
+}
+
+export interface BoardPostDeleteRequest {
+  password: string;
+}
+
+export interface BoardReplyCreateRequest {
+  authorName: string;
+  password: string;
+  content: string;
+}
+
+export interface BoardReplyUpdateRequest {
+  password: string;
+  content: string;
+}
+
+export interface BoardReplyDeleteRequest {
+  password: string;
 }
 
 export type InquiryCreatePayload = InquiryCreateRequest;
@@ -135,3 +184,60 @@ export interface CmsPageUpsertRequest {
 }
 
 export type CmsPageUpdateRequest = Omit<CmsPage, "updatedAt">;
+
+export interface PowerRankingPersonRow {
+  id: string;
+  name: string;
+  profile_image_url: string;
+  score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PowerRankingNoteRow {
+  id: string;
+  person_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PowerRankingPersonWithNotes = PowerRankingPerson;
+export type PowerRankingNoteItem = PowerRankingNote;
+
+export interface BoardPostRow {
+  id: string;
+  author_name: string;
+  password: string;
+  title: string;
+  content: string;
+  file_url: string;
+  file_name: string;
+  file_size: string;
+  file_mime_type: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BoardReplyRow {
+  id: string;
+  post_id: string;
+  author_name: string;
+  password: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BoardReplyRow {
+  id: string;
+  post_id: string;
+  author_name: string;
+  password: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type BoardPostItem = BoardPost;
+export type BoardReplyItem = BoardReply;

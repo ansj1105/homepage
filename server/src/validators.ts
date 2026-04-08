@@ -1,10 +1,18 @@
 import { z } from "zod";
 import type {
   AdminLoginRequest,
+  BoardPostCreateRequest,
+  BoardPostDeleteRequest,
+  BoardPostUpdateRequest,
+  BoardReplyCreateRequest,
+  BoardReplyDeleteRequest,
+  BoardReplyUpdateRequest,
   CmsPageUpsertRequest,
   InquiryCreatePayload,
   InquiryStatusRequest,
   MainPageUpsertRequest,
+  PowerRankingNoteCreateRequest,
+  PowerRankingNoteUpdateRequest,
   PublicSiteSettingsUpsertRequest,
   NoticeUpsertRequest,
   ResourceUpsertRequest
@@ -158,6 +166,49 @@ const inquiryStatusSchema = z.object({
   status: z.enum(["in-review", "done"])
 });
 
+const powerRankingNoteSchema = z.object({
+  content: z.string().trim().min(1).max(300)
+});
+
+const boardPasswordSchema = z.string().trim().min(1).max(80);
+
+const boardPostCreateSchema = z.object({
+  authorName: z.string().trim().min(1).max(40),
+  password: boardPasswordSchema,
+  title: z.string().trim().min(1).max(120),
+  content: z.string().trim().min(1).max(4000),
+  fileUrl: z.string().default(""),
+  fileName: z.string().default(""),
+  fileSize: z.number().int().nonnegative().default(0),
+  fileMimeType: z.string().default("")
+});
+
+const boardPostUpdateSchema = z.object({
+  authorName: z.string().trim().min(1).max(40),
+  password: boardPasswordSchema,
+  title: z.string().trim().min(1).max(120),
+  content: z.string().trim().min(1).max(4000)
+});
+
+const boardPostDeleteSchema = z.object({
+  password: boardPasswordSchema
+});
+
+const boardReplyCreateSchema = z.object({
+  authorName: z.string().trim().min(1).max(40),
+  password: boardPasswordSchema,
+  content: z.string().trim().min(1).max(1000)
+});
+
+const boardReplyUpdateSchema = z.object({
+  password: boardPasswordSchema,
+  content: z.string().trim().min(1).max(1000)
+});
+
+const boardReplyDeleteSchema = z.object({
+  password: boardPasswordSchema
+});
+
 const mainPageSettingsSchema = z.object({
   heroCopyTop: z.string().min(1),
   heroCopyMid: z.string().min(1),
@@ -265,3 +316,19 @@ export const parsePublicSiteSettingsUpsert = (value: unknown): PublicSiteSetting
   publicSiteSettingsSchema.parse(value);
 export const parseCmsPageUpsert = (value: unknown): CmsPageUpsertRequest =>
   cmsPageUpsertSchema.parse(value);
+export const parsePowerRankingNoteCreate = (value: unknown): PowerRankingNoteCreateRequest =>
+  powerRankingNoteSchema.parse(value);
+export const parsePowerRankingNoteUpdate = (value: unknown): PowerRankingNoteUpdateRequest =>
+  powerRankingNoteSchema.parse(value);
+export const parseBoardPostCreate = (value: unknown): BoardPostCreateRequest =>
+  boardPostCreateSchema.parse(value);
+export const parseBoardPostUpdate = (value: unknown): BoardPostUpdateRequest =>
+  boardPostUpdateSchema.parse(value);
+export const parseBoardPostDelete = (value: unknown): BoardPostDeleteRequest =>
+  boardPostDeleteSchema.parse(value);
+export const parseBoardReplyCreate = (value: unknown): BoardReplyCreateRequest =>
+  boardReplyCreateSchema.parse(value);
+export const parseBoardReplyUpdate = (value: unknown): BoardReplyUpdateRequest =>
+  boardReplyUpdateSchema.parse(value);
+export const parseBoardReplyDelete = (value: unknown): BoardReplyDeleteRequest =>
+  boardReplyDeleteSchema.parse(value);

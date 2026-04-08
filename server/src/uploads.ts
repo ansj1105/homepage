@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-type UploadKind = "inquiry" | "resource";
+type UploadKind = "inquiry" | "resource" | "board" | "power-ranking-profile";
 
 export interface StoredUploadFile {
   url: string;
@@ -18,6 +18,8 @@ const parseBytes = (value: string | undefined, fallback: number): number => {
 const uploadRoot = path.resolve(process.cwd(), process.env.UPLOAD_DIR ?? "uploads");
 const inquiryMaxBytes = parseBytes(process.env.MAX_INQUIRY_FILE_BYTES, 10 * 1024 * 1024);
 const resourceMaxBytes = parseBytes(process.env.MAX_RESOURCE_FILE_BYTES, 30 * 1024 * 1024);
+const boardMaxBytes = parseBytes(process.env.MAX_BOARD_FILE_BYTES, 5 * 1024 * 1024);
+const powerRankingProfileMaxBytes = parseBytes(process.env.MAX_POWER_RANKING_PROFILE_BYTES, 5 * 1024 * 1024);
 
 const inquiryAllowedExt = new Set([
   ".pdf",
@@ -36,6 +38,8 @@ const inquiryAllowedExt = new Set([
 ]);
 
 const resourceAllowedExt = new Set([...inquiryAllowedExt, ".hwp", ".txt", ".md"]);
+const boardAllowedExt = new Set([...inquiryAllowedExt, ".hwp", ".txt"]);
+const powerRankingProfileAllowedExt = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"]);
 
 const sanitizeFileName = (filename: string): string =>
   path
@@ -53,8 +57,22 @@ const randomKey = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-const getMaxBytes = (kind: UploadKind) => (kind === "inquiry" ? inquiryMaxBytes : resourceMaxBytes);
-const getAllowedExtSet = (kind: UploadKind) => (kind === "inquiry" ? inquiryAllowedExt : resourceAllowedExt);
+const getMaxBytes = (kind: UploadKind) =>
+  kind === "inquiry"
+    ? inquiryMaxBytes
+    : kind === "resource"
+      ? resourceMaxBytes
+      : kind === "board"
+        ? boardMaxBytes
+        : powerRankingProfileMaxBytes;
+const getAllowedExtSet = (kind: UploadKind) =>
+  kind === "inquiry"
+    ? inquiryAllowedExt
+    : kind === "resource"
+      ? resourceAllowedExt
+      : kind === "board"
+        ? boardAllowedExt
+        : powerRankingProfileAllowedExt;
 
 export const getUploadRoot = () => uploadRoot;
 export const getUploadMaxBytes = (kind: UploadKind) => getMaxBytes(kind);

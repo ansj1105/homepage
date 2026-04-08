@@ -4,6 +4,8 @@ import { apiClient } from "./api/client";
 import { defaultPublicSiteSettings } from "./data/siteSettingsDefaults";
 import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
+import BoardPage from "./pages/BoardPage";
+import PowerRankingPage from "./pages/PowerRankingPage";
 import {
   ApplicationDetailPage,
   ApplicationListPage,
@@ -120,6 +122,10 @@ const App = () => (
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/main" element={<MainPage />} />
+      <Route path="/power-ranking" element={<PowerRankingPage />} />
+      <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
+      <Route path="/board" element={<BoardPage />} />
+      <Route path="/dongyeon-board" element={<BoardPage />} />
       <Route path="/asgasdg124af/admin" element={<AdminPage />} />
       <Route path="/admin" element={<Navigate to="/asgasdg124af/admin" replace />} />
 

@@ -3,25 +3,38 @@ import { ZodError } from "zod";
 import { createToken, verifyToken } from "./auth";
 import {
   createCmsPage,
+  createBoardPost,
+  createBoardReply,
   createInquiry,
   createNotice,
+  createPowerRankingNote,
   createResource,
   countUnreadInquiries,
+  deleteBoardPost,
+  deleteBoardReply,
   deleteCmsPage,
   deleteNotice,
+  deletePowerRankingNote,
   deleteResource,
   getCmsPageBySlug,
   getMainPageContent,
   getPublicSiteSettings,
   getContent,
+  incrementPowerRankingScore,
+  updatePowerRankingProfileImage,
+  listBoardPosts,
   listCmsPages,
   listInquiries,
+  listPowerRankingPeople,
   markAllInquiriesAsRead,
   saveMainPageContent,
   savePublicSiteSettings,
   listNotices,
   listResources,
   saveContent,
+  updateBoardPost,
+  updateBoardReply,
+  updatePowerRankingNote,
   updateInquiryStatus,
   updateCmsPage,
   updateNotice,
@@ -30,11 +43,19 @@ import {
 import { getUploadMaxBytes, getUploadRoot, storeUploadFile } from "./uploads";
 import {
   parseCmsPageUpsert,
+  parseBoardPostCreate,
+  parseBoardPostDelete,
+  parseBoardPostUpdate,
+  parseBoardReplyCreate,
+  parseBoardReplyDelete,
+  parseBoardReplyUpdate,
   parseInquiryCreate,
   parseInquiryStatus,
   parseLogin,
   parseMainPageUpsert,
   parseNoticeUpsert,
+  parsePowerRankingNoteCreate,
+  parsePowerRankingNoteUpdate,
   parsePublicSiteSettingsUpsert,
   parseResourceUpsert,
   parseSiteContent
@@ -115,6 +136,10 @@ const errorMiddleware = (
       res.status(400).json({ message: err.message });
       return;
     }
+    if (err.message === "Invalid password") {
+      res.status(403).json({ message: "비밀번호가 일치하지 않습니다." });
+      return;
+    }
     res.status(500).json({ message: err.message });
     return;
   }
@@ -162,6 +187,232 @@ export const createApp = () => {
     try {
       const content = await getMainPageContent();
       res.json(content);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/power-ranking", async (_req, res, next) => {
+    try {
+      const people = await listPowerRankingPeople();
+      res.json(people);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/board/posts", async (_req, res, next) => {
+    try {
+      const posts = await listBoardPosts();
+      res.json(posts);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/board/posts", async (req, res, next) => {
+    try {
+      const payload = parseBoardPostCreate(req.body);
+      const created = await createBoardPost(
+        payload.authorName,
+        payload.password,
+        payload.title,
+        payload.content,
+        payload.fileUrl ?? "",
+        payload.fileName ?? "",
+        payload.fileSize ?? 0,
+        payload.fileMimeType ?? ""
+      );
+      res.status(201).json(created);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/board/posts/:postId", async (req, res, next) => {
+    try {
+      const postId = getParamValue(req.params.postId);
+      const payload = parseBoardPostUpdate(req.body);
+      const updated = await updateBoardPost(
+        postId,
+        payload.authorName,
+        payload.password,
+        payload.title,
+        payload.content
+      );
+      if (!updated) {
+        res.status(404).json({ message: "Board post not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/board/posts/:postId", async (req, res, next) => {
+    try {
+      const postId = getParamValue(req.params.postId);
+      const payload = parseBoardPostDelete(req.body);
+      const deleted = await deleteBoardPost(postId, payload.password);
+      if (!deleted) {
+        res.status(404).json({ message: "Board post not found" });
+        return;
+      }
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/board/posts/:postId/replies", async (req, res, next) => {
+    try {
+      const postId = getParamValue(req.params.postId);
+      const payload = parseBoardReplyCreate(req.body);
+      const created = await createBoardReply(
+        postId,
+        payload.authorName,
+        payload.password,
+        payload.content
+      );
+      if (!created) {
+        res.status(404).json({ message: "Board post not found" });
+        return;
+      }
+      res.status(201).json(created);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/board/replies/:replyId", async (req, res, next) => {
+    try {
+      const replyId = getParamValue(req.params.replyId);
+      const payload = parseBoardReplyUpdate(req.body);
+      const updated = await updateBoardReply(replyId, payload.password, payload.content);
+      if (!updated) {
+        res.status(404).json({ message: "Board reply not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/board/replies/:replyId", async (req, res, next) => {
+    try {
+      const replyId = getParamValue(req.params.replyId);
+      const payload = parseBoardReplyDelete(req.body);
+      const deleted = await deleteBoardReply(replyId, payload.password);
+      if (!deleted) {
+        res.status(404).json({ message: "Board reply not found" });
+        return;
+      }
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/power-ranking/:personId/votes", async (req, res, next) => {
+    try {
+      const personId = getParamValue(req.params.personId);
+      const updated = await incrementPowerRankingScore(personId);
+      if (!updated) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/power-ranking/:personId/profile-image", async (req, res, next) => {
+    try {
+      const personId = getParamValue(req.params.personId);
+      const payload = req.body as { profileImageUrl?: string };
+      const updated = await updatePowerRankingProfileImage(personId, payload.profileImageUrl?.trim() ?? "");
+      if (!updated) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/power-ranking/:personId/profile-image", async (req, res, next) => {
+    try {
+      const personId = getParamValue(req.params.personId);
+      const updated = await updatePowerRankingProfileImage(personId, "");
+      if (!updated) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post(
+    "/api/uploads/power-ranking-profile",
+    express.raw({ type: "application/octet-stream", limit: getUploadMaxBytes("power-ranking-profile") }),
+    async (req, res, next) => {
+      try {
+        const fileBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+        const fileName = decodeURIComponent(req.header("x-file-name") ?? "profile_image");
+        const mimeType = req.header("x-file-type") ?? "application/octet-stream";
+        const stored = await storeUploadFile("power-ranking-profile", fileBuffer, fileName, mimeType);
+        res.status(201).json(stored);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post("/api/power-ranking/:personId/notes", async (req, res, next) => {
+    try {
+      const personId = getParamValue(req.params.personId);
+      const payload = parsePowerRankingNoteCreate(req.body);
+      const created = await createPowerRankingNote(personId, payload.content);
+      if (!created) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.status(201).json(created);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/power-ranking/notes/:noteId", async (req, res, next) => {
+    try {
+      const noteId = getParamValue(req.params.noteId);
+      const payload = parsePowerRankingNoteUpdate(req.body);
+      const updated = await updatePowerRankingNote(noteId, payload.content);
+      if (!updated) {
+        res.status(404).json({ message: "Memo not found" });
+        return;
+      }
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.delete("/api/power-ranking/notes/:noteId", async (req, res, next) => {
+    try {
+      const noteId = getParamValue(req.params.noteId);
+      const deleted = await deletePowerRankingNote(noteId);
+      if (!deleted) {
+        res.status(404).json({ message: "Memo not found" });
+        return;
+      }
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -392,6 +643,22 @@ export const createApp = () => {
         const fileName = decodeURIComponent(req.header("x-file-name") ?? "inquiry_file");
         const mimeType = req.header("x-file-type") ?? "application/octet-stream";
         const stored = await storeUploadFile("inquiry", fileBuffer, fileName, mimeType);
+        res.status(201).json(stored);
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  app.post(
+    "/api/uploads/board",
+    express.raw({ type: "application/octet-stream", limit: getUploadMaxBytes("board") }),
+    async (req, res, next) => {
+      try {
+        const fileBuffer = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+        const fileName = decodeURIComponent(req.header("x-file-name") ?? "board_file");
+        const mimeType = req.header("x-file-type") ?? "application/octet-stream";
+        const stored = await storeUploadFile("board", fileBuffer, fileName, mimeType);
         res.status(201).json(stored);
       } catch (error) {
         next(error);

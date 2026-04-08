@@ -193,3 +193,81 @@ export interface ProductFilterCriteria {
   maxWavelengthNm?: number;
   minPowerW?: number;
 }
+
+export interface PowerRankingNote {
+  id: string;
+  personId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PowerRankingPerson {
+  id: string;
+  name: string;
+  profileImageUrl: string;
+  score: number;
+  createdAt: string;
+  updatedAt: string;
+  notes: PowerRankingNote[];
+}
+
+export interface BoardReply {
+  id: string;
+  postId: string;
+  authorName: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoardPost {
+  id: string;
+  authorName: string;
+  title: string;
+  content: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  fileMimeType: string;
+  createdAt: string;
+  updatedAt: string;
+  replies: BoardReply[];
+}
+
+export interface BoardPostCreateRequest {
+  authorName: string;
+  password: string;
+  title: string;
+  content: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileMimeType?: string;
+}
+
+export interface BoardPostUpdateRequest {
+  authorName: string;
+  password: string;
+  title: string;
+  content: string;
+}
+
+export interface BoardPostDeleteRequest {
+  password: string;
+}
+
+export interface BoardReplyCreateRequest {
+  authorName: string;
+  password: string;
+  content: string;
+}
+
+export interface BoardReplyUpdateRequest {
+  password: string;
+  content: string;
+}
+
+export interface BoardReplyDeleteRequest {
+  password: string;
+}
