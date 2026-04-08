@@ -10,7 +10,10 @@ import type {
   PublicSiteSettings,
   NoticeItem,
   PowerRankingNote,
+  PowerRankingPeriod,
   PowerRankingPerson,
+  PowerRankingVoteDelta,
+  PowerRankingVoteRequest,
   ResourceItem,
   SiteContent
 } from "../../src/types";
@@ -44,6 +47,8 @@ export interface PowerRankingNoteCreateRequest {
 export interface PowerRankingNoteUpdateRequest {
   content: string;
 }
+
+export interface PowerRankingVoteActionRequest extends PowerRankingVoteRequest {}
 
 export interface BoardPostCreateRequest {
   authorName: string;
@@ -200,6 +205,20 @@ export interface PowerRankingNoteRow {
   content: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface PowerRankingVoteRow {
+  id: string;
+  person_id: string;
+  device_id: string;
+  delta: PowerRankingVoteDelta;
+  created_at: string;
+}
+
+export interface PowerRankingPeriodMeta {
+  period: PowerRankingPeriod;
+  whereSql: string;
+  params: string[];
 }
 
 export type PowerRankingPersonWithNotes = PowerRankingPerson;

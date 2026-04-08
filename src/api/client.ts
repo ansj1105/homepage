@@ -13,12 +13,15 @@ import type {
   MainPageContent,
   NoticeItem,
   PowerRankingNote,
+  PowerRankingPeriod,
   PowerRankingPerson,
+  PowerRankingVoteRequest,
   PublicSiteSettings,
   ResourceItem,
   SiteContent,
   UploadedFileResponse
 } from "../types";
+import { getOrCreateDeviceId } from "../utils/deviceId";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -31,6 +34,7 @@ const request = async <T>(
     ...options,
     headers: {
       "Content-Type": "application/json",
+      "X-Device-Id": getOrCreateDeviceId(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers ?? {})
     }
@@ -61,13 +65,15 @@ export const apiClient = {
   getCmsPage: (slug: string) => request<CmsPage>(`/api/cms-pages/${slug}`),
   getPublicSettings: () => request<PublicSiteSettings>("/api/settings/public"),
   getMainPage: () => request<MainPageContent>("/api/main-page"),
-  getPowerRanking: () => request<PowerRankingPerson[]>("/api/power-ranking"),
+  getPowerRanking: (period: PowerRankingPeriod) =>
+    request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
   getBoardPosts: () => request<BoardPost[]>("/api/board/posts"),
   getResources: () => request<ResourceItem[]>("/api/resources"),
   getNotices: () => request<NoticeItem[]>("/api/notices"),
-  incrementPowerRanking: (personId: string) =>
+  submitPowerRankingVote: (personId: string, payload: PowerRankingVoteRequest) =>
     request<PowerRankingPerson>(`/api/power-ranking/${personId}/votes`, {
-      method: "POST"
+      method: "POST",
+      body: JSON.stringify(payload)
     }),
   createPowerRankingNote: (personId: string, content: string) =>
     request<PowerRankingNote>(`/api/power-ranking/${personId}/notes`, {

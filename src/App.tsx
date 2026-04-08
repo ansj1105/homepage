@@ -6,6 +6,7 @@ import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import BoardPage from "./pages/BoardPage";
 import PowerRankingPage from "./pages/PowerRankingPage";
+import SignupPage from "./pages/SignupPage";
 import {
   ApplicationDetailPage,
   ApplicationListPage,
@@ -126,6 +127,8 @@ const App = () => (
       <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
       <Route path="/board" element={<BoardPage />} />
       <Route path="/dongyeon-board" element={<BoardPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/dongyeon-signup" element={<SignupPage />} />
       <Route path="/asgasdg124af/admin" element={<AdminPage />} />
       <Route path="/admin" element={<Navigate to="/asgasdg124af/admin" replace />} />
 

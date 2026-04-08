@@ -23,6 +23,14 @@ const CommunityTopBar = () => (
       >
         게시판
       </NavLink>
+      <NavLink
+        to="/dongyeon-signup"
+        className={({ isActive }) =>
+          `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
+        }
+      >
+        회원가입
+      </NavLink>
       <NavLink to="/" className="communityTopBarLink isGhost">
         메인으로
       </NavLink>

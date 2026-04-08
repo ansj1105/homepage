@@ -202,11 +202,21 @@ export interface PowerRankingNote {
   updatedAt: string;
 }
 
+export type PowerRankingPeriod = "all" | "weekly" | "daily";
+export type PowerRankingVoteDelta = 1 | -1;
+
+export interface PowerRankingVoteRequest {
+  deviceId: string;
+  delta: PowerRankingVoteDelta;
+  period: PowerRankingPeriod;
+}
+
 export interface PowerRankingPerson {
   id: string;
   name: string;
   profileImageUrl: string;
   score: number;
+  rank: number;
   createdAt: string;
   updatedAt: string;
   notes: PowerRankingNote[];

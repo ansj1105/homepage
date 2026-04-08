@@ -20,7 +20,7 @@ import {
   getMainPageContent,
   getPublicSiteSettings,
   getContent,
-  incrementPowerRankingScore,
+  changePowerRankingScore,
   updatePowerRankingProfileImage,
   listBoardPosts,
   listCmsPages,
@@ -56,6 +56,7 @@ import {
   parseNoticeUpsert,
   parsePowerRankingNoteCreate,
   parsePowerRankingNoteUpdate,
+  parsePowerRankingVoteAction,
   parsePublicSiteSettingsUpsert,
   parseResourceUpsert,
   parseSiteContent
@@ -86,6 +87,16 @@ const getParamValue = (value: string | string[] | undefined): string => {
   return "";
 };
 
+const getPowerRankingPeriod = (value: unknown): "all" | "weekly" | "daily" => {
+  if (value === "daily" || value === "weekly") {
+    return value;
+  }
+  return "all";
+};
+
+const getRequestDeviceId = (req: Request): string =>
+  (req.header("x-device-id") ?? "").trim();
+
 const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
   const token = getTokenFromRequest(req);
   if (!token || !verifyToken(token)) {
@@ -100,7 +111,7 @@ const corsMiddleware = (req: Request, res: Response, next: NextFunction): void =
   res.header("Access-Control-Allow-Origin", origin);
   res.header(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-File-Name, X-File-Type"
+    "Content-Type, Authorization, X-File-Name, X-File-Type, X-Device-Id"
   );
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if (req.method === "OPTIONS") {
@@ -192,9 +203,9 @@ export const createApp = () => {
     }
   });
 
-  app.get("/api/power-ranking", async (_req, res, next) => {
+  app.get("/api/power-ranking", async (req, res, next) => {
     try {
-      const people = await listPowerRankingPeople();
+      const people = await listPowerRankingPeople(getPowerRankingPeriod(req.query.period));
       res.json(people);
     } catch (error) {
       next(error);
@@ -318,7 +329,9 @@ export const createApp = () => {
   app.post("/api/power-ranking/:personId/votes", async (req, res, next) => {
     try {
       const personId = getParamValue(req.params.personId);
-      const updated = await incrementPowerRankingScore(personId);
+      const payload = parsePowerRankingVoteAction(req.body);
+      const deviceId = payload.deviceId || getRequestDeviceId(req);
+      const updated = await changePowerRankingScore(personId, deviceId, payload.delta, payload.period);
       if (!updated) {
         res.status(404).json({ message: "Ranking target not found" });
         return;

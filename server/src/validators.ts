@@ -13,6 +13,7 @@ import type {
   MainPageUpsertRequest,
   PowerRankingNoteCreateRequest,
   PowerRankingNoteUpdateRequest,
+  PowerRankingVoteActionRequest,
   PublicSiteSettingsUpsertRequest,
   NoticeUpsertRequest,
   ResourceUpsertRequest
@@ -170,6 +171,12 @@ const powerRankingNoteSchema = z.object({
   content: z.string().trim().min(1).max(300)
 });
 
+const powerRankingVoteActionSchema = z.object({
+  deviceId: z.string().trim().min(12).max(120),
+  delta: z.union([z.literal(1), z.literal(-1)]),
+  period: z.enum(["all", "weekly", "daily"])
+});
+
 const boardPasswordSchema = z.string().trim().min(1).max(80);
 
 const boardPostCreateSchema = z.object({
@@ -320,6 +327,8 @@ export const parsePowerRankingNoteCreate = (value: unknown): PowerRankingNoteCre
   powerRankingNoteSchema.parse(value);
 export const parsePowerRankingNoteUpdate = (value: unknown): PowerRankingNoteUpdateRequest =>
   powerRankingNoteSchema.parse(value);
+export const parsePowerRankingVoteAction = (value: unknown): PowerRankingVoteActionRequest =>
+  powerRankingVoteActionSchema.parse(value);
 export const parseBoardPostCreate = (value: unknown): BoardPostCreateRequest =>
   boardPostCreateSchema.parse(value);
 export const parseBoardPostUpdate = (value: unknown): BoardPostUpdateRequest =>

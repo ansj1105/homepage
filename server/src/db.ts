@@ -28,7 +28,9 @@ import type {
   MainPageSlideRow,
   NoticeRow,
   PowerRankingNoteRow,
+  PowerRankingPeriodMeta,
   PowerRankingPersonRow,
+  PowerRankingVoteRow,
   PublicSiteSettingsRow,
   ResourceRow
 } from "./types";
@@ -105,7 +107,7 @@ const mapPowerRankingNoteRow = (row: PowerRankingNoteRow): PowerRankingNote => (
   updatedAt: row.updated_at
 });
 
-const mapPowerRankingPersonRow = (row: PowerRankingPersonRow): Omit<PowerRankingPerson, "notes"> => ({
+const mapPowerRankingPersonRow = (row: PowerRankingPersonRow): Omit<PowerRankingPerson, "notes" | "rank"> => ({
   id: row.id,
   name: row.name,
   profileImageUrl: row.profile_image_url,
@@ -137,6 +139,61 @@ const mapBoardPostRow = (row: BoardPostRow): Omit<BoardPost, "replies"> => ({
 });
 
 const passwordMismatchError = () => new Error("Invalid password");
+const powerRankingDailyActionLimit = 1000;
+
+const getPowerRankingPeriodMeta = (period: "all" | "weekly" | "daily"): PowerRankingPeriodMeta => {
+  if (period === "daily") {
+    return {
+      period,
+      whereSql: "AND v.created_at >= NOW() - INTERVAL '1 day'",
+      params: []
+    };
+  }
+  if (period === "weekly") {
+    return {
+      period,
+      whereSql: "AND v.created_at >= NOW() - INTERVAL '7 days'",
+      params: []
+    };
+  }
+  return {
+    period,
+    whereSql: "",
+    params: []
+  };
+};
+
+const loadPowerRankingNotesByPersonIds = async (personIds: string[]): Promise<Map<string, PowerRankingNote[]>> => {
+  if (personIds.length === 0) {
+    return new Map();
+  }
+
+  const notesResult = await pool.query<PowerRankingNoteRow>(
+    `SELECT id, person_id, content, created_at, updated_at
+     FROM power_ranking_notes
+     WHERE person_id = ANY($1::uuid[])
+     ORDER BY created_at DESC`,
+    [personIds]
+  );
+
+  const notesByPerson = new Map<string, PowerRankingNote[]>();
+  for (const row of notesResult.rows) {
+    const note = mapPowerRankingNoteRow(row);
+    const current = notesByPerson.get(note.personId) ?? [];
+    current.push(note);
+    notesByPerson.set(note.personId, current);
+  }
+
+  return notesByPerson;
+};
+
+const loadPowerRankingPersonByPeriod = async (
+  personId: string,
+  period: "all" | "weekly" | "daily"
+): Promise<PowerRankingPerson | null> => {
+  const people = await listPowerRankingPeople(period);
+  return people.find((person) => person.id === personId) ?? null;
+};
 
 const mapMainPageSettingsRow = (row: MainPageSettingsRow): MainPageSettings => ({
   heroCopyTop: row.hero_copy_top,
@@ -446,58 +503,71 @@ export const deleteCmsPage = async (slug: string): Promise<boolean> => {
   return (result.rowCount ?? 0) > 0;
 };
 
-export const listPowerRankingPeople = async (): Promise<PowerRankingPerson[]> => {
-  const [peopleResult, notesResult] = await Promise.all([
-    pool.query<PowerRankingPersonRow>(
-      `SELECT id, name, profile_image_url, score, created_at, updated_at
-       FROM power_ranking_people
-       ORDER BY name ASC`
-    ),
-    pool.query<PowerRankingNoteRow>(
-      `SELECT id, person_id, content, created_at, updated_at
-       FROM power_ranking_notes
-       ORDER BY created_at DESC`
-    )
-  ]);
+export const listPowerRankingPeople = async (
+  period: "all" | "weekly" | "daily" = "all"
+): Promise<PowerRankingPerson[]> => {
+  const periodMeta = getPowerRankingPeriodMeta(period);
+  const scoreSql =
+    period === "all"
+      ? "p.score + COALESCE(SUM(v.delta), 0)"
+      : "COALESCE(SUM(v.delta), 0)";
+  const peopleResult = await pool.query<PowerRankingPersonRow>(
+    `SELECT
+       p.id,
+       p.name,
+       p.profile_image_url,
+       ${scoreSql}::int AS score,
+       p.created_at,
+       p.updated_at
+     FROM power_ranking_people p
+     LEFT JOIN power_ranking_votes v
+       ON v.person_id = p.id
+       ${periodMeta.whereSql}
+     GROUP BY p.id
+     ORDER BY score DESC, p.name ASC, p.updated_at DESC`
+  );
+  const notesByPerson = await loadPowerRankingNotesByPersonIds(peopleResult.rows.map((row) => row.id));
 
-  const notesByPerson = new Map<string, PowerRankingNote[]>();
-  for (const row of notesResult.rows) {
-    const note = mapPowerRankingNoteRow(row);
-    const current = notesByPerson.get(note.personId) ?? [];
-    current.push(note);
-    notesByPerson.set(note.personId, current);
-  }
-
-  return peopleResult.rows.map((row) => ({
+  return peopleResult.rows.map((row, index) => ({
     ...mapPowerRankingPersonRow(row),
+    rank: index + 1,
     notes: notesByPerson.get(row.id) ?? []
   }));
 };
 
-export const incrementPowerRankingScore = async (personId: string): Promise<PowerRankingPerson | null> => {
-  const result = await pool.query<PowerRankingPersonRow>(
-    `UPDATE power_ranking_people
-     SET score = score + 1, updated_at = NOW()
-     WHERE id = $1
-     RETURNING id, name, profile_image_url, score, created_at, updated_at`,
+export const changePowerRankingScore = async (
+  personId: string,
+  deviceId: string,
+  delta: 1 | -1,
+  period: "all" | "weekly" | "daily"
+): Promise<PowerRankingPerson | null> => {
+  const personResult = await pool.query<{ id: string }>(
+    "SELECT id FROM power_ranking_people WHERE id = $1 LIMIT 1",
     [personId]
   );
-  if (!result.rows[0]) {
+  if (!personResult.rows[0]) {
     return null;
   }
 
-  const notesResult = await pool.query<PowerRankingNoteRow>(
-    `SELECT id, person_id, content, created_at, updated_at
-     FROM power_ranking_notes
-     WHERE person_id = $1
-     ORDER BY created_at DESC`,
-    [personId]
+  const dailyCountResult = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+     FROM power_ranking_votes
+     WHERE device_id = $1
+       AND created_at >= NOW() - INTERVAL '1 day'`,
+    [deviceId]
+  );
+  const dailyCount = Number(dailyCountResult.rows[0]?.count ?? "0");
+  if (dailyCount >= powerRankingDailyActionLimit) {
+    throw new Error("하루 최대 1000회까지만 반영할 수 있습니다.");
+  }
+
+  await pool.query<PowerRankingVoteRow>(
+    `INSERT INTO power_ranking_votes (person_id, device_id, delta)
+     VALUES ($1, $2, $3)`,
+    [personId, deviceId, delta]
   );
 
-  return {
-    ...mapPowerRankingPersonRow(result.rows[0]),
-    notes: notesResult.rows.map(mapPowerRankingNoteRow)
-  };
+  return loadPowerRankingPersonByPeriod(personId, period);
 };
 
 export const updatePowerRankingProfileImage = async (
@@ -514,19 +584,7 @@ export const updatePowerRankingProfileImage = async (
   if (!result.rows[0]) {
     return null;
   }
-
-  const notesResult = await pool.query<PowerRankingNoteRow>(
-    `SELECT id, person_id, content, created_at, updated_at
-     FROM power_ranking_notes
-     WHERE person_id = $1
-     ORDER BY created_at DESC`,
-    [personId]
-  );
-
-  return {
-    ...mapPowerRankingPersonRow(result.rows[0]),
-    notes: notesResult.rows.map(mapPowerRankingNoteRow)
-  };
+  return loadPowerRankingPersonByPeriod(personId, "all");
 };
 
 export const createPowerRankingNote = async (

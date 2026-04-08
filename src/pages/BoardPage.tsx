@@ -4,6 +4,8 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import type { BoardPost, BoardReply } from "../types";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const BOARD_PAGE_SIZE = 10;
+const REPLY_PAGE_SIZE = 10;
 
 const alphaPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -87,6 +89,8 @@ const BoardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [replyVisibleCounts, setReplyVisibleCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     document.title = "동연 자유게시판";
@@ -131,7 +135,41 @@ const BoardPage = () => {
     });
   }, [posts]);
 
+  useEffect(() => {
+    setReplyVisibleCounts((current) => {
+      const next = { ...current };
+      let updated = false;
+      for (const post of posts) {
+        if (!next[post.id]) {
+          next[post.id] = REPLY_PAGE_SIZE;
+          updated = true;
+        }
+      }
+      return updated ? next : current;
+    });
+  }, [posts]);
+
   const postCountLabel = useMemo(() => `${posts.length}개의 게시글`, [posts.length]);
+  const totalPages = Math.max(1, Math.ceil(posts.length / BOARD_PAGE_SIZE));
+  const pagedPosts = useMemo(
+    () => posts.slice((currentPage - 1) * BOARD_PAGE_SIZE, currentPage * BOARD_PAGE_SIZE),
+    [currentPage, posts]
+  );
+  const visiblePageNumbers = useMemo(() => {
+    const windowSize = 5;
+    const half = Math.floor(windowSize / 2);
+    const start = Math.max(1, Math.min(currentPage - half, totalPages - windowSize + 1));
+    const end = Math.min(totalPages, start + windowSize - 1);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }, [currentPage, totalPages]);
+  const visiblePostStart = posts.length === 0 ? 0 : (currentPage - 1) * BOARD_PAGE_SIZE + 1;
+  const visiblePostEnd = Math.min(currentPage * BOARD_PAGE_SIZE, posts.length);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const patchPost = (updated: BoardPost) => {
     setPosts((current) => current.map((post) => (post.id === updated.id ? updated : post)));
@@ -209,6 +247,7 @@ const BoardPage = () => {
       });
 
       setPosts((current) => [created, ...current]);
+      setCurrentPage(1);
       setPostDraft(createPostDraft());
       setSuccessMessage("게시글이 등록되었습니다.");
     } catch (error) {
@@ -420,9 +459,68 @@ const BoardPage = () => {
         {isLoading ? (
           <div className="powerRankingLoading">게시글을 불러오는 중입니다.</div>
         ) : (
-          <div className="boardList">
-            {posts.map((post) => (
-              <article key={post.id} className="boardCard">
+          <>
+            {posts.length > 0 ? (
+              <section className="boardListToolbar">
+                <div className="boardListSummary">
+                  <strong>{postCountLabel}</strong>
+                  <span>
+                    {visiblePostStart}-{visiblePostEnd} / page {currentPage} of {totalPages}
+                  </span>
+                </div>
+                <nav className="boardPagination boardPaginationCompact" aria-label="게시판 상단 페이지">
+                  <button
+                    type="button"
+                    className="powerRankingBackLink"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(1)}
+                  >
+                    처음
+                  </button>
+                  <button
+                    type="button"
+                    className="powerRankingBackLink"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  >
+                    이전
+                  </button>
+                  <div className="boardPaginationNumbers">
+                    {visiblePageNumbers.map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        className={`powerRankingSortButton ${currentPage === page ? "isActive" : ""}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="powerRankingBackLink"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  >
+                    다음
+                  </button>
+                  <button
+                    type="button"
+                    className="powerRankingBackLink"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(totalPages)}
+                  >
+                    끝
+                  </button>
+                </nav>
+              </section>
+            ) : null}
+            <div className="boardList">
+              {pagedPosts.map((post, index) => {
+                const postNumber = posts.length - ((currentPage - 1) * BOARD_PAGE_SIZE + index);
+                return (
+                <article key={post.id} className="boardCard">
                 {editingPostId === post.id && editingPostDraft ? (
                   <div className="boardEditBlock">
                     <div className="boardComposerGrid">
@@ -486,6 +584,11 @@ const BoardPage = () => {
                   <>
                     <header className="boardCardHead">
                       <div>
+                        <div className="boardCardMeta">
+                          <span className="boardCardBadge">No. {postNumber}</span>
+                          <span className="boardCardMetaText">답글 {post.replies.length}</span>
+                          {post.fileUrl ? <span className="boardCardMetaText">첨부 있음</span> : null}
+                        </div>
                         <div className="boardAuthorLine">
                           <strong>{post.authorName}</strong>
                           <time>{formatDateTime(post.createdAt)}</time>
@@ -520,7 +623,7 @@ const BoardPage = () => {
                     <strong>답글 {post.replies.length}</strong>
                   </div>
                   <ul className="boardReplyList">
-                    {post.replies.map((reply) => (
+                    {post.replies.slice(0, replyVisibleCounts[post.id] ?? REPLY_PAGE_SIZE).map((reply) => (
                       <li key={reply.id} className="boardReplyItem">
                         {editingReplyId === reply.id && editingReplyDraft ? (
                           <div className="boardEditBlock boardReplyEditBlock">
@@ -592,6 +695,22 @@ const BoardPage = () => {
                     ))}
                     {post.replies.length === 0 ? <li className="powerRankingMemoEmpty">첫 답글을 남겨보세요.</li> : null}
                   </ul>
+                  {post.replies.length > (replyVisibleCounts[post.id] ?? REPLY_PAGE_SIZE) ? (
+                    <div className="boardReplyMore">
+                      <button
+                        type="button"
+                        className="powerRankingBackLink"
+                        onClick={() =>
+                          setReplyVisibleCounts((current) => ({
+                            ...current,
+                            [post.id]: (current[post.id] ?? REPLY_PAGE_SIZE) + REPLY_PAGE_SIZE
+                          }))
+                        }
+                      >
+                        답글 더보기
+                      </button>
+                    </div>
+                  ) : null}
 
                   <div className="boardReplyComposer">
                     {(() => {
@@ -655,10 +774,60 @@ const BoardPage = () => {
                     })()}
                   </div>
                 </section>
-              </article>
-            ))}
-            {posts.length === 0 ? <div className="powerRankingLoading">아직 등록된 게시글이 없습니다.</div> : null}
-          </div>
+                </article>
+              );
+              })}
+              {posts.length === 0 ? <div className="powerRankingLoading">아직 등록된 게시글이 없습니다.</div> : null}
+            </div>
+            {posts.length > 0 ? (
+              <nav className="boardPagination" aria-label="게시판 페이지">
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(1)}
+                >
+                  처음
+                </button>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                >
+                  이전
+                </button>
+                <div className="boardPaginationNumbers">
+                  {visiblePageNumbers.map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      className={`powerRankingSortButton ${currentPage === page ? "isActive" : ""}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                >
+                  끝
+                </button>
+              </nav>
+            ) : null}
+          </>
         )}
       </div>
     </div>
