@@ -125,7 +125,7 @@ const LegacyMainPage = () => {
       <main className="legacy-main-content">
         <section
           className="legacy-main-hero"
-          style={{ backgroundImage: `linear-gradient(135deg, rgba(6, 8, 12, 0.66), rgba(6, 8, 12, 0.36)), url(/assets/main/office-lounge-wallpaper.svg)` }}
+          style={{ backgroundImage: `linear-gradient(135deg, rgba(6, 8, 12, 0.66), rgba(6, 8, 12, 0.36)), url(/assets/main/office-lounge-wallpaper-photo.jpg)` }}
           aria-label="메인 비주얼"
         >
           <div className="legacy-main-hero-dim" />

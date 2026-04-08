@@ -5534,7 +5534,7 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   background:
     linear-gradient(180deg, rgba(10, 15, 24, 0.94) 0%, rgba(16, 23, 35, 0.92) 16%, rgba(232, 237, 244, 0.96) 16%, #e8edf4 100%),
     linear-gradient(180deg, rgba(10, 15, 24, 0.28), rgba(10, 15, 24, 0.28)),
-    url("/assets/sub/baeknong-hall-sign-banner.svg");
+    url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
   background-repeat: no-repeat, no-repeat, no-repeat;
   background-size: 100% 100%, 100% 320px, cover;
   background-position: center top, center top, center top;
@@ -5544,6 +5544,25 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   position: relative;
   width: min(1240px, 94vw);
   padding: 32px 0 72px;
+  isolation: isolate;
+}
+
+.powerRankingPageMaple .powerRankingShell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: -1;
+  width: 100vw;
+  height: 360px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(180deg, rgba(10, 15, 24, 0.2), rgba(10, 15, 24, 0.58)),
+    url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  pointer-events: none;
 }
 
 .powerRankingPageMaple .powerRankingHiddenBlessing {
@@ -5651,8 +5670,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 38%),
-    linear-gradient(180deg, rgba(15, 23, 38, 0.96), rgba(25, 37, 57, 0.94));
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(7, 10, 17, 0.46), rgba(12, 18, 30, 0.82)),
+    url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
   box-shadow: 0 16px 36px rgba(6, 10, 19, 0.24);
 }
 
