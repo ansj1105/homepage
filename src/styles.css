@@ -4281,6 +4281,7 @@ dl::after {
   background-image: url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
   background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
   min-height: 220px;
   display: grid;
   align-items: center;
@@ -4288,6 +4289,20 @@ dl::after {
 
 html[data-has-route-sub-banner="1"] .company-shell-hero {
   background-image: var(--route-sub-banner-image) !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+html[data-has-route-sub-banner="1"] .partner-shell-hero,
+html[data-has-route-sub-banner="1"] .inquiry-shell-hero,
+html[data-has-route-sub-banner="1"] .notice-shell-hero,
+html[data-has-route-sub-banner="1"] .application-shell-hero,
+html[data-has-route-sub-banner="1"] .solution-shell-hero {
+  background-image: var(--route-sub-banner-image) !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 
 .company-shell-hero-inner {
