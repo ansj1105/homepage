@@ -633,6 +633,7 @@ const BoardPage = () => {
                       <div className="powerRankingMemoButtons">
                         <button
                           type="button"
+                          className="boardRecommendButton"
                           disabled={selectedPost.isRecommendedByCurrentUser || submittingId === `recommend-${selectedPost.id}`}
                           onClick={() => void handleRecommendPost(selectedPost.id)}
                         >
@@ -872,24 +873,6 @@ const BoardPage = () => {
                   </div>
                 </div>
               </section>
-
-              <div className="boardSearchBar boardSearchBarBottom">
-                <input
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="제목 또는 작성자명 검색"
-                />
-                <button
-                  type="button"
-                  className="powerRankingVoteButton"
-                  onClick={() => {
-                    setCurrentPage(1);
-                    setSearchKeyword(searchInput.trim());
-                  }}
-                >
-                  검색
-                </button>
-              </div>
             </section>
           </>
         )}

@@ -57,14 +57,16 @@ const CommunityTopBar = ({
         >
           게시판
         </NavLink>
-        <NavLink
-          to="/dongyeon-equipment"
-          className={({ isActive }) =>
-            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
-          }
-        >
-          내 장비
-        </NavLink>
+        {!user || !onEquipEquipment ? (
+          <NavLink
+            to="/dongyeon-equipment"
+            className={({ isActive }) =>
+              `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
+            }
+          >
+            내 장비
+          </NavLink>
+        ) : null}
         <NavLink
           to="/dongyeon-hunting-ground"
           className={({ isActive }) =>

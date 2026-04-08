@@ -68,6 +68,9 @@ const getEventLabel = (event: PowerRankingEventLog): string => {
   return `${event.actorNickname}님이 ${event.personName} 인기도를 올렸습니다.`;
 };
 
+const getAnonymousDownvoteLabel = (event: PowerRankingEventLog): string =>
+  `익명 유저가 ${event.personName} 인기도를 내렸습니다.`;
+
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
@@ -922,6 +925,15 @@ const PowerRankingPage = () => {
                     const loveItem = inventoryByCode["seoeuntaek-love"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
+                    const personItemUseLogs = eventLogs
+                      .filter((event) => event.personId === person.id && event.eventType === "item_use")
+                      .slice(0, 5);
+                    const personItemDropLogs = eventLogs
+                      .filter((event) => event.personId === person.id && event.eventType === "item_drop")
+                      .slice(0, 5);
+                    const personDownvoteLogs = eventLogs
+                      .filter((event) => event.personId === person.id && event.eventType === "vote_down")
+                      .slice(0, 5);
 
                     return (
                       <details
@@ -1035,6 +1047,62 @@ const PowerRankingPage = () => {
                                 ? "사용 중..."
                                 : `서은택의 사랑 ${loveItem ? `x${loveItem.quantity}` : "x0"}`}
                             </button>
+                          </div>
+
+                          <div className="powerRankingLogGrid powerRankingRowLogGrid">
+                            <article className="powerRankingLogCard">
+                              <strong>적용된 아이템</strong>
+                              <ul className="powerRankingLogList">
+                                {personItemUseLogs.length === 0 ? (
+                                  <li>
+                                    <p>최근 기록이 없습니다.</p>
+                                  </li>
+                                ) : (
+                                  personItemUseLogs.map((event) => (
+                                    <li key={event.id}>
+                                      <p>{getEventLabel(event)}</p>
+                                      <time>{formatDateTime(event.createdAt)}</time>
+                                    </li>
+                                  ))
+                                )}
+                              </ul>
+                            </article>
+
+                            <article className="powerRankingLogCard">
+                              <strong>드랍된 아이템</strong>
+                              <ul className="powerRankingLogList">
+                                {personItemDropLogs.length === 0 ? (
+                                  <li>
+                                    <p>최근 기록이 없습니다.</p>
+                                  </li>
+                                ) : (
+                                  personItemDropLogs.map((event) => (
+                                    <li key={event.id}>
+                                      <p>{getEventLabel(event)}</p>
+                                      <time>{formatDateTime(event.createdAt)}</time>
+                                    </li>
+                                  ))
+                                )}
+                              </ul>
+                            </article>
+
+                            <article className="powerRankingLogCard">
+                              <strong>인기도 하락 로그</strong>
+                              <ul className="powerRankingLogList">
+                                {personDownvoteLogs.length === 0 ? (
+                                  <li>
+                                    <p>최근 기록이 없습니다.</p>
+                                  </li>
+                                ) : (
+                                  personDownvoteLogs.map((event) => (
+                                    <li key={event.id}>
+                                      <p>{getAnonymousDownvoteLabel(event)}</p>
+                                      <time>{formatDateTime(event.createdAt)}</time>
+                                    </li>
+                                  ))
+                                )}
+                              </ul>
+                            </article>
                           </div>
 
                           <div className="powerRankingMemoComposer">

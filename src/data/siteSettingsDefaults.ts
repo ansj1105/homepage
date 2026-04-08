@@ -3,7 +3,7 @@ import type { PublicSiteSettings } from "../types";
 
 const yonseiFaviconUrl = "https://www.yonsei.ac.kr/favicon.ico";
 const yonseiOgImageUrl = "https://yonsei.ac.kr/Web-home/_UI/images/img_symbol.png";
-const baeknongHallBannerUrl = "/assets/sub/baeknong-hall-sign-banner.svg";
+const baeknongHallBannerUrl = "/assets/sub/baeknong-hall-sign-banner-photo.jpg";
 
 export const defaultPublicSiteSettings: PublicSiteSettings = {
   routeMeta: [
