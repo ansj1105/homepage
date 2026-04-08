@@ -32,6 +32,13 @@ const formatDateTime = (value: string): string => {
   }).format(date);
 };
 
+const isImageAttachment = (fileUrl: string, fileMimeType?: string): boolean => {
+  if (fileMimeType?.startsWith("image/")) {
+    return true;
+  }
+  return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(fileUrl);
+};
+
 type PostDraft = {
   title: string;
   content: string;
@@ -520,6 +527,53 @@ const BoardPage = () => {
                 </div>
               </section>
 
+              <nav className="boardPagination" aria-label="게시판 페이지">
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(1)}
+                >
+                  처음
+                </button>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                >
+                  이전
+                </button>
+                <div className="boardPaginationNumbers">
+                  {visiblePageNumbers.map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      className={`powerRankingSortButton ${currentPage === page ? "isActive" : ""}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  className="powerRankingBackLink"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                >
+                  끝
+                </button>
+              </nav>
+
               {selectedPost ? (
                 <article className="boardCard boardDetailCard">
                 {editingPostId === selectedPost.id && editingPostDraft ? (
@@ -603,9 +657,21 @@ const BoardPage = () => {
                     </header>
                     <p className="boardCardBody">{selectedPost.content}</p>
                     {selectedPost.fileUrl ? (
-                      <a href={selectedPost.fileUrl} target="_blank" rel="noreferrer" className="boardAttachment">
-                        첨부파일: {selectedPost.fileName || "다운로드"}
-                      </a>
+                      <>
+                        {isImageAttachment(selectedPost.fileUrl, selectedPost.fileMimeType) ? (
+                          <div className="boardAttachmentPreview">
+                            <img
+                              src={selectedPost.fileUrl}
+                              alt={selectedPost.fileName || `${selectedPost.title} 첨부 이미지`}
+                              className="boardAttachmentImage"
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : null}
+                        <a href={selectedPost.fileUrl} target="_blank" rel="noreferrer" className="boardAttachment">
+                          첨부파일: {selectedPost.fileName || "다운로드"}
+                        </a>
+                      </>
                     ) : null}
                   </>
                 )}
@@ -765,53 +831,6 @@ const BoardPage = () => {
                 </section>
                 </article>
               ) : null}
-
-              <nav className="boardPagination" aria-label="게시판 페이지">
-                <button
-                  type="button"
-                  className="powerRankingBackLink"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(1)}
-                >
-                  처음
-                </button>
-                <button
-                  type="button"
-                  className="powerRankingBackLink"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                >
-                  이전
-                </button>
-                <div className="boardPaginationNumbers">
-                  {visiblePageNumbers.map((page) => (
-                    <button
-                      key={page}
-                      type="button"
-                      className={`powerRankingSortButton ${currentPage === page ? "isActive" : ""}`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  className="powerRankingBackLink"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                >
-                  다음
-                </button>
-                <button
-                  type="button"
-                  className="powerRankingBackLink"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(totalPages)}
-                >
-                  끝
-                </button>
-              </nav>
             </section>
 
             <section className="boardSearchFooter">
