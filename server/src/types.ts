@@ -16,6 +16,7 @@ import type {
   PowerRankingEquippedItem,
   PowerRankingEventLog,
   PowerRankingEventType,
+  HuntingProfile,
   PowerRankingInventoryItem,
   PowerRankingItemCode,
   PowerRankingEquipRequest,
@@ -69,6 +70,7 @@ export interface PowerRankingVoteActionRequest extends PowerRankingVoteRequest {
 export interface PowerRankingItemUsePayload extends PowerRankingItemUseRequest {}
 export interface PowerRankingEquipPayload extends PowerRankingEquipRequest {}
 export interface TodayVisitorPayload extends TodayVisitorRequest {}
+export interface HuntingProfileResponse extends HuntingProfile {}
 
 export interface UserSignupPayload extends UserSignupRequest {}
 export interface UserLoginPayload extends UserLoginRequest {}

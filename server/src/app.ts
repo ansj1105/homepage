@@ -29,6 +29,7 @@ import {
   getContent,
   changePowerRankingScore,
   equipPowerRankingEquipment,
+  getHuntingProfile,
   listPowerRankingEquipmentState,
   listPowerRankingEventLogs,
   listPowerRankingInventory,
@@ -509,6 +510,20 @@ export const createApp = () => {
     try {
       const events = await listPowerRankingEventLogs(60);
       res.json(events);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/hunting/stage-1", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const profile = await getHuntingProfile(user.id);
+      res.json(profile);
     } catch (error) {
       next(error);
     }

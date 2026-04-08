@@ -9,6 +9,7 @@ import type {
   BoardPost,
   BoardReply,
   CmsPage,
+  HuntingProfile,
   InquiryItem,
   MainPageContent,
   MainPageSettings,
@@ -1050,6 +1051,123 @@ export const equipPowerRankingEquipment = async (
   }
 
   return listPowerRankingEquipmentState(userId);
+};
+
+export const getHuntingProfile = async (userId: string): Promise<HuntingProfile> => {
+  const equipmentState = await listPowerRankingEquipmentState(userId);
+  const equippedItems = Object.values(equipmentState.equipped);
+  const recommendationCountResult = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+     FROM power_ranking_votes
+     WHERE user_id = $1
+       AND delta > 0`,
+    [userId]
+  );
+  const recommendationCoefficient = Number(recommendationCountResult.rows[0]?.count ?? "0");
+  const equippedCount = equippedItems.length;
+
+  let setMultiplier = 1;
+  if (equippedCount >= 5) {
+    setMultiplier = 1.8;
+  } else if (equippedCount >= 4) {
+    setMultiplier = 1.55;
+  } else if (equippedCount >= 3) {
+    setMultiplier = 1.35;
+  } else if (equippedCount >= 2) {
+    setMultiplier = 1.15;
+  }
+
+  let effectMultiplier = 1;
+  let flatBonus = 0;
+  const effectBreakdown: string[] = [];
+
+  for (const item of equippedItems) {
+    switch (item.code) {
+      case "crown-of-cheers":
+        effectMultiplier *= 2;
+        effectBreakdown.push("환호의 왕관 x2.00");
+        break;
+      case "star-visor":
+        effectMultiplier *= 1.12;
+        effectBreakdown.push("별빛 바이저 x1.12");
+        break;
+      case "mint-beret":
+        effectMultiplier *= 1.08;
+        effectBreakdown.push("민트 베레모 x1.08");
+        break;
+      case "commander-jacket":
+        effectMultiplier *= 1.18;
+        effectBreakdown.push("사령관 재킷 x1.18");
+        break;
+      case "ribbon-cardigan":
+        effectMultiplier *= 1.1;
+        effectBreakdown.push("리본 가디건 x1.10");
+        break;
+      case "golden-harness":
+        flatBonus += 20;
+        effectBreakdown.push("골든 하네스 +20");
+        break;
+      case "midnight-slacks":
+        effectMultiplier *= 1.22;
+        effectBreakdown.push("미드나잇 슬랙스 x1.22");
+        break;
+      case "wave-denim":
+        flatBonus += 12;
+        effectBreakdown.push("웨이브 데님 +12");
+        break;
+      case "aurora-skirt":
+        effectMultiplier *= 1.1;
+        effectBreakdown.push("오로라 스커트 x1.10");
+        break;
+      case "thunder-boots":
+        flatBonus += 8;
+        effectBreakdown.push("썬더 부츠 +8");
+        break;
+      case "crystal-sneakers":
+        effectMultiplier *= 1.06;
+        effectBreakdown.push("크리스털 스니커즈 x1.06");
+        break;
+      case "ember-heels":
+        effectMultiplier *= 1.07;
+        effectBreakdown.push("엠버 힐 x1.07");
+        break;
+      case "titan-gauntlet":
+        effectMultiplier *= 1.18;
+        effectBreakdown.push("타이탄 건틀릿 x1.18");
+        break;
+      case "silk-gloves":
+        flatBonus += 10;
+        effectBreakdown.push("실크 글러브 +10");
+        break;
+      case "pulse-gloves":
+        effectMultiplier *= 1.05;
+        effectBreakdown.push("펄스 글러브 x1.05");
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (equippedCount >= 2) {
+    effectBreakdown.unshift(`장비 세트 x${setMultiplier.toFixed(2)}`);
+  }
+
+  const basePower = Math.max(10, recommendationCoefficient);
+  const battlePower = Math.max(
+    1,
+    Math.floor(basePower * setMultiplier * effectMultiplier + flatBonus)
+  );
+
+  return {
+    recommendationCoefficient,
+    battlePower,
+    setMultiplier,
+    effectMultiplier,
+    flatBonus,
+    effectBreakdown,
+    equipmentInventory: equipmentState.inventory,
+    equippedItems: equipmentState.equipped
+  };
 };
 
 export const updatePowerRankingProfileImage = async (

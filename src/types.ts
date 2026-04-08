@@ -263,6 +263,17 @@ export interface PowerRankingEquipmentState {
   equipped: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
 }
 
+export interface HuntingProfile {
+  recommendationCoefficient: number;
+  battlePower: number;
+  setMultiplier: number;
+  effectMultiplier: number;
+  flatBonus: number;
+  effectBreakdown: string[];
+  equipmentInventory: PowerRankingEquipmentInventoryItem[];
+  equippedItems: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
+}
+
 export interface PowerRankingInventoryItem extends PowerRankingItemCatalogEntry {
   quantity: number;
   createdAt: string;

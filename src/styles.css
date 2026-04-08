@@ -5525,8 +5525,28 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingShell {
+  position: relative;
   width: min(1240px, 94vw);
   padding: 32px 0 72px;
+}
+
+.powerRankingPageMaple .powerRankingHiddenBlessing {
+  position: absolute;
+  top: 88px;
+  right: 10px;
+  z-index: 5;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 0.12;
+  cursor: pointer;
+}
+
+.powerRankingPageMaple .powerRankingHiddenBlessing:hover {
+  opacity: 0.22;
 }
 
 .powerRankingPageMaple .communityTopBar {
@@ -6021,14 +6041,14 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+  align-items: end;
 }
 
 .powerRankingPageMaple .powerRankingHonorCard {
   --honor-base: #fff6d9;
   --honor-glow: rgba(255, 219, 117, 0.5);
-  --honor-spec-a: rgba(255, 97, 156, 0.28);
-  --honor-spec-b: rgba(91, 197, 255, 0.24);
-  --honor-spec-c: rgba(185, 136, 255, 0.24);
+  --honor-sheen: rgba(255, 255, 255, 0.78);
+  --honor-shadow: rgba(138, 105, 27, 0.18);
   --honor-line: rgba(255, 255, 255, 0.82);
   --honor-rank-bg: linear-gradient(180deg, rgba(13, 23, 39, 0.96), rgba(33, 51, 78, 0.92));
   --honor-rank-color: var(--honor-line);
@@ -6042,17 +6062,17 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   overflow: hidden;
   isolation: isolate;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.8), transparent 32%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.16)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.4) 74%, rgba(255, 255, 255, 0.1)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 38%, rgba(0, 0, 0, 0.04) 100%),
     var(--honor-base);
   transition:
     transform 140ms ease,
     box-shadow 180ms ease,
     border-color 180ms ease;
   box-shadow:
-    0 16px 34px rgba(16, 36, 63, 0.12),
+    0 18px 36px rgba(16, 36, 63, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.68),
-    inset 0 -18px 28px rgba(16, 36, 63, 0.08);
+    inset 0 -20px 34px rgba(16, 36, 63, 0.08);
 }
 
 .powerRankingPageMaple .powerRankingHonorCard:hover {
@@ -6076,28 +6096,21 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 .powerRankingPageMaple .powerRankingHonorCard::before {
   z-index: 0;
   background:
-    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.88), transparent 28%),
-    radial-gradient(circle at 82% 10%, var(--honor-glow), transparent 34%),
-    radial-gradient(circle at 50% 52%, rgba(255, 255, 255, 0.3), transparent 36%),
+    linear-gradient(102deg, transparent 18%, rgba(255, 255, 255, 0.2) 28%, var(--honor-sheen) 36%, rgba(255, 255, 255, 0.18) 46%, transparent 58%),
+    radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.82), transparent 26%),
+    radial-gradient(circle at 84% 12%, var(--honor-glow), transparent 36%),
+    radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.16), transparent 42%),
     linear-gradient(
-      115deg,
-      transparent 0 18%,
-      var(--honor-spec-a) 24%,
-      transparent 32%,
-      var(--honor-spec-b) 40%,
-      transparent 48%,
-      var(--honor-spec-c) 58%,
-      transparent 70%
-    ),
-    repeating-linear-gradient(
-      125deg,
-      rgba(255, 255, 255, 0.18) 0 3px,
-      rgba(255, 255, 255, 0.02) 3px 10px
+      180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      transparent 24%,
+      transparent 72%,
+      rgba(0, 0, 0, 0.06) 100%
     );
-  background-size: 190% 190%, 180% 180%, 150% 150%, 260% 260%, auto;
-  background-position: 50% 50%, 50% 50%, 50% 50%, 50% 50%, center;
-  mix-blend-mode: screen;
-  opacity: 0.98;
+  background-size: 240% 240%, 140% 140%, 180% 180%, 140% 140%, auto;
+  background-position: 50% 50%, 0 0, 100% 0, 50% 50%, center;
+  mix-blend-mode: soft-light;
+  opacity: 0.94;
 }
 
 .powerRankingPageMaple .powerRankingHonorCard::after {
@@ -6111,11 +6124,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingHonorRank1 {
-  --honor-base: linear-gradient(180deg, #fff7cb 0%, #fff5d8 44%, #f1d596 100%);
-  --honor-glow: rgba(255, 220, 117, 0.82);
-  --honor-spec-a: rgba(255, 104, 125, 0.28);
-  --honor-spec-b: rgba(111, 205, 255, 0.3);
-  --honor-spec-c: rgba(193, 136, 255, 0.28);
+  grid-column: 2;
+  min-height: 500px;
+  --honor-base: linear-gradient(180deg, #f8df86 0%, #f4cf62 34%, #e1b53d 68%, #c8921f 100%);
+  --honor-glow: rgba(255, 245, 194, 0.86);
+  --honor-sheen: rgba(255, 251, 226, 0.96);
+  --honor-shadow: rgba(170, 117, 17, 0.22);
   --honor-line: rgba(255, 249, 224, 0.9);
   --honor-rank-bg: linear-gradient(180deg, #fff5bf, #e0a83f);
   --honor-rank-color: #4f2d00;
@@ -6125,11 +6139,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingHonorRank2 {
-  --honor-base: linear-gradient(180deg, #edf3ff 0%, #eef5ff 44%, #c9d7ea 100%);
-  --honor-glow: rgba(178, 219, 255, 0.72);
-  --honor-spec-a: rgba(137, 104, 255, 0.22);
-  --honor-spec-b: rgba(111, 216, 255, 0.26);
-  --honor-spec-c: rgba(255, 173, 221, 0.22);
+  grid-column: 1;
+  min-height: 450px;
+  --honor-base: linear-gradient(180deg, #eff3f9 0%, #dfe5ef 36%, #bcc7d6 72%, #98a6bb 100%);
+  --honor-glow: rgba(247, 250, 255, 0.84);
+  --honor-sheen: rgba(255, 255, 255, 0.94);
+  --honor-shadow: rgba(102, 119, 145, 0.18);
   --honor-line: rgba(242, 247, 255, 0.9);
   --honor-rank-bg: linear-gradient(180deg, #f6f8fd, #a8b8d5);
   --honor-rank-color: #324968;
@@ -6139,11 +6154,12 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingHonorRank3 {
-  --honor-base: linear-gradient(180deg, #ffe7d7 0%, #fff0e2 44%, #ddb292 100%);
-  --honor-glow: rgba(255, 192, 143, 0.76);
-  --honor-spec-a: rgba(255, 132, 95, 0.24);
-  --honor-spec-b: rgba(255, 223, 126, 0.24);
-  --honor-spec-c: rgba(123, 196, 255, 0.2);
+  grid-column: 3;
+  min-height: 420px;
+  --honor-base: linear-gradient(180deg, #ecc0a1 0%, #d99a6f 36%, #bb7145 72%, #96512b 100%);
+  --honor-glow: rgba(255, 229, 210, 0.74);
+  --honor-sheen: rgba(255, 242, 232, 0.9);
+  --honor-shadow: rgba(123, 73, 38, 0.2);
   --honor-line: rgba(255, 241, 232, 0.88);
   --honor-rank-bg: linear-gradient(180deg, #f7d1b1, #ba7448);
   --honor-rank-color: #fff4ea;
@@ -6158,23 +6174,21 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   z-index: 1;
   pointer-events: none;
   border-radius: inherit;
-  mix-blend-mode: color-dodge;
-  opacity: 0.82;
+  mix-blend-mode: screen;
+  opacity: 0.88;
   background:
     linear-gradient(
-      115deg,
-      transparent 10%,
-      rgba(255, 245, 205, 0.42) 20%,
-      rgba(255, 255, 255, 1) 29%,
-      rgba(139, 220, 255, 0.92) 36%,
-      rgba(255, 120, 168, 0.62) 43%,
-      rgba(188, 129, 255, 0.64) 50%,
-      transparent 64%
+      102deg,
+      transparent 16%,
+      rgba(255, 255, 255, 0.16) 26%,
+      rgba(255, 255, 255, 0.9) 34%,
+      rgba(255, 255, 255, 0.22) 42%,
+      transparent 56%
     ),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.44), transparent 48%);
-  background-size: 280% 280%, 170% 170%;
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.22), transparent 46%);
+  background-size: 220% 220%, 140% 140%;
   background-position: 50% 50%;
-  filter: brightness(1.18) saturate(1.24) opacity(0.9);
+  filter: brightness(1.08) saturate(1.02) opacity(0.88);
   transition:
     background-position 120ms ease,
     filter 120ms ease,
@@ -6602,6 +6616,90 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   opacity: 0.5;
 }
 
+.powerRankingPageMaple .huntingMonsterGrid,
+.powerRankingPageMaple .huntingInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.powerRankingPageMaple .huntingMonsterCard,
+.powerRankingPageMaple .huntingBreakdownCard {
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
+  box-shadow: 0 14px 32px rgba(16, 36, 63, 0.08);
+}
+
+.powerRankingPageMaple .huntingMonsterCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.powerRankingPageMaple .huntingMonsterBadge {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f8d27d, #e7ab45);
+  color: #352000;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.powerRankingPageMaple .huntingMonsterCard strong,
+.powerRankingPageMaple .huntingBreakdownCard strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingPageMaple .huntingMonsterCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.powerRankingPageMaple .huntingMonsterStat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #17314f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .huntingMonsterHpBar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(16, 36, 63, 0.08);
+}
+
+.powerRankingPageMaple .huntingMonsterHpFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f36a6a, #f3c04f);
+}
+
+.powerRankingPageMaple .huntingMonsterCard small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .huntingBreakdownCard {
+  margin-top: 14px;
+  padding: 18px;
+}
+
 .powerRankingPageMaple .powerRankingMemoList {
   gap: 12px;
 }
@@ -6668,7 +6766,9 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingInventoryGrid,
-  .powerRankingPageMaple .powerRankingLogGrid {
+  .powerRankingPageMaple .powerRankingLogGrid,
+  .powerRankingPageMaple .huntingMonsterGrid,
+  .powerRankingPageMaple .huntingInfoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -6706,7 +6806,9 @@ html[data-has-route-sub-banner="1"] .company-shell-hero {
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingDetailActions,
   .powerRankingPageMaple .powerRankingInventoryGrid,
-  .powerRankingPageMaple .powerRankingLogGrid {
+  .powerRankingPageMaple .powerRankingLogGrid,
+  .powerRankingPageMaple .huntingMonsterGrid,
+  .powerRankingPageMaple .huntingInfoGrid {
     grid-template-columns: 1fr;
   }
 

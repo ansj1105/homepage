@@ -65,6 +65,14 @@ const CommunityTopBar = ({
         >
           내 장비
         </NavLink>
+        <NavLink
+          to="/dongyeon-hunting-ground"
+          className={({ isActive }) =>
+            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
+          }
+        >
+          사냥터
+        </NavLink>
         {!user ? (
           <>
             <NavLink

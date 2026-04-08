@@ -633,9 +633,21 @@ const PowerRankingPage = () => {
     }
   };
 
+  const handleHiddenBlessing = () => {
+    for (let index = 0; index < 3; index += 1) {
+      window.alert("장현준의 축복을 받았습니다");
+    }
+  };
+
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
+        <button
+          type="button"
+          className="powerRankingHiddenBlessing"
+          aria-label="hidden blessing"
+          onClick={handleHiddenBlessing}
+        />
         <CommunityTopBar
           equipmentInventory={equipmentInventory}
           equippedItems={equippedItems}
@@ -648,8 +660,7 @@ const PowerRankingPage = () => {
             <p className="powerRankingEyebrow">World Ranking</p>
             <h1>동아리연합회</h1>
             <p className="powerRankingLead">
-              메이플스토리 랭킹 페이지처럼 상단 하이라이트와 순위표 중심으로 재구성했습니다.
-              투표와 메모는 각 순위 행의 상세 패널에서 바로 관리할 수 있습니다.
+              동연 파워랭킹 1등을 뽑습니다. 절대적인 권력을 가질수잇습니다.
             </p>
           </div>
 
