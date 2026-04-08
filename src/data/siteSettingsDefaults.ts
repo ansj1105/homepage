@@ -5,7 +5,7 @@ export const defaultPublicSiteSettings: PublicSiteSettings = {
   routeMeta: [
     {
       route: "/",
-      title: "신호텍 주식회사",
+      title: "동연 파워랭킹",
       faviconUrl: "/favicon.ico",
       ogImageUrl: "/assets/legacy/images/hero/main_011498524747.jpg",
       subBannerImageUrl: ""

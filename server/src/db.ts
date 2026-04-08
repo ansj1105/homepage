@@ -182,8 +182,20 @@ const hasLatestRouteMeta = (settings: PublicSiteSettings): boolean => {
 };
 
 const normalizePublicSiteSettings = (settings: PublicSiteSettings): PublicSiteSettings => {
+  const normalizedRouteMeta = settings.routeMeta.map((item) =>
+    item.route === "/"
+      ? {
+          ...item,
+          ...defaultPublicSiteSettings.routeMeta[0]
+        }
+      : item
+  );
+
   if (hasLatestTopMenu(settings) && hasLatestProductMega(settings) && hasLatestRouteMeta(settings)) {
-    return settings;
+    return {
+      ...settings,
+      routeMeta: normalizedRouteMeta
+    };
   }
 
   return {
