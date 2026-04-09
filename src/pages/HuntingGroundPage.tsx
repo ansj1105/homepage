@@ -55,6 +55,24 @@ type StageMonsterState = StageMonster & {
   defeatedCount: number;
 };
 
+const monsterImageUrls: Record<string, string> = {
+  "slime-chairman": "/assets/monsters/slime-chairman.svg",
+  "poster-goblin": "/assets/monsters/poster-goblin.svg",
+  "canteen-wolf": "/assets/monsters/canteen-wolf.svg",
+  "ledger-bat": "/assets/monsters/ledger-bat.svg",
+  "seminar-golem": "/assets/monsters/seminar-golem.svg",
+  "hall-keeper": "/assets/monsters/hall-keeper.svg",
+  "vault-mimic": "/assets/monsters/vault-mimic.svg",
+  "executive-specter": "/assets/monsters/executive-specter.svg",
+  "council-dragon": "/assets/monsters/council-dragon.svg",
+  "booth-spirit": "/assets/monsters/booth-spirit.svg",
+  "cheer-lion": "/assets/monsters/cheer-lion.svg",
+  "night-parade-queen": "/assets/monsters/night-parade-queen.svg",
+  "index-wraith": "/assets/monsters/index-wraith.svg",
+  "ledger-hydra": "/assets/monsters/ledger-hydra.svg",
+  "grand-archive-core": "/assets/monsters/grand-archive-core.svg"
+};
+
 
 const stageDefinitions: StageDefinition[] = [
   {
@@ -717,6 +735,17 @@ const HuntingGroundPage = () => {
     appendLog(`${stage.name}으로 이동했습니다.`);
   };
 
+  const handleMonsterFocus = (monsterId: string) => {
+    setProgress((current) => ({
+      ...current,
+      selectedMonsterId: monsterId
+    }));
+    const monsterName = stageMonsters.find((monster) => monster.id === monsterId)?.name;
+    if (monsterName) {
+      appendLog(`${monsterName}을(를) 현재 자동 사냥 대상으로 지정했습니다.`);
+    }
+  };
+
   const handleUseConsumable = (code: HuntingConsumableCode) => {
     if (progress.consumables[code] < 1) {
       setErrorMessage("보유한 소비 아이템이 없습니다.");
@@ -970,12 +999,17 @@ const HuntingGroundPage = () => {
                 {stageMonsters.map((monster) => {
                   const hpPercent = Math.max(0, (monster.currentHp / monster.maxHp) * 100);
                   return (
-                    <button
+                    <article
                       key={monster.id}
-                      type="button"
                       className={`huntingMonsterCard ${progress.selectedMonsterId === monster.id ? "isActive" : ""}`}
-                      onClick={() => handleAttackMonster(monster.id)}
                     >
+                      <div className="huntingMonsterVisual">
+                        <img
+                          src={monsterImageUrls[monster.id]}
+                          alt={monster.name}
+                          className="huntingMonsterImage"
+                        />
+                      </div>
                       <span className="huntingMonsterBadge">{activeStage.badge}</span>
                       <strong>{monster.name}</strong>
                       <p>{monster.flavor}</p>
@@ -987,7 +1021,23 @@ const HuntingGroundPage = () => {
                         <div className="huntingMonsterHpFill" style={{ width: `${hpPercent}%` }} />
                       </div>
                       <small>드롭: {monster.reward} · 처치 {monster.defeatedCount}</small>
-                    </button>
+                      <div className="huntingMonsterActions">
+                        <button
+                          type="button"
+                          className="powerRankingItemButton"
+                          onClick={() => handleAttackMonster(monster.id)}
+                        >
+                          공격
+                        </button>
+                        <button
+                          type="button"
+                          className={`powerRankingBackLink ${progress.selectedMonsterId === monster.id ? "isActiveTarget" : ""}`}
+                          onClick={() => handleMonsterFocus(monster.id)}
+                        >
+                          {progress.autoAttackEnabled ? "자동 대상 지정" : "대상 지정"}
+                        </button>
+                      </div>
+                    </article>
                   );
                 })}
               </div>
@@ -995,9 +1045,17 @@ const HuntingGroundPage = () => {
               {selectedMonster ? (
                 <div className="huntingMonsterDetailPanel">
                   <div className="huntingMonsterDetailHead">
+                    <div className="huntingMonsterDetailVisual">
+                      <img
+                        src={monsterImageUrls[selectedMonster.id]}
+                        alt={selectedMonster.name}
+                        className="huntingMonsterDetailImage"
+                      />
+                    </div>
                     <div>
                       <p className="powerRankingEyebrow">{selectedMonster.rarityLabel}</p>
                       <h3>{selectedMonster.name}</h3>
+                      <p className="huntingMonsterDetailFlavor">{selectedMonster.flavor}</p>
                     </div>
                     <div className="powerRankingInventoryTags">
                       <span className="powerRankingInventoryPill">{selectedMonster.typeLabel}</span>
