@@ -5660,10 +5660,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   padding: 34px;
   border: 1px solid rgba(16, 36, 63, 0.08);
   border-radius: 12px;
-  background-image: url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
   box-shadow: 0 16px 36px rgba(16, 36, 63, 0.12);
 }
 
@@ -5672,10 +5669,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   padding: 34px;
   border: 1px solid rgba(16, 36, 63, 0.08);
   border-radius: 12px;
-  background-image: url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 252, 0.96));
   box-shadow: 0 16px 36px rgba(16, 36, 63, 0.12);
 }
 
