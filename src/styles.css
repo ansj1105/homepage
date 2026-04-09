@@ -5977,6 +5977,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingLogSection,
 .powerRankingPageMaple .powerRankingBoardSection {
   margin-top: 30px;
+  padding: 22px;
+  border: 1px solid #cfe0f4;
+  border-radius: 0;
+  background: #f3f8ff;
+  box-shadow: none;
 }
 
 .powerRankingPageMaple .powerRankingRewardBanner {
