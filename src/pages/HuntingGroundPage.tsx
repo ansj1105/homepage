@@ -830,14 +830,59 @@ const HuntingGroundPage = () => {
           <div className="powerRankingLoading">사냥터 정보를 불러오는 중입니다.</div>
         ) : (
           <>
-            <section className="powerRankingDashboardSection huntingLoopSection">
+            <section className="powerRankingDashboardSection huntingOverviewSection" id="hunting-my-info">
               <div className="powerRankingSectionHead">
                 <div>
-                  <p className="powerRankingSectionEyebrow">Core Loop</p>
-                  <h2>클릭 + 방치형 성장 루프</h2>
+                  <p className="powerRankingSectionEyebrow">My Hunting Hub</p>
+                  <h2>내 정보</h2>
                 </div>
                 <p className="powerRankingSectionHint">
-                  공격 → 처치 → 드랍 → 소비/강화 → 더 높은 사냥터 이동 구조입니다.
+                  사냥터에서 필요한 개인 정보만 먼저 보고, 아래 `sub-nav`로 원하는 영역만 바로 확인할 수 있게 정리했습니다.
+                </p>
+              </div>
+
+              <div className="powerRankingDashboardGrid huntingOverviewGrid">
+                <article className="powerRankingDashboardCard">
+                  <span>내 상태</span>
+                  <strong>Lv.{progress.level}</strong>
+                  <p>전투력 {effectiveBattlePower} · 지구력 {progress.endurance}/{MAX_ENDURANCE}</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>내 장비</span>
+                  <strong>{equippedList.length} / 5</strong>
+                  <p>장착 장비와 강화는 내 장비 페이지에서 관리합니다.</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>내 프로필</span>
+                  <strong>{selectedCardTarget?.name ?? user.nickname}</strong>
+                  <p>현재 응원 카드 대상과 파워랭킹 연동 상태를 확인할 수 있습니다.</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>내 소개</span>
+                  <strong>{activeStage.name}</strong>
+                  <p>지금 입장한 사냥터와 추천 전투력 {activeStage.recommendedPower}를 기준으로 진행합니다.</p>
+                </article>
+              </div>
+            </section>
+
+            <nav className="huntingSubNav" aria-label="사냥터 내 정보 이동">
+              <a href="#hunting-my-info" className="huntingSubNavLink">내 정보</a>
+              <a href="#hunting-status" className="huntingSubNavLink">내 상태</a>
+              <a href="#hunting-stage" className="huntingSubNavLink">사냥터</a>
+              <a href="#hunting-profile" className="huntingSubNavLink">내 프로필</a>
+              <a href="#hunting-economy" className="huntingSubNavLink">재화</a>
+              <a href="#hunting-equipment" className="huntingSubNavLink">장비</a>
+              <a href="#hunting-intro" className="huntingSubNavLink">소개</a>
+            </nav>
+
+            <section className="powerRankingDashboardSection huntingLoopSection" id="hunting-status">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">My Status</p>
+                  <h2>내 상태</h2>
+                </div>
+                <p className="powerRankingSectionHint">
+                  전투력, 성장 보너스, 치명타, 자동 성장처럼 지금 전투에 바로 영향을 주는 값만 모았습니다.
                 </p>
               </div>
 
@@ -865,7 +910,7 @@ const HuntingGroundPage = () => {
               </div>
             </section>
 
-            <section className="powerRankingBoardSection huntingStageSection">
+            <section className="powerRankingBoardSection huntingStageSection" id="hunting-stage">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Stage Progression</p>
@@ -1012,7 +1057,7 @@ const HuntingGroundPage = () => {
               ) : null}
             </section>
 
-            <section className="powerRankingInventorySection huntingCardSupportSection">
+            <section className="powerRankingInventorySection huntingCardSupportSection" id="hunting-profile">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Hat Card Support</p>
@@ -1065,7 +1110,7 @@ const HuntingGroundPage = () => {
               </div>
             </section>
 
-            <section className="powerRankingInventorySection huntingResourceSection">
+            <section className="powerRankingInventorySection huntingResourceSection" id="hunting-economy">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Inventory & Economy</p>
@@ -1119,7 +1164,7 @@ const HuntingGroundPage = () => {
               </div>
             </section>
 
-            <section className="powerRankingInventorySection huntingEnhancementSection">
+            <section className="powerRankingInventorySection huntingEnhancementSection" id="hunting-equipment">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Equipment Link</p>
@@ -1151,7 +1196,7 @@ const HuntingGroundPage = () => {
               </div>
             </section>
 
-            <section className="powerRankingInventorySection huntingInfoSection">
+            <section className="powerRankingInventorySection huntingInfoSection" id="hunting-intro">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Integration Check</p>

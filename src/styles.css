@@ -7057,6 +7057,45 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 14px;
 }
 
+.powerRankingPageMaple .huntingOverviewGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.powerRankingPageMaple .huntingSubNav {
+  position: sticky;
+  top: 18px;
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 32px rgba(16, 36, 63, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.powerRankingPageMaple .huntingSubNavLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(28, 56, 92, 0.1);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f7fbff, #eaf2fb);
+  color: #1f3550;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.powerRankingPageMaple .huntingSubNavLink:hover {
+  border-color: rgba(93, 143, 214, 0.28);
+  background: linear-gradient(180deg, #ffffff, #edf5ff);
+}
+
 .powerRankingPageMaple .huntingMonsterCard,
 .powerRankingPageMaple .huntingBreakdownCard {
   border: 1px solid rgba(16, 36, 63, 0.08);
@@ -7462,6 +7501,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 @media (max-width: 1100px) {
   .powerRankingPageMaple .powerRankingDashboardGrid,
+  .powerRankingPageMaple .huntingOverviewGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingInventoryGrid,
   .powerRankingPageMaple .powerRankingLogGrid,
@@ -7505,6 +7545,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   }
 
   .powerRankingPageMaple .powerRankingHeroActions,
+  .powerRankingPageMaple .huntingOverviewGrid,
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingDetailActions,
@@ -7523,6 +7564,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingSectionHead {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .powerRankingPageMaple .huntingSubNav {
+    top: 12px;
+    padding: 12px;
   }
 
   .powerRankingPageMaple .powerRankingSectionHead h2 {
