@@ -256,7 +256,9 @@ const shopBuySchema = z.object({
 
 const huntingCombatClickSchema = z.object({
   zoneId: z.string().trim().min(1).max(80),
-  monsterId: z.string().trim().min(1).max(80)
+  monsterId: z.string().trim().min(1).max(80),
+  selectedCardId: z.string().trim().min(1).max(80).optional(),
+  selectedCardLevel: z.number().int().min(1).max(50).optional()
 });
 
 const huntingCombatConsumableSchema = z.object({
@@ -273,7 +275,9 @@ const huntingCombatConsumableSchema = z.object({
     "cheering-stick",
     "viral-ticket",
     "protection-scroll"
-  ])
+  ]),
+  selectedCardId: z.string().trim().min(1).max(80).optional(),
+  selectedCardLevel: z.number().int().min(1).max(50).optional()
 });
 
 const todayVisitorSchema = z.object({

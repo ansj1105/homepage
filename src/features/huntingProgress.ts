@@ -1,6 +1,13 @@
 import type { PowerRankingEquipmentCode } from "../types";
 
-export type HuntingMaterialCode = "club-coin" | "enhancement-stone" | "refined-stone" | "ancient-core";
+export type HuntingMaterialCode =
+  | "club-coin"
+  | "gem"
+  | "enhancement-stone"
+  | "refined-stone"
+  | "ancient-core"
+  | "card-shard"
+  | "event-token";
 export type HuntingConsumableCode =
   | "healing-potion"
   | "medium-healing-potion"
@@ -25,6 +32,8 @@ export type HuntingProgress = {
   materials: Record<HuntingMaterialCode, number>;
   consumables: Record<HuntingConsumableCode, number>;
   enhancementLevels: Partial<Record<PowerRankingEquipmentCode, number>>;
+  cardLevels: Record<string, number>;
+  cardPopularity: Record<string, number>;
   totalDefeated: number;
   todayClickCount: number;
   todayDefeatedCount: number;
@@ -44,10 +53,13 @@ const getTodayDateKey = (): string => {
 };
 
 export const materialMeta: Record<HuntingMaterialCode, { name: string; description: string }> = {
-  "club-coin": { name: "동연 코인", description: "사냥터 경제의 기본 화폐입니다." },
+  "club-coin": { name: "골드", description: "사냥터 경제의 기본 화폐입니다." },
+  gem: { name: "젬", description: "상점과 이벤트 교환에 쓰이는 상위 재화입니다." },
   "enhancement-stone": { name: "강화석", description: "장비 강화의 기본 재료입니다." },
-  "refined-stone": { name: "정제 강화석", description: "+8 이상 강화 보조 재료로 사용됩니다." },
-  "ancient-core": { name: "고대 코어", description: "상위 사냥터에서 얻는 희귀 성장 재료입니다." }
+  "refined-stone": { name: "고급 강화석", description: "+8 이상 강화 보조 재료로 사용됩니다." },
+  "ancient-core": { name: "제작 재료", description: "상위 사냥터에서 얻는 희귀 제작 재료입니다." },
+  "card-shard": { name: "카드 조각", description: "카드 성장과 해금에 쓰이는 조각입니다." },
+  "event-token": { name: "이벤트 토큰", description: "기간 한정 교환 상점에 쓰이는 토큰입니다." }
 };
 
 export const consumableMeta: Record<
@@ -77,9 +89,12 @@ export const createDefaultProgress = (): HuntingProgress => ({
   autoAttackEnabled: false,
   materials: {
     "club-coin": 0,
+    gem: 0,
     "enhancement-stone": 0,
     "refined-stone": 0,
-    "ancient-core": 0
+    "ancient-core": 0,
+    "card-shard": 0,
+    "event-token": 0
   },
   consumables: {
     "healing-potion": 0,
@@ -96,6 +111,8 @@ export const createDefaultProgress = (): HuntingProgress => ({
     "protection-scroll": 0
   },
   enhancementLevels: {},
+  cardLevels: {},
+  cardPopularity: {},
   totalDefeated: 0,
   todayClickCount: 0,
   todayDefeatedCount: 0,
@@ -127,6 +144,8 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
         ...(parsed.consumables ?? {})
       },
       enhancementLevels: parsed.enhancementLevels ?? {},
+      cardLevels: parsed.cardLevels ?? {},
+      cardPopularity: parsed.cardPopularity ?? {},
       todayClickCount: needsDailyReset ? 0 : parsed.todayClickCount ?? 0,
       todayDefeatedCount: needsDailyReset ? 0 : parsed.todayDefeatedCount ?? 0,
       lastDailyResetDate: currentDateKey

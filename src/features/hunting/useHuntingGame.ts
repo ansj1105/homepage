@@ -21,8 +21,6 @@ import type {
   HuntingZoneSummary
 } from "../../types";
 
-const DAILY_CLICK_LIMIT = 300;
-
 const updateProgressFromCombat = (
   current: HuntingProgress,
   result: HuntingCombatClickResponse
@@ -51,7 +49,7 @@ const updateProgressFromCombat = (
     exp: nextExp,
     selectedStageId: result.state.zoneId,
     selectedMonsterId: result.state.monster.id,
-    todayClickCount: Math.min(DAILY_CLICK_LIMIT, current.todayClickCount + 1),
+    todayClickCount: current.todayClickCount + 1,
     totalDefeated: current.totalDefeated + (result.defeated ? 1 : 0),
     todayDefeatedCount: current.todayDefeatedCount + (result.defeated ? 1 : 0)
   };
@@ -89,11 +87,14 @@ export const useHuntingGame = () => {
 
   const selectedZoneId = zoneDetail?.id ?? progress.selectedStageId;
   const selectedMonsterId = combatState?.monster.id ?? progress.selectedMonsterId;
+  const selectedCardLevel = progress.selectedCardTargetId
+    ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1)
+    : 1;
 
-  const loadZoneBundle = async (zoneId: string, monsterId?: string) => {
+  const loadZoneBundle = async (zoneId: string, monsterId?: string, selectedCardId?: string, cardLevel = 1) => {
     const [detail, state] = await Promise.all([
       apiClient.getHuntingZone(zoneId),
-      apiClient.getCombatState(zoneId, monsterId)
+      apiClient.getCombatState(zoneId, monsterId, selectedCardId, cardLevel)
     ]);
     setZoneDetail(detail);
     setCombatState(state);
@@ -109,13 +110,21 @@ export const useHuntingGame = () => {
     try {
       const savedProgress = storageKey ? loadHuntingProgress(storageKey) : progress;
       const [nextProfile, nextZones] = await Promise.all([
-        apiClient.getHuntingProfile(),
+        apiClient.getHuntingProfile(
+          savedProgress.selectedCardTargetId,
+          savedProgress.selectedCardTargetId ? (savedProgress.cardLevels[savedProgress.selectedCardTargetId] ?? 1) : 1
+        ),
         apiClient.getHuntingZones()
       ]);
       setProfile(nextProfile);
       setZones(nextZones);
       setProgress(savedProgress);
-      await loadZoneBundle(savedProgress.selectedStageId, savedProgress.selectedMonsterId);
+      await loadZoneBundle(
+        savedProgress.selectedStageId,
+        savedProgress.selectedMonsterId,
+        savedProgress.selectedCardTargetId,
+        savedProgress.selectedCardTargetId ? (savedProgress.cardLevels[savedProgress.selectedCardTargetId] ?? 1) : 1
+      );
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "사냥터 정보를 불러오지 못했습니다.");
@@ -134,13 +143,13 @@ export const useHuntingGame = () => {
   );
   const selectedMonster = combatState?.monster ?? null;
   const remainingClicks =
-    combatState?.remainingClicks ?? Math.max(0, DAILY_CLICK_LIMIT - progress.todayClickCount);
+    combatState?.remainingClicks ?? Math.max(0, (profile?.dailyClickLimit ?? 300) - progress.todayClickCount);
   const estimatedDamage =
     combatState?.estimatedDamage ?? Math.max(1, Math.floor((profile?.battlePower ?? 0) * 0.98));
 
   const syncZone = async (zoneId: string, monsterId?: string) => {
     try {
-      await loadZoneBundle(zoneId, monsterId);
+      await loadZoneBundle(zoneId, monsterId, progress.selectedCardTargetId, selectedCardLevel);
       setProgress((current) => ({
         ...current,
         selectedStageId: zoneId,
@@ -182,12 +191,22 @@ export const useHuntingGame = () => {
     try {
       const result = await apiClient.clickCombat({
         zoneId: selectedZoneId,
-        monsterId: selectedMonsterId
+        monsterId: selectedMonsterId,
+        selectedCardId: progress.selectedCardTargetId || undefined,
+        selectedCardLevel
       });
       setCombatState(result.state);
       setProgress((current) => ({
         ...updateProgressFromCombat(current, result),
-        endurance: Math.max(0, current.endurance - 1)
+        endurance: Math.max(0, current.endurance - 1),
+        cardPopularity: current.selectedCardTargetId
+          ? {
+              ...current.cardPopularity,
+              [current.selectedCardTargetId]:
+                (current.cardPopularity[current.selectedCardTargetId] ?? 0) +
+                Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
+            }
+          : current.cardPopularity
       }));
       if (result.rewards.length > 0) {
         window.alert(result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", "));
@@ -210,7 +229,11 @@ export const useHuntingGame = () => {
     }
 
     try {
-      const nextState = await apiClient.useCombatConsumable({ consumableCode: code });
+      const nextState = await apiClient.useCombatConsumable({
+        consumableCode: code,
+        selectedCardId: progress.selectedCardTargetId || undefined,
+        selectedCardLevel
+      });
       setCombatState(nextState);
       setProgress((current) => ({
         ...current,

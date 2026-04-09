@@ -316,6 +316,9 @@ export interface CardEntry {
   rank: number;
   imageUrl: string;
   grade: "common" | "rare" | "epic" | "legendary";
+  typeLabel: "공격 카드" | "수확 카드" | "응원 카드" | "인기 카드";
+  effectKind: "damage" | "drop" | "click" | "popularity";
+  effectValue: number;
   bonusSummary: string;
 }
 
@@ -379,6 +382,9 @@ export interface HuntingProfile {
   bossBonusRollRate: number;
   autoGrowthMultiplier: number;
   cardGrowthMultiplier: number;
+  dailyClickLimit: number;
+  activeCardId?: string;
+  activeCardName?: string;
   effectBreakdown: string[];
   equipmentInventory: PowerRankingEquipmentInventoryItem[];
   equippedItems: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
@@ -475,6 +481,8 @@ export interface HuntingCombatState {
 export interface HuntingCombatClickRequest {
   zoneId: string;
   monsterId: string;
+  selectedCardId?: string;
+  selectedCardLevel?: number;
 }
 
 export interface HuntingCombatConsumableRequest {
@@ -491,6 +499,8 @@ export interface HuntingCombatConsumableRequest {
     | "cheering-stick"
     | "viral-ticket"
     | "protection-scroll";
+  selectedCardId?: string;
+  selectedCardLevel?: number;
 }
 
 export interface HuntingCombatClickResponse {
@@ -507,7 +517,7 @@ export interface GameHomeResponse {
   huntingProfile: HuntingProfile;
   equipment: PowerRankingEquipmentState;
   inventory: PowerRankingInventoryItem[];
-  cards: PowerRankingPerson[];
+  cards: CardEntry[];
 }
 
 export interface PowerRankingInventoryItem extends PowerRankingItemCatalogEntry {

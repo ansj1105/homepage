@@ -159,7 +159,10 @@ export const apiClient = {
   getMainPage: () => request<MainPageContent>("/api/main-page"),
   getPowerRanking: (period: PowerRankingPeriod) =>
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
-  getGameHome: () => request<GameHomeResponse>("/api/game/home"),
+  getGameHome: (selectedCardId?: string, selectedCardLevel?: number) =>
+    request<GameHomeResponse>(
+      `/api/game/home${selectedCardId ? `?selectedCardId=${encodeURIComponent(selectedCardId)}&selectedCardLevel=${selectedCardLevel ?? 1}` : ""}`
+    ),
   getInventory: () => request<InventoryResponse>("/api/inventory"),
   getCards: () => request<CardEntry[]>("/api/cards"),
   selectCard: (payload: CardSelectRequest) =>
@@ -172,13 +175,22 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
-  getHuntingProfile: () => request<HuntingProfile>("/api/hunting/stage-1"),
+  getHuntingProfile: (selectedCardId?: string, selectedCardLevel?: number) =>
+    request<HuntingProfile>(
+      `/api/hunting/stage-1${selectedCardId ? `?selectedCardId=${encodeURIComponent(selectedCardId)}&selectedCardLevel=${selectedCardLevel ?? 1}` : ""}`
+    ),
   getHuntingZones: () => request<HuntingZoneSummary[]>("/api/zones"),
   getHuntingZone: (zoneId: string) => request<HuntingZoneDetail>(`/api/zones/${zoneId}`),
   getHuntingZoneDrops: (zoneId: string) => request<HuntingZoneDropEntry[]>(`/api/zones/${zoneId}/drops`),
-  getCombatState: (zoneId?: string, monsterId?: string) =>
+  getCombatState: (zoneId?: string, monsterId?: string, selectedCardId?: string, selectedCardLevel?: number) =>
     request<HuntingCombatState>(
-      `/api/combat/state${zoneId ? `?zoneId=${encodeURIComponent(zoneId)}${monsterId ? `&monsterId=${encodeURIComponent(monsterId)}` : ""}` : ""}`
+      `/api/combat/state${
+        zoneId
+          ? `?zoneId=${encodeURIComponent(zoneId)}${monsterId ? `&monsterId=${encodeURIComponent(monsterId)}` : ""}${selectedCardId ? `&selectedCardId=${encodeURIComponent(selectedCardId)}&selectedCardLevel=${selectedCardLevel ?? 1}` : ""}`
+          : selectedCardId
+            ? `?selectedCardId=${encodeURIComponent(selectedCardId)}&selectedCardLevel=${selectedCardLevel ?? 1}`
+            : ""
+      }`
     ),
   clickCombat: (payload: HuntingCombatClickRequest) =>
     request<HuntingCombatClickResponse>("/api/combat/click", {
@@ -192,7 +204,7 @@ export const apiClient = {
     }),
   getUserResources: () => request<PowerRankingInventoryItem[]>("/api/user/resources"),
   getUserEquipment: () => request<PowerRankingEquipmentState>("/api/user/equipment"),
-  getUserCards: () => request<PowerRankingPerson[]>("/api/user/cards"),
+  getUserCards: () => request<CardEntry[]>("/api/user/cards"),
   getHuntingBattleRanking: () => request<HuntingBattleRankingEntry[]>("/api/hunting/ranking"),
   getPowerRankingInventory: () => request<PowerRankingInventoryItem[]>("/api/power-ranking/inventory"),
   getPowerRankingEquipment: () => request<PowerRankingEquipmentState>("/api/power-ranking/equipment"),

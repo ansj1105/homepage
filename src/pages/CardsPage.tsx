@@ -48,11 +48,15 @@ const CardsPage = () => {
     }
     try {
       await apiClient.upgradeCard({ cardId, pointCost: 5 });
-      setProgress({ ...progress, cardSupportPoints: Math.max(0, progress.cardSupportPoints - 5) });
-      setCards((current) =>
-        current.map((card) => (card.id === cardId ? { ...card, popularity: card.popularity + 10 } : card))
-      );
-      setErrorMessage("카드 인기도를 올렸습니다.");
+      setProgress({
+        ...progress,
+        cardSupportPoints: Math.max(0, progress.cardSupportPoints - 5),
+        cardLevels: {
+          ...progress.cardLevels,
+          [cardId]: (progress.cardLevels[cardId] ?? 1) + 1
+        }
+      });
+      setErrorMessage("카드 레벨을 올렸습니다.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "카드를 성장시키지 못했습니다.");
     }
@@ -91,10 +95,12 @@ const CardsPage = () => {
                     <strong>{card.name}</strong>
                     <span>{card.grade.toUpperCase()}</span>
                   </div>
-                  <p>인기도 {card.popularity} · 보너스 {card.bonusSummary}</p>
+                  <p>
+                    {card.typeLabel} · 레벨 {progress?.cardLevels[card.id] ?? 1} · 인기도 {(progress?.cardPopularity[card.id] ?? 0) + card.popularity}
+                  </p>
                   <div className="powerRankingInventoryTags">
                     <span className="powerRankingInventoryPill">등급 {card.grade}</span>
-                    <span className="powerRankingInventoryPill isMuted">랭크 {card.rank}</span>
+                    <span className="powerRankingInventoryPill isMuted">{card.bonusSummary}</span>
                   </div>
                   <div className="huntingCombatActions">
                     <button type="button" className="powerRankingItemButton" onClick={() => void handleSelect(card.id)}>선택</button>

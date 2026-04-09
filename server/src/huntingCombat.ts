@@ -11,8 +11,6 @@ import type {
   HuntingZoneSummary
 } from "../../src/types";
 
-const DAILY_CLICK_LIMIT = 300;
-
 type CombatSession = {
   zoneId: string;
   monsterId: string;
@@ -201,7 +199,7 @@ const buildState = (profile: HuntingProfile, session: CombatSession): HuntingCom
     zoneType: zone.zoneType,
     monster: toMonsterView(zone.id, session.monsterId, session.currentHp),
     estimatedDamage: getEstimatedDamage(profile, session, session.monsterId),
-    remainingClicks: Math.max(0, DAILY_CLICK_LIMIT - session.totalClicks),
+    remainingClicks: Math.max(0, profile.dailyClickLimit - session.totalClicks),
     totalClicks: session.totalClicks,
     clickCost: zone.clickCost,
     remainingBossEntries:
@@ -264,7 +262,7 @@ export const clickCombat = (
   const session = getSession(userId);
   syncSessionTarget(session, zoneId, monsterId);
 
-  if (session.totalClicks >= DAILY_CLICK_LIMIT) {
+  if (session.totalClicks >= profile.dailyClickLimit) {
     throw new Error("오늘 클릭 횟수를 모두 사용했습니다.");
   }
 
@@ -277,7 +275,7 @@ export const clickCombat = (
   if (!zone) {
     throw new Error("존재하지 않는 사냥터입니다.");
   }
-  if (session.totalClicks + zone.clickCost > DAILY_CLICK_LIMIT) {
+  if (session.totalClicks + zone.clickCost > profile.dailyClickLimit) {
     throw new Error("남은 클릭 수가 부족합니다.");
   }
   if (zone.zoneType === "boss" && zone.dailyEntryLimit) {

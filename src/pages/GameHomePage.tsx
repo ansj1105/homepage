@@ -14,8 +14,6 @@ import {
 import type { GameHomeResponse, PowerRankingEquipmentSlot } from "../types";
 import { useTodayVisitors } from "../visitor/VisitorContext";
 
-const DAILY_CLICK_LIMIT = 300;
-
 const GameHomePage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
@@ -36,8 +34,13 @@ const GameHomePage = () => {
     }
 
     setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
+    const saved = loadHuntingProgress(getHuntingStorageKey(user.id));
+    setProgress(saved);
     apiClient
-      .getGameHome()
+      .getGameHome(
+        saved.selectedCardTargetId,
+        saved.selectedCardTargetId ? (saved.cardLevels[saved.selectedCardTargetId] ?? 1) : 1
+      )
       .then((payload) => {
         setHome(payload);
         setErrorMessage("");
@@ -50,7 +53,7 @@ const GameHomePage = () => {
       });
   }, [navigate, user]);
 
-  const remainingClicks = Math.max(0, DAILY_CLICK_LIMIT - (progress?.todayClickCount ?? 0));
+  const remainingClicks = Math.max(0, (home?.huntingProfile.dailyClickLimit ?? 300) - (progress?.todayClickCount ?? 0));
   const missions = useMemo(
     () => [
       {
@@ -137,7 +140,7 @@ const GameHomePage = () => {
                 <article className="powerRankingDashboardCard">
                   <span>남은 클릭 횟수</span>
                   <strong>{remainingClicks}</strong>
-                  <p>오늘 클릭 {progress.todayClickCount} / {DAILY_CLICK_LIMIT}</p>
+                  <p>오늘 클릭 {progress.todayClickCount} / {home.huntingProfile.dailyClickLimit}</p>
                 </article>
                 <article className="powerRankingDashboardCard">
                   <span>남은 지구력</span>
@@ -217,7 +220,7 @@ const GameHomePage = () => {
                       <strong>현재 응원 카드</strong>
                       <span>{home.cards.find((card) => card.id === progress.selectedCardTargetId)?.name ?? "미선택"}</span>
                     </div>
-                    <p>응원 포인트 {progress.cardSupportPoints}점을 모아 파워랭킹 인기도 성장에 사용합니다.</p>
+                    <p>응원 포인트 {progress.cardSupportPoints}점 · 카드 레벨 {progress.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0}</p>
                   </div>
                 </article>
                 {home.cards.slice(0, 3).map((card) => (
@@ -225,9 +228,9 @@ const GameHomePage = () => {
                     <div className="powerRankingInventoryBody">
                       <div className="powerRankingInventoryHeading">
                         <strong>{card.name}</strong>
-                        <span>인기도 {card.score}</span>
+                        <span>{card.typeLabel}</span>
                       </div>
-                      <p>현재 파워랭킹 상위 카드입니다.</p>
+                      <p>{card.bonusSummary}</p>
                     </div>
                   </article>
                 ))}

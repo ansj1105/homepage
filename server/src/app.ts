@@ -2,6 +2,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { ZodError } from "zod";
 import { getPowerRankingEquipmentEnhancePreview } from "../../src/data/powerRankingEquipment";
 import { shopCatalog } from "../../src/data/shopCatalog";
+import { gameCardsCatalog } from "../../src/data/gameCards";
 import { huntingZones } from "../../src/data/huntingZones";
 import { createToken, verifyToken } from "./auth";
 import {
@@ -545,11 +546,14 @@ export const createApp = () => {
         return;
       }
 
-      const [huntingProfile, equipment, inventory, cards] = await Promise.all([
-        getHuntingProfile(user.id),
+      const selectedCardId = typeof req.query.selectedCardId === "string" ? req.query.selectedCardId : undefined;
+      const selectedCardLevel =
+        typeof req.query.selectedCardLevel === "string" ? Math.max(1, Number(req.query.selectedCardLevel) || 1) : 1;
+
+      const [huntingProfile, equipment, inventory] = await Promise.all([
+        getHuntingProfile(user.id, selectedCardId, selectedCardLevel),
         listPowerRankingEquipmentState(user.id),
-        listPowerRankingInventory(user.id),
-        listPowerRankingPeople("all")
+        listPowerRankingInventory(user.id)
       ]);
 
       res.json({
@@ -557,7 +561,7 @@ export const createApp = () => {
         huntingProfile,
         equipment,
         inventory,
-        cards: cards.slice(0, 8)
+        cards: gameCardsCatalog
       });
     } catch (error) {
       next(error);
@@ -599,8 +603,7 @@ export const createApp = () => {
         res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
         return;
       }
-      const cards = await listPowerRankingPeople("all");
-      res.json(cards.slice(0, 8));
+      res.json(gameCardsCatalog);
     } catch (error) {
       next(error);
     }
@@ -613,7 +616,10 @@ export const createApp = () => {
         res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
         return;
       }
-      const profile = await getHuntingProfile(user.id);
+      const selectedCardId = typeof req.query.selectedCardId === "string" ? req.query.selectedCardId : undefined;
+      const selectedCardLevel =
+        typeof req.query.selectedCardLevel === "string" ? Math.max(1, Number(req.query.selectedCardLevel) || 1) : 1;
+      const profile = await getHuntingProfile(user.id, selectedCardId, selectedCardLevel);
       res.json(profile);
     } catch (error) {
       next(error);
@@ -648,18 +654,7 @@ export const createApp = () => {
 
   app.get("/api/cards", async (_req, res, next) => {
     try {
-      const cards = await listPowerRankingPeople("all");
-      res.json(
-        cards.slice(0, 12).map((card, index) => ({
-          id: card.id,
-          name: card.name,
-          popularity: card.score,
-          rank: card.rank,
-          imageUrl: card.profileImageUrl,
-          grade: index < 1 ? "legendary" : index < 3 ? "epic" : index < 6 ? "rare" : "common",
-          bonusSummary: index < 1 ? "선택 시 카드 성장 +12%" : index < 3 ? "선택 시 카드 성장 +8%" : "선택 시 카드 성장 +5%"
-        }))
-      );
+      res.json(gameCardsCatalog);
     } catch (error) {
       next(error);
     }
@@ -668,8 +663,7 @@ export const createApp = () => {
   app.post("/api/cards/select", async (req, res, next) => {
     try {
       const payload = parseCardSelect(req.body);
-      const cards = await listPowerRankingPeople("all");
-      const card = cards.find((item) => item.id === payload.cardId);
+      const card = gameCardsCatalog.find((item) => item.id === payload.cardId);
       if (!card) {
         res.status(404).json({ message: "선택할 카드가 없습니다." });
         return;
@@ -821,7 +815,10 @@ export const createApp = () => {
         res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
         return;
       }
-      const profile = await getHuntingProfile(user.id);
+      const selectedCardId = typeof req.query.selectedCardId === "string" ? req.query.selectedCardId : undefined;
+      const selectedCardLevel =
+        typeof req.query.selectedCardLevel === "string" ? Math.max(1, Number(req.query.selectedCardLevel) || 1) : 1;
+      const profile = await getHuntingProfile(user.id, selectedCardId, selectedCardLevel);
       res.json(
         getCombatState(
           user.id,
@@ -843,7 +840,7 @@ export const createApp = () => {
         return;
       }
       const payload = parseHuntingCombatClick(req.body);
-      const profile = await getHuntingProfile(user.id);
+      const profile = await getHuntingProfile(user.id, payload.selectedCardId, payload.selectedCardLevel ?? 1);
       res.json(clickCombat(user.id, profile, payload.zoneId, payload.monsterId));
     } catch (error) {
       next(error);
@@ -858,7 +855,7 @@ export const createApp = () => {
         return;
       }
       const payload = parseHuntingCombatConsumable(req.body);
-      const profile = await getHuntingProfile(user.id);
+      const profile = await getHuntingProfile(user.id, payload.selectedCardId, payload.selectedCardLevel ?? 1);
       res.json(useCombatConsumable(user.id, profile, payload));
     } catch (error) {
       next(error);

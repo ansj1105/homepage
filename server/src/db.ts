@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { powerRankingEquipmentCatalog, powerRankingEquipmentCodes } from "../../src/data/powerRankingEquipment";
+import { getGameCardById } from "../../src/data/gameCards";
 import { powerRankingItemCatalog, powerRankingItemCodes } from "../../src/data/powerRankingItems";
 import { defaultCmsPages } from "../../src/data/cmsPageDefaults";
 import { defaultMainPageContent } from "../../src/data/mainPageDefaults";
@@ -1176,7 +1177,11 @@ export const sellInventoryItem = async (
   }
 };
 
-export const getHuntingProfile = async (userId: string): Promise<HuntingProfile> => {
+export const getHuntingProfile = async (
+  userId: string,
+  selectedCardId?: string,
+  selectedCardLevel = 1
+): Promise<HuntingProfile> => {
   const equipmentState = await listPowerRankingEquipmentState(userId);
   const equippedItems = Object.values(equipmentState.equipped);
   const recommendationCountResult = await pool.query<{ count: string }>(
@@ -1218,6 +1223,7 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
   let bossBonusRollRate = 0;
   let autoGrowthMultiplier = 1;
   let cardGrowthMultiplier = 1;
+  let dailyClickLimit = 300;
   const effectBreakdown: string[] = [];
 
   for (const item of equippedItems) {
@@ -1297,6 +1303,27 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
   autoGrowthMultiplier = Math.min(autoGrowthMultiplier, 1.16);
   cardGrowthMultiplier = Math.min(cardGrowthMultiplier, 1.18);
 
+  const selectedCard = selectedCardId ? getGameCardById(selectedCardId) : null;
+  const cardLevelBonus = Math.max(0, selectedCardLevel - 1);
+  if (selectedCard) {
+    if (selectedCard.effectKind === "damage") {
+      effectMultiplier += selectedCard.effectValue + cardLevelBonus * 0.01;
+      effectBreakdown.unshift(`${selectedCard.name} 전투 x${effectMultiplier.toFixed(2)}`);
+    } else if (selectedCard.effectKind === "drop") {
+      dropRateMultiplier += selectedCard.effectValue + cardLevelBonus * 0.01;
+      effectBreakdown.unshift(`${selectedCard.name} 드랍 x${dropRateMultiplier.toFixed(2)}`);
+    } else if (selectedCard.effectKind === "click") {
+      dailyClickLimit += Math.floor(selectedCard.effectValue + cardLevelBonus * 5);
+      effectBreakdown.unshift(`${selectedCard.name} 오늘 클릭 +${Math.floor(selectedCard.effectValue + cardLevelBonus * 5)}`);
+    } else if (selectedCard.effectKind === "popularity") {
+      cardGrowthMultiplier += selectedCard.effectValue + cardLevelBonus * 0.03;
+      effectBreakdown.unshift(`${selectedCard.name} 카드 성장 x${cardGrowthMultiplier.toFixed(2)}`);
+    }
+  }
+
+  dropRateMultiplier = Math.min(dropRateMultiplier, 1.32);
+  cardGrowthMultiplier = Math.min(cardGrowthMultiplier, 1.36);
+
   if (equippedCount >= 2) {
     effectBreakdown.unshift(`장비 세트 x${setMultiplier.toFixed(2)}`);
   }
@@ -1324,6 +1351,9 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
     bossBonusRollRate,
     autoGrowthMultiplier,
     cardGrowthMultiplier,
+    dailyClickLimit,
+    activeCardId: selectedCard?.id,
+    activeCardName: selectedCard?.name,
     effectBreakdown,
     equipmentInventory: equipmentState.inventory,
     equippedItems: equipmentState.equipped
