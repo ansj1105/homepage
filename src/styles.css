@@ -5735,7 +5735,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   border: 1px solid rgba(16, 36, 63, 0.08);
   border-radius: 12px;
   background-image:
-    linear-gradient(180deg, rgba(10, 16, 28, 0.58), rgba(10, 16, 28, 0.72)),
+    linear-gradient(180deg, rgba(8, 12, 22, 0.78), rgba(8, 12, 22, 0.86)),
     url("/assets/sub/baeknong-hall-sign-banner-photo.jpg");
   background-position: center;
   background-repeat: no-repeat;
@@ -5826,20 +5826,28 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingHeroCopy {
   display: grid;
   gap: 10px;
+  align-content: start;
+  padding: 24px 26px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(7, 11, 20, 0.52);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
 }
 
 .powerRankingPageMaple .powerRankingEyebrow {
-  color: #7fd5ff;
+  color: #ffd36e;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
 }
 
 .powerRankingPageMaple .powerRankingHero h1,
 .powerRankingPageMaple .powerRankingLead {
-  color: #f7fbff;
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.32);
 }
 
 .powerRankingPageMaple .powerRankingLead {
   max-width: 720px;
-  color: rgba(247, 251, 255, 0.8);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .powerRankingPageMaple .powerRankingControlPanel {
@@ -5847,6 +5855,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 18px;
   align-content: start;
   min-width: min(100%, 360px);
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(244, 247, 252, 0.94);
+  box-shadow: 0 16px 34px rgba(5, 10, 20, 0.18);
 }
 
 .powerRankingPageMaple .powerRankingControlGroup {
@@ -5855,7 +5868,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingControlLabel {
-  color: rgba(247, 251, 255, 0.72);
+  color: #365274;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -5874,9 +5887,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingSortButton {
   min-height: 48px;
   padding: 0 18px;
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: #f7fbff;
+  border-color: rgba(30, 56, 92, 0.14);
+  background: rgba(255, 255, 255, 0.98);
+  color: #1f3550;
   border-radius: 6px;
 }
 
@@ -5903,13 +5916,14 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   display: grid;
   gap: 6px;
   padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(7, 11, 20, 0.48);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 
 .powerRankingPageMaple .powerRankingStatCard span {
-  color: rgba(247, 251, 255, 0.66);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
