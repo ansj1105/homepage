@@ -12,11 +12,18 @@ import type {
   MainPageContent,
   NoticeItem,
   GameHomeResponse,
+  HuntingCombatClickRequest,
+  HuntingCombatClickResponse,
+  HuntingCombatConsumableRequest,
+  HuntingCombatState,
   PowerRankingEquipmentState,
   PowerRankingEquipRequest,
   PowerRankingEventLog,
   HuntingProfile,
   HuntingBattleRankingEntry,
+  HuntingZoneDetail,
+  HuntingZoneDropEntry,
+  HuntingZoneSummary,
   PowerRankingInventoryItem,
   PowerRankingItemUseRequest,
   PowerRankingItemUseResponse,
@@ -140,6 +147,23 @@ export const apiClient = {
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
   getGameHome: () => request<GameHomeResponse>("/api/game/home"),
   getHuntingProfile: () => request<HuntingProfile>("/api/hunting/stage-1"),
+  getHuntingZones: () => request<HuntingZoneSummary[]>("/api/zones"),
+  getHuntingZone: (zoneId: string) => request<HuntingZoneDetail>(`/api/zones/${zoneId}`),
+  getHuntingZoneDrops: (zoneId: string) => request<HuntingZoneDropEntry[]>(`/api/zones/${zoneId}/drops`),
+  getCombatState: (zoneId?: string, monsterId?: string) =>
+    request<HuntingCombatState>(
+      `/api/combat/state${zoneId ? `?zoneId=${encodeURIComponent(zoneId)}${monsterId ? `&monsterId=${encodeURIComponent(monsterId)}` : ""}` : ""}`
+    ),
+  clickCombat: (payload: HuntingCombatClickRequest) =>
+    request<HuntingCombatClickResponse>("/api/combat/click", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  useCombatConsumable: (payload: HuntingCombatConsumableRequest) =>
+    request<HuntingCombatState>("/api/combat/use-consumable", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
   getUserResources: () => request<PowerRankingInventoryItem[]>("/api/user/resources"),
   getUserEquipment: () => request<PowerRankingEquipmentState>("/api/user/equipment"),
   getUserCards: () => request<PowerRankingPerson[]>("/api/user/cards"),

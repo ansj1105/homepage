@@ -204,6 +204,20 @@ const powerRankingEquipSchema = z.object({
   ])
 });
 
+const huntingCombatClickSchema = z.object({
+  zoneId: z.string().trim().min(1).max(80),
+  monsterId: z.string().trim().min(1).max(80)
+});
+
+const huntingCombatConsumableSchema = z.object({
+  consumableCode: z.enum([
+    "healing-potion",
+    "berserk-tonic",
+    "lucky-scroll",
+    "protection-scroll"
+  ])
+});
+
 const todayVisitorSchema = z.object({
   deviceId: z.string().trim().min(12).max(120),
   path: z.string().trim().min(1).max(300)
@@ -369,6 +383,9 @@ export const parsePowerRankingItemUse = (value: unknown): import("./types").Powe
   powerRankingItemUseSchema.parse(value);
 export const parsePowerRankingEquip = (value: unknown): import("./types").PowerRankingEquipPayload =>
   powerRankingEquipSchema.parse(value);
+export const parseHuntingCombatClick = (value: unknown) => huntingCombatClickSchema.parse(value);
+export const parseHuntingCombatConsumable = (value: unknown) =>
+  huntingCombatConsumableSchema.parse(value);
 export const parseTodayVisitor = (value: unknown): import("./types").TodayVisitorPayload =>
   todayVisitorSchema.parse(value);
 export const parseUserSignup = (value: unknown): UserSignupPayload => userSignupSchema.parse(value);

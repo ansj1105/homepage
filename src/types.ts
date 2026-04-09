@@ -295,6 +295,90 @@ export interface HuntingBattleRankingEntry {
   updatedAt: string;
 }
 
+export interface HuntingZoneSummary {
+  id: string;
+  badge: string;
+  chapterLabel: string;
+  name: string;
+  description: string;
+  unlockLevel: number;
+  recommendedPower: number;
+  clickCost: number;
+  monsterNames: string[];
+  previewDrops: string[];
+  hasBoss: boolean;
+}
+
+export interface HuntingMonsterView {
+  id: string;
+  name: string;
+  imageUrl: string;
+  typeLabel: string;
+  rarityLabel: string;
+  patternLabel: string;
+  flavor: string;
+  maxHp: number;
+  currentHp: number;
+  defense: number;
+  expReward: number;
+  isBoss: boolean;
+  rewardSummary: string;
+}
+
+export interface HuntingZoneDropEntry {
+  kind: "material" | "consumable";
+  code: string;
+  label: string;
+  rate: number;
+  min: number;
+  max: number;
+}
+
+export interface HuntingZoneDetail extends HuntingZoneSummary {
+  monsters: Array<HuntingMonsterView & { dropTable: HuntingZoneDropEntry[] }>;
+}
+
+export interface HuntingCombatReward {
+  kind: "material" | "consumable";
+  code: string;
+  label: string;
+  quantity: number;
+}
+
+export interface HuntingCombatState {
+  zoneId: string;
+  zoneName: string;
+  monster: HuntingMonsterView;
+  estimatedDamage: number;
+  remainingClicks: number;
+  totalClicks: number;
+  clickCost: number;
+  critRate: number;
+  attackBuffCharges: number;
+  dropBuffKills: number;
+  protectionCharges: number;
+  logs: string[];
+  recentDrops: HuntingCombatReward[];
+}
+
+export interface HuntingCombatClickRequest {
+  zoneId: string;
+  monsterId: string;
+}
+
+export interface HuntingCombatConsumableRequest {
+  consumableCode: "healing-potion" | "berserk-tonic" | "lucky-scroll" | "protection-scroll";
+}
+
+export interface HuntingCombatClickResponse {
+  state: HuntingCombatState;
+  damage: number;
+  wasCritical: boolean;
+  defeated: boolean;
+  expGained: number;
+  rewards: HuntingCombatReward[];
+}
+
 export interface GameHomeResponse {
   user: UserProfile;
   huntingProfile: HuntingProfile;

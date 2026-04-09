@@ -7377,6 +7377,64 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 14px;
 }
 
+.powerRankingPageMaple .huntingCombatLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.powerRankingPageMaple .huntingCombatPanel,
+.powerRankingPageMaple .huntingCombatSide {
+  display: grid;
+  gap: 14px;
+}
+
+.powerRankingPageMaple .huntingCombatPanel {
+  padding: 18px;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  background: #ffffff;
+}
+
+.powerRankingPageMaple .huntingCombatVisual {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(16, 36, 63, 0.08);
+  background: linear-gradient(180deg, #f8fbff, #edf3fb);
+}
+
+.powerRankingPageMaple .huntingCombatInfo {
+  display: grid;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .huntingCombatInfo h3 {
+  margin: 0;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingPageMaple .huntingCombatInfo p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.powerRankingPageMaple .huntingCombatMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: #17314f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .huntingCombatActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .powerRankingPageMaple .huntingDropTable {
   list-style: none;
   margin: 16px 0 0;
@@ -7590,6 +7648,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingLogGrid,
   .powerRankingPageMaple .huntingStageSelector,
   .powerRankingPageMaple .huntingMonsterDetailGrid,
+  .powerRankingPageMaple .huntingCombatLayout,
   .powerRankingPageMaple .huntingResourceGrid,
   .powerRankingPageMaple .huntingEnhancementGrid,
   .powerRankingPageMaple .huntingCardTargetGrid,
@@ -7657,6 +7716,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingLogGrid,
   .powerRankingPageMaple .huntingStageSelector,
   .powerRankingPageMaple .huntingMonsterDetailGrid,
+  .powerRankingPageMaple .huntingCombatLayout,
   .powerRankingPageMaple .huntingResourceGrid,
   .powerRankingPageMaple .huntingEnhancementGrid,
   .powerRankingPageMaple .huntingCardTargetGrid,

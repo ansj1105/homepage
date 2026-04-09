@@ -2,6 +2,14 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { ZodError } from "zod";
 import { createToken, verifyToken } from "./auth";
 import {
+  clickCombat,
+  getCombatState,
+  getHuntingZoneDetail,
+  getHuntingZoneDrops,
+  listHuntingZones,
+  useCombatConsumable
+} from "./huntingCombat";
+import {
   createUserAccount,
   createUserSession,
   createCmsPage,
@@ -67,6 +75,8 @@ import {
   parseBoardReplyCreate,
   parseBoardReplyDelete,
   parseBoardReplyUpdate,
+  parseHuntingCombatClick,
+  parseHuntingCombatConsumable,
   parseInquiryCreate,
   parseInquiryStatus,
   parseLogin,
@@ -603,6 +613,81 @@ export const createApp = () => {
     try {
       const ranking = await listHuntingBattleRanking();
       res.json(ranking);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/zones", async (_req, res, next) => {
+    try {
+      res.json(listHuntingZones());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/zones/:zoneId", async (req, res, next) => {
+    try {
+      res.json(getHuntingZoneDetail(getParamValue(req.params.zoneId)));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/zones/:zoneId/drops", async (req, res, next) => {
+    try {
+      res.json(getHuntingZoneDrops(getParamValue(req.params.zoneId)));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/combat/state", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const profile = await getHuntingProfile(user.id);
+      res.json(
+        getCombatState(
+          user.id,
+          profile,
+          typeof req.query.zoneId === "string" ? req.query.zoneId : undefined,
+          typeof req.query.monsterId === "string" ? req.query.monsterId : undefined
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/combat/click", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parseHuntingCombatClick(req.body);
+      const profile = await getHuntingProfile(user.id);
+      res.json(clickCombat(user.id, profile, payload.zoneId, payload.monsterId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/combat/use-consumable", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parseHuntingCombatConsumable(req.body);
+      const profile = await getHuntingProfile(user.id);
+      res.json(useCombatConsumable(user.id, profile, payload));
     } catch (error) {
       next(error);
     }
