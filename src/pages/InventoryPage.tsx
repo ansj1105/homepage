@@ -1,0 +1,280 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { apiClient } from "../api/client";
+import CommunityTopBar from "../components/CommunityTopBar";
+import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
+import { useUserAuth } from "../auth/UserAuthContext";
+import {
+  consumableMeta,
+  getHuntingStorageKey,
+  loadHuntingProgress,
+  materialMeta,
+  saveHuntingProgress,
+  type HuntingProgress
+} from "../features/huntingProgress";
+import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
+import type {
+  PowerRankingEquipmentCode,
+  PowerRankingEquipmentSlot,
+  PowerRankingInventoryItem
+} from "../types";
+
+type InventoryTab = "equipment" | "consumables" | "materials" | "other" | "card-shards";
+
+const InventoryPage = () => {
+  const navigate = useNavigate();
+  const { user } = useUserAuth();
+  const [activeTab, setActiveTab] = useState<InventoryTab>("equipment");
+  const [progress, setProgress] = useState<HuntingProgress | null>(null);
+  const [equipmentInventory, setEquipmentInventory] = useState<any[]>([]);
+  const [equippedItems, setEquippedItems] = useState<Record<string, any>>({});
+  const [itemInventory, setItemInventory] = useState<PowerRankingInventoryItem[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [submittingCode, setSubmittingCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = "인벤토리";
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/dongyeon-login");
+      return;
+    }
+
+    setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
+    apiClient
+      .getInventory()
+      .then((payload) => {
+        setEquipmentInventory(payload.equipment.inventory);
+        setEquippedItems(payload.equipment.equipped);
+        setItemInventory(payload.consumables);
+        setErrorMessage("");
+      })
+      .catch((error: unknown) => {
+        setErrorMessage(error instanceof Error ? error.message : "인벤토리를 불러오지 못했습니다.");
+      });
+  }, [navigate, user]);
+
+  useEffect(() => {
+    if (!user || !progress) {
+      return;
+    }
+    saveHuntingProgress(getHuntingStorageKey(user.id), progress);
+  }, [progress, user]);
+
+  const handleEquip = async (equipmentCode: PowerRankingEquipmentCode) => {
+    setSubmittingCode(equipmentCode);
+    try {
+      const equipment = await apiClient.equipEquipment({ equipmentCode });
+      setEquipmentInventory(equipment.inventory);
+      setEquippedItems(equipment.equipped);
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "장비를 착용하지 못했습니다.");
+    } finally {
+      setSubmittingCode(null);
+    }
+  };
+
+  const handleUnequip = async (slot: PowerRankingEquipmentSlot) => {
+    try {
+      const equipment = await apiClient.unequipEquipment({ slot });
+      setEquipmentInventory(equipment.inventory);
+      setEquippedItems(equipment.equipped);
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "장비를 해제하지 못했습니다.");
+    }
+  };
+
+  const handleSell = async (inventoryType: "equipment" | "consumable", code: string) => {
+    try {
+      const result = await apiClient.sellItem({ inventoryType, code });
+      setEquipmentInventory(result.equipment.inventory);
+      setEquippedItems(result.equipment.equipped);
+      setItemInventory(result.consumables);
+      if (progress) {
+        setProgress({
+          ...progress,
+          materials: {
+            ...progress.materials,
+            "club-coin": progress.materials["club-coin"] + result.soldAmount
+          }
+        });
+      }
+      setErrorMessage(`판매 완료 · 동연 코인 +${result.soldAmount}`);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "판매하지 못했습니다.");
+    }
+  };
+
+  const materialItems = useMemo(
+    () =>
+      progress
+        ? (Object.keys(materialMeta) as Array<keyof typeof materialMeta>).map((code) => ({
+            code,
+            name: materialMeta[code].name,
+            description: materialMeta[code].description,
+            quantity: progress.materials[code]
+          }))
+        : [],
+    [progress]
+  );
+
+  const otherItems = useMemo(
+    () =>
+      progress
+        ? (Object.keys(consumableMeta) as Array<keyof typeof consumableMeta>).map((code) => ({
+            code,
+            name: consumableMeta[code].name,
+            description: consumableMeta[code].description,
+            quantity: progress.consumables[code]
+          }))
+        : [],
+    [progress]
+  );
+
+  const equippedList = Object.entries(equippedItems) as Array<[PowerRankingEquipmentSlot, any]>;
+
+  return (
+    <div className="powerRankingPage powerRankingPageMaple">
+      <div className="powerRankingShell">
+        <CommunityTopBar />
+
+        <section className="powerRankingInventorySection">
+          <div className="powerRankingSectionHead">
+            <div>
+              <p className="powerRankingSectionEyebrow">Inventory</p>
+              <h1>인벤토리</h1>
+            </div>
+            <p className="powerRankingSectionHint">장비 / 소비 / 재료 / 기타 / 카드 조각 탭으로 분리했습니다.</p>
+          </div>
+
+          {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+
+          <div className="huntingSubNav">
+            <button type="button" className={`huntingSubNavLink ${activeTab === "equipment" ? "isActive" : ""}`} onClick={() => setActiveTab("equipment")}>장비</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "consumables" ? "isActive" : ""}`} onClick={() => setActiveTab("consumables")}>소비</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "materials" ? "isActive" : ""}`} onClick={() => setActiveTab("materials")}>재료</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "other" ? "isActive" : ""}`} onClick={() => setActiveTab("other")}>기타</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "card-shards" ? "isActive" : ""}`} onClick={() => setActiveTab("card-shards")}>카드 조각</button>
+          </div>
+
+          {activeTab === "equipment" ? (
+            <>
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Equipped</p>
+                  <h2>착용 중 장비</h2>
+                </div>
+                <Link to="/dongyeon-equipment-enhancement" className="powerRankingItemButton">강화 화면 이동</Link>
+              </div>
+              <div className="powerRankingInventoryGrid">
+                {(Object.keys(powerRankingEquipmentSlotLabels) as PowerRankingEquipmentSlot[]).map((slot) => {
+                  const equipped = equippedItems[slot];
+                  return (
+                    <article key={slot} className="powerRankingInventoryCard">
+                      <div className="powerRankingInventoryBody">
+                        <div className="powerRankingInventoryHeading">
+                          <strong>{powerRankingEquipmentSlotLabels[slot]}</strong>
+                          <span>{equipped ? equipped.name : "미착용"}</span>
+                        </div>
+                        <p>{equipped ? equipped.effectSummary : "아직 장착한 장비가 없습니다."}</p>
+                        {equipped ? (
+                          <button type="button" className="powerRankingItemButton" onClick={() => void handleUnequip(slot)}>
+                            장비 해제
+                          </button>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div className="powerRankingInventoryGrid">
+                {equipmentInventory.length === 0 ? (
+                  <article className="powerRankingInventoryEmpty">보유 장비가 없습니다.</article>
+                ) : (
+                  equipmentInventory.map((item) => (
+                    <div key={item.code} className="powerRankingItemActionCard">
+                      <PowerRankingEquipmentCard item={item} onEquipEquipment={handleEquip} equipSubmittingCode={submittingCode} />
+                      <button type="button" className="powerRankingItemButton" onClick={() => void handleSell("equipment", item.code)}>
+                        장비 판매
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : null}
+
+          {activeTab === "consumables" ? (
+            <div className="powerRankingInventoryGrid">
+              {itemInventory.length === 0 ? (
+                <article className="powerRankingInventoryEmpty">보유 중인 소비 아이템이 없습니다.</article>
+              ) : (
+                itemInventory.map((item) => (
+                  <article key={item.code} className="powerRankingInventoryCard">
+                    <div className="powerRankingInventoryVisual">
+                      <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
+                      <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                    </div>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{item.name}</strong>
+                        <span>사용/판매 가능</span>
+                      </div>
+                      <p>{item.description}</p>
+                      <button type="button" className="powerRankingItemButton" onClick={() => void handleSell("consumable", item.code)}>
+                        아이템 판매
+                      </button>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          ) : null}
+
+          {activeTab === "materials" ? (
+            <div className="powerRankingInventoryGrid">
+              {materialItems.map((item) => (
+                <article key={item.code} className="powerRankingInventoryCard">
+                  <div className="powerRankingInventoryBody">
+                    <div className="powerRankingInventoryHeading">
+                      <strong>{item.name}</strong>
+                      <span>보유 {item.quantity}</span>
+                    </div>
+                    <p>{item.description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "other" ? (
+            <div className="powerRankingInventoryGrid">
+              {otherItems.map((item) => (
+                <article key={item.code} className="powerRankingInventoryCard">
+                  <div className="powerRankingInventoryBody">
+                    <div className="powerRankingInventoryHeading">
+                      <strong>{item.name}</strong>
+                      <span>보유 {item.quantity}</span>
+                    </div>
+                    <p>{item.description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "card-shards" ? (
+            <article className="powerRankingInventoryEmpty">카드 조각 시스템은 다음 단계에서 별도 성장 콘텐츠로 분리됩니다.</article>
+          ) : null}
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default InventoryPage;

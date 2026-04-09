@@ -11,11 +11,18 @@ import type {
   InquiryItem,
   MainPageContent,
   NoticeItem,
+  EquipmentEnhancePreview,
+  EquipmentEnhanceRequest,
+  EquipmentEnhanceResponse,
+  EquipmentUnequipRequest,
   GameHomeResponse,
   HuntingCombatClickRequest,
   HuntingCombatClickResponse,
   HuntingCombatConsumableRequest,
   HuntingCombatState,
+  InventoryResponse,
+  ItemSellRequest,
+  ItemSellResponse,
   PowerRankingEquipmentState,
   PowerRankingEquipRequest,
   PowerRankingEventLog,
@@ -146,6 +153,7 @@ export const apiClient = {
   getPowerRanking: (period: PowerRankingPeriod) =>
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
   getGameHome: () => request<GameHomeResponse>("/api/game/home"),
+  getInventory: () => request<InventoryResponse>("/api/inventory"),
   getHuntingProfile: () => request<HuntingProfile>("/api/hunting/stage-1"),
   getHuntingZones: () => request<HuntingZoneSummary[]>("/api/zones"),
   getHuntingZone: (zoneId: string) => request<HuntingZoneDetail>(`/api/zones/${zoneId}`),
@@ -170,6 +178,10 @@ export const apiClient = {
   getHuntingBattleRanking: () => request<HuntingBattleRankingEntry[]>("/api/hunting/ranking"),
   getPowerRankingInventory: () => request<PowerRankingInventoryItem[]>("/api/power-ranking/inventory"),
   getPowerRankingEquipment: () => request<PowerRankingEquipmentState>("/api/power-ranking/equipment"),
+  getEquipmentEnhancePreview: (equipmentCode: string, currentLevel: number) =>
+    request<EquipmentEnhancePreview>(
+      `/api/equipment/${encodeURIComponent(equipmentCode)}/enhance-preview?currentLevel=${currentLevel}`
+    ),
   getPowerRankingEvents: () => request<PowerRankingEventLog[]>("/api/power-ranking/events"),
   getBoardPosts: (search = "") =>
     request<BoardPost[]>(`/api/board/posts?search=${encodeURIComponent(search)}`),
@@ -185,8 +197,33 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  useItem: (payload: PowerRankingItemUseRequest) =>
+    request<PowerRankingItemUseResponse>("/api/items/use", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  sellItem: (payload: ItemSellRequest) =>
+    request<ItemSellResponse>("/api/items/sell", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
   equipPowerRankingEquipment: (payload: PowerRankingEquipRequest) =>
     request<PowerRankingEquipmentState>("/api/power-ranking/equipment/equip", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  equipEquipment: (payload: PowerRankingEquipRequest) =>
+    request<PowerRankingEquipmentState>("/api/equipment/equip", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  unequipEquipment: (payload: EquipmentUnequipRequest) =>
+    request<PowerRankingEquipmentState>("/api/equipment/unequip", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  enhanceEquipment: (payload: EquipmentEnhanceRequest) =>
+    request<EquipmentEnhanceResponse>("/api/equipment/enhance", {
       method: "POST",
       body: JSON.stringify(payload)
     }),

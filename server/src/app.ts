@@ -1,5 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import { ZodError } from "zod";
+import { getPowerRankingEquipmentEnhancePreview } from "../../src/data/powerRankingEquipment";
 import { createToken, verifyToken } from "./auth";
 import {
   clickCombat,
@@ -64,7 +65,9 @@ import {
   updatePowerRankingProfileImage,
   updateResource,
   rotateUserSessionRefreshToken,
+  sellInventoryItem,
   touchUserSession,
+  unequipPowerRankingEquipment,
   usePowerRankingItem
 } from "./db";
 import { getUploadMaxBytes, getUploadRoot, storeUploadFile } from "./uploads";
@@ -75,10 +78,13 @@ import {
   parseBoardReplyCreate,
   parseBoardReplyDelete,
   parseBoardReplyUpdate,
+  parseEquipmentEnhance,
+  parseEquipmentUnequip,
   parseHuntingCombatClick,
   parseHuntingCombatConsumable,
   parseInquiryCreate,
   parseInquiryStatus,
+  parseItemSell,
   parseLogin,
   parseMainPageUpsert,
   parseNoticeUpsert,
@@ -618,6 +624,23 @@ export const createApp = () => {
     }
   });
 
+  app.get("/api/inventory", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const [equipment, consumables] = await Promise.all([
+        listPowerRankingEquipmentState(user.id),
+        listPowerRankingInventory(user.id)
+      ]);
+      res.json({ equipment, consumables });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/zones", async (_req, res, next) => {
     try {
       res.json(listHuntingZones());
@@ -899,6 +922,112 @@ export const createApp = () => {
       const payload = parsePowerRankingEquip(req.body);
       const equipment = await equipPowerRankingEquipment(user.id, payload.equipmentCode);
       res.json(equipment);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/equipment/equip", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parsePowerRankingEquip(req.body);
+      res.json(await equipPowerRankingEquipment(user.id, payload.equipmentCode));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/equipment/unequip", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parseEquipmentUnequip(req.body);
+      res.json(await unequipPowerRankingEquipment(user.id, payload.slot));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/items/use", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parsePowerRankingItemUse(req.body);
+      const result = await usePowerRankingItem(
+        user.id,
+        getRequestDeviceId(req),
+        payload.personId,
+        payload.itemCode,
+        payload.period
+      );
+      if (!result) {
+        res.status(404).json({ message: "Ranking target not found" });
+        return;
+      }
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/items/sell", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parseItemSell(req.body);
+      res.json(await sellInventoryItem(user.id, payload.inventoryType, payload.code));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/equipment/:equipmentId/enhance-preview", async (req, res, next) => {
+    try {
+      const equipmentId = getParamValue(req.params.equipmentId);
+      const currentLevel = Math.max(0, Math.min(10, Number(req.query.currentLevel ?? 0) || 0));
+      const preview = getPowerRankingEquipmentEnhancePreview(equipmentId as never, currentLevel);
+      if (!preview) {
+        res.status(404).json({ message: "강화 가능한 다음 단계가 없습니다." });
+        return;
+      }
+      res.json(preview);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/equipment/enhance", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const payload = parseEquipmentEnhance(req.body);
+      const preview = getPowerRankingEquipmentEnhancePreview(payload.equipmentCode, payload.currentLevel);
+      if (!preview) {
+        res.status(404).json({ message: "강화 가능한 다음 단계가 없습니다." });
+        return;
+      }
+      const success = Math.random() < preview.successRate;
+      res.json({
+        preview,
+        success,
+        nextLevel: success ? preview.nextLevel : payload.currentLevel
+      });
     } catch (error) {
       next(error);
     }

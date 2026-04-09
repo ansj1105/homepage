@@ -204,6 +204,37 @@ const powerRankingEquipSchema = z.object({
   ])
 });
 
+const equipmentUnequipSchema = z.object({
+  slot: z.enum(["head", "top", "bottom", "shoes", "gloves"])
+});
+
+const itemSellSchema = z.object({
+  inventoryType: z.enum(["equipment", "consumable"]),
+  code: z.string().trim().min(1).max(80)
+});
+
+const equipmentEnhanceSchema = z.object({
+  equipmentCode: z.enum([
+    "crown-of-cheers",
+    "star-visor",
+    "mint-beret",
+    "commander-jacket",
+    "ribbon-cardigan",
+    "golden-harness",
+    "midnight-slacks",
+    "wave-denim",
+    "aurora-skirt",
+    "thunder-boots",
+    "crystal-sneakers",
+    "ember-heels",
+    "titan-gauntlet",
+    "silk-gloves",
+    "pulse-gloves"
+  ]),
+  currentLevel: z.number().int().min(0).max(10),
+  useProtection: z.boolean()
+});
+
 const huntingCombatClickSchema = z.object({
   zoneId: z.string().trim().min(1).max(80),
   monsterId: z.string().trim().min(1).max(80)
@@ -383,6 +414,9 @@ export const parsePowerRankingItemUse = (value: unknown): import("./types").Powe
   powerRankingItemUseSchema.parse(value);
 export const parsePowerRankingEquip = (value: unknown): import("./types").PowerRankingEquipPayload =>
   powerRankingEquipSchema.parse(value);
+export const parseEquipmentUnequip = (value: unknown) => equipmentUnequipSchema.parse(value);
+export const parseItemSell = (value: unknown) => itemSellSchema.parse(value);
+export const parseEquipmentEnhance = (value: unknown) => equipmentEnhanceSchema.parse(value);
 export const parseHuntingCombatClick = (value: unknown) => huntingCombatClickSchema.parse(value);
 export const parseHuntingCombatConsumable = (value: unknown) =>
   huntingCombatConsumableSchema.parse(value);

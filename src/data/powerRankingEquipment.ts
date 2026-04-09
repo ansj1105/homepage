@@ -1,4 +1,5 @@
 import type {
+  EquipmentEnhancePreview,
   PowerRankingEquipmentCatalogEntry,
   PowerRankingEquipmentCode,
   PowerRankingEquipmentSlot
@@ -178,4 +179,29 @@ export const getPowerRankingEquipmentEnhancementPlan = (
     { level: 9, successRate: 0.35, stoneCost: baseStoneCost + 6, failurePenalty: "유지" },
     { level: 10, successRate: 0.2, stoneCost: baseStoneCost + 8, failurePenalty: "유지" }
   ];
+};
+
+export const getPowerRankingEquipmentEnhancePreview = (
+  equipmentCode: PowerRankingEquipmentCode,
+  currentLevel: number
+): EquipmentEnhancePreview | null => {
+  const nextTier = getPowerRankingEquipmentEnhancementPlan(equipmentCode).find(
+    (tier) => tier.level === currentLevel + 1
+  );
+  if (!nextTier) {
+    return null;
+  }
+
+  const nextBattleBonus = nextTier.level * 8 + (nextTier.level >= 8 ? 10 : 0);
+
+  return {
+    equipmentCode,
+    currentLevel,
+    nextLevel: nextTier.level,
+    successRate: nextTier.successRate,
+    stoneCost: nextTier.stoneCost,
+    goldCost: nextTier.stoneCost * 120 + nextTier.level * 40,
+    failurePenalty: nextTier.failurePenalty,
+    nextEffectSummary: `사냥 전투력 보정 +${nextBattleBonus}`
+  };
 };

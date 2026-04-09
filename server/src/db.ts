@@ -1054,6 +1054,128 @@ export const equipPowerRankingEquipment = async (
   return listPowerRankingEquipmentState(userId);
 };
 
+export const unequipPowerRankingEquipment = async (
+  userId: string,
+  slot: PowerRankingEquipmentSlot
+): Promise<PowerRankingEquipmentState> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const equippedResult = await client.query<PowerRankingEquippedRow>(
+      `SELECT user_id, slot_code, equipment_code, equipped_at, updated_at
+       FROM power_ranking_user_equipped
+       WHERE user_id = $1
+         AND slot_code = $2
+       FOR UPDATE`,
+      [userId, slot]
+    );
+    const equippedRow = equippedResult.rows[0];
+    if (!equippedRow) {
+      throw new Error("해제할 장비가 없습니다.");
+    }
+
+    await client.query(
+      `INSERT INTO power_ranking_user_equipment_inventory (user_id, equipment_code, quantity)
+       VALUES ($1, $2, 1)
+       ON CONFLICT (user_id, equipment_code)
+       DO UPDATE SET quantity = power_ranking_user_equipment_inventory.quantity + 1, updated_at = NOW()`,
+      [userId, equippedRow.equipment_code]
+    );
+
+    await client.query(
+      `DELETE FROM power_ranking_user_equipped
+       WHERE user_id = $1
+         AND slot_code = $2`,
+      [userId, slot]
+    );
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  return listPowerRankingEquipmentState(userId);
+};
+
+export const sellInventoryItem = async (
+  userId: string,
+  inventoryType: "equipment" | "consumable",
+  code: string
+): Promise<{ equipment: PowerRankingEquipmentState; consumables: PowerRankingInventoryItem[]; soldAmount: number }> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    let soldAmount = 0;
+
+    if (inventoryType === "equipment") {
+      const equipment = powerRankingEquipmentCatalog[code];
+      if (!equipment) {
+        throw new Error("판매할 수 없는 장비입니다.");
+      }
+      const result = await client.query<PowerRankingEquipmentInventoryRow>(
+        `SELECT id, quantity
+         FROM power_ranking_user_equipment_inventory
+         WHERE user_id = $1
+           AND equipment_code = $2
+         FOR UPDATE`,
+        [userId, code]
+      );
+      const row = result.rows[0];
+      if (!row || row.quantity <= 0) {
+        throw new Error("보유한 장비가 없습니다.");
+      }
+      await client.query(
+        `UPDATE power_ranking_user_equipment_inventory
+         SET quantity = quantity - 1, updated_at = NOW()
+         WHERE id = $1`,
+        [row.id]
+      );
+      soldAmount = 80;
+    } else {
+      const item = powerRankingItemCatalog[code];
+      if (!item) {
+        throw new Error("판매할 수 없는 아이템입니다.");
+      }
+      const result = await client.query<PowerRankingUserItemRow>(
+        `SELECT id, quantity
+         FROM power_ranking_user_items
+         WHERE user_id = $1
+           AND item_code = $2
+         FOR UPDATE`,
+        [userId, code]
+      );
+      const row = result.rows[0];
+      if (!row || row.quantity <= 0) {
+        throw new Error("보유한 아이템이 없습니다.");
+      }
+      await client.query(
+        `UPDATE power_ranking_user_items
+         SET quantity = quantity - 1, updated_at = NOW()
+         WHERE id = $1`,
+        [row.id]
+      );
+      soldAmount = 40;
+    }
+
+    await client.query("COMMIT");
+
+    return {
+      equipment: await listPowerRankingEquipmentState(userId),
+      consumables: await listPowerRankingInventoryByUserId(userId),
+      soldAmount
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 export const getHuntingProfile = async (userId: string): Promise<HuntingProfile> => {
   const equipmentState = await listPowerRankingEquipmentState(userId);
   const equippedItems = Object.values(equipmentState.equipped);

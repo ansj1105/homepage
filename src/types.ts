@@ -263,6 +263,49 @@ export interface PowerRankingEquipmentState {
   equipped: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
 }
 
+export interface InventoryResponse {
+  equipment: PowerRankingEquipmentState;
+  consumables: PowerRankingInventoryItem[];
+}
+
+export interface EquipmentUnequipRequest {
+  slot: PowerRankingEquipmentSlot;
+}
+
+export interface ItemSellRequest {
+  inventoryType: "equipment" | "consumable";
+  code: string;
+}
+
+export interface ItemSellResponse {
+  equipment: PowerRankingEquipmentState;
+  consumables: PowerRankingInventoryItem[];
+  soldAmount: number;
+}
+
+export interface EquipmentEnhancePreview {
+  equipmentCode: PowerRankingEquipmentCode;
+  currentLevel: number;
+  nextLevel: number;
+  successRate: number;
+  stoneCost: number;
+  goldCost: number;
+  failurePenalty: string;
+  nextEffectSummary: string;
+}
+
+export interface EquipmentEnhanceRequest {
+  equipmentCode: PowerRankingEquipmentCode;
+  currentLevel: number;
+  useProtection: boolean;
+}
+
+export interface EquipmentEnhanceResponse {
+  preview: EquipmentEnhancePreview;
+  success: boolean;
+  nextLevel: number;
+}
+
 export interface HuntingProfile {
   recommendationCoefficient: number;
   weaponAttack: number;

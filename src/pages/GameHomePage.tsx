@@ -76,8 +76,8 @@ const GameHomePage = () => {
     { label: "사냥터 허브", to: "/dongyeon-hunting-ground" },
     { label: "사냥터 선택", to: "/dongyeon-hunting-zones" },
     { label: "전투 화면", to: "/dongyeon-hunting-combat" },
-    { label: "인벤토리", to: "/dongyeon-equipment#equipment-inventory" },
-    { label: "강화", to: "/dongyeon-equipment#equipment-enhancement" },
+    { label: "인벤토리", to: "/dongyeon-inventory" },
+    { label: "강화", to: "/dongyeon-equipment-enhancement" },
     { label: "카드", to: "/dongyeon-power-ranking" },
     { label: "상점", to: "/dongyeon-hunting-battle-ranking" }
   ];
