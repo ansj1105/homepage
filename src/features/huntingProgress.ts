@@ -18,11 +18,22 @@ export type HuntingProgress = {
   consumables: Record<HuntingConsumableCode, number>;
   enhancementLevels: Partial<Record<PowerRankingEquipmentCode, number>>;
   totalDefeated: number;
+  todayClickCount: number;
+  todayDefeatedCount: number;
+  lastDailyResetDate: string;
   selectedCardTargetId: string;
   cardSupportPoints: number;
 };
 
 export const MAX_ENDURANCE = 100;
+
+const getTodayDateKey = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export const materialMeta: Record<HuntingMaterialCode, { name: string; description: string }> = {
   "club-coin": { name: "동연 코인", description: "사냥터 경제의 기본 화폐입니다." },
@@ -59,6 +70,9 @@ export const createDefaultProgress = (): HuntingProgress => ({
   },
   enhancementLevels: {},
   totalDefeated: 0,
+  todayClickCount: 0,
+  todayDefeatedCount: 0,
+  lastDailyResetDate: getTodayDateKey(),
   selectedCardTargetId: "",
   cardSupportPoints: 0
 });
@@ -72,6 +86,8 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
       return createDefaultProgress();
     }
     const parsed = JSON.parse(raw) as Partial<HuntingProgress>;
+    const currentDateKey = getTodayDateKey();
+    const needsDailyReset = parsed.lastDailyResetDate !== currentDateKey;
     return {
       ...createDefaultProgress(),
       ...parsed,
@@ -83,7 +99,10 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
         ...createDefaultProgress().consumables,
         ...(parsed.consumables ?? {})
       },
-      enhancementLevels: parsed.enhancementLevels ?? {}
+      enhancementLevels: parsed.enhancementLevels ?? {},
+      todayClickCount: needsDailyReset ? 0 : parsed.todayClickCount ?? 0,
+      todayDefeatedCount: needsDailyReset ? 0 : parsed.todayDefeatedCount ?? 0,
+      lastDailyResetDate: currentDateKey
     };
   } catch {
     return createDefaultProgress();

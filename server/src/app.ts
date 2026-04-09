@@ -516,6 +516,75 @@ export const createApp = () => {
     }
   });
 
+  app.get("/api/game/home", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+
+      const [huntingProfile, equipment, inventory, cards] = await Promise.all([
+        getHuntingProfile(user.id),
+        listPowerRankingEquipmentState(user.id),
+        listPowerRankingInventory(user.id),
+        listPowerRankingPeople("all")
+      ]);
+
+      res.json({
+        user,
+        huntingProfile,
+        equipment,
+        inventory,
+        cards: cards.slice(0, 8)
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/user/resources", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const inventory = await listPowerRankingInventory(user.id);
+      res.json(inventory);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/user/equipment", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const equipment = await listPowerRankingEquipmentState(user.id);
+      res.json(equipment);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/user/cards", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      const cards = await listPowerRankingPeople("all");
+      res.json(cards.slice(0, 8));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/hunting/stage-1", async (req, res, next) => {
     try {
       const user = await resolveAuthenticatedUser(req);

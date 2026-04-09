@@ -512,6 +512,7 @@ const HuntingGroundPage = () => {
     () => rankingPeople.find((person) => person.id === progress.selectedCardTargetId) ?? null,
     [progress.selectedCardTargetId, rankingPeople]
   );
+  const equippedHeadItem = profile?.equippedItems.head ?? null;
   const equippedList = useMemo(
     () => Object.values(profile?.equippedItems ?? {}),
     [profile?.equippedItems]
@@ -529,6 +530,7 @@ const HuntingGroundPage = () => {
   const playerLevelAttackBonus = Math.max(0, (progress.level - 1) * 12);
   const attackBuffMultiplier = attackBuffCharges > 0 ? 1.28 : 1;
   const autoGrowthMultiplier = profile?.autoGrowthMultiplier ?? 1;
+  const cardGrowthMultiplier = profile?.cardGrowthMultiplier ?? 1;
   const fatigueDropMultiplier =
     progress.endurance >= 60 ? 1 : progress.endurance >= 30 ? 0.88 : 0.74;
   const dropRateMultiplier =
@@ -598,6 +600,7 @@ const HuntingGroundPage = () => {
         materials: nextMaterials,
         consumables: nextConsumables,
         totalDefeated: current.totalDefeated + 1,
+        todayDefeatedCount: current.todayDefeatedCount + 1,
         cardSupportPoints:
           current.selectedCardTargetId && equippedHeadItem
             ? Math.min(60, current.cardSupportPoints + (monster.isBoss ? 3 : Math.max(1, Math.floor(cardGrowthMultiplier))))
@@ -621,7 +624,8 @@ const HuntingGroundPage = () => {
     setProgress((current) => ({
       ...current,
       endurance: Math.max(0, current.endurance - enduranceCost),
-      selectedMonsterId: monsterId
+      selectedMonsterId: monsterId,
+      todayClickCount: source === "click" ? current.todayClickCount + 1 : current.todayClickCount
     }));
 
     setStageMonsters((current) =>

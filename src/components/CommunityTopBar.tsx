@@ -48,6 +48,14 @@ const CommunityTopBar = ({
       </div>
       <nav className="communityTopBarNav" aria-label="커뮤니티 메뉴">
         <NavLink
+          to="/dongyeon-game-home"
+          className={({ isActive }) =>
+            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
+          }
+        >
+          메인 로비
+        </NavLink>
+        <NavLink
           to="/dongyeon-power-ranking"
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()

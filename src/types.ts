@@ -295,6 +295,14 @@ export interface HuntingBattleRankingEntry {
   updatedAt: string;
 }
 
+export interface GameHomeResponse {
+  user: UserProfile;
+  huntingProfile: HuntingProfile;
+  equipment: PowerRankingEquipmentState;
+  inventory: PowerRankingInventoryItem[];
+  cards: PowerRankingPerson[];
+}
+
 export interface PowerRankingInventoryItem extends PowerRankingItemCatalogEntry {
   quantity: number;
   createdAt: string;

@@ -6,6 +6,7 @@ import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import BoardPage from "./pages/BoardPage";
 import EquipmentPage from "./pages/EquipmentPage";
+import GameHomePage from "./pages/GameHomePage";
 import HuntingGroundPage from "./pages/HuntingGroundPage";
 import HuntingBattleRankingPage from "./pages/HuntingBattleRankingPage";
 import LoginPage from "./pages/LoginPage";
@@ -133,6 +134,8 @@ const App = () => (
         <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
         <Route path="/board" element={<BoardPage />} />
         <Route path="/dongyeon-board" element={<BoardPage />} />
+        <Route path="/game-home" element={<GameHomePage />} />
+        <Route path="/dongyeon-game-home" element={<GameHomePage />} />
         <Route path="/equipment" element={<EquipmentPage />} />
         <Route path="/dongyeon-equipment" element={<EquipmentPage />} />
         <Route path="/hunting-ground" element={<HuntingGroundPage />} />

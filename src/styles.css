@@ -6037,6 +6037,19 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 14px;
 }
 
+.powerRankingPageMaple .gameHomeQuickGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.powerRankingPageMaple .gameHomeQuickLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .powerRankingPageMaple .powerRankingDashboardCard {
   display: grid;
   gap: 10px;
@@ -7571,6 +7584,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 @media (max-width: 1100px) {
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .huntingOverviewGrid,
+  .powerRankingPageMaple .gameHomeQuickGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingInventoryGrid,
   .powerRankingPageMaple .powerRankingLogGrid,
@@ -7635,6 +7649,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingHeroActions,
   .powerRankingPageMaple .huntingOverviewGrid,
+  .powerRankingPageMaple .gameHomeQuickGrid,
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingDetailActions,

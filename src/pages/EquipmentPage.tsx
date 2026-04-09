@@ -167,7 +167,7 @@ const EquipmentPage = () => {
         <CommunityTopBar />
 
         <section className="powerRankingInventorySection" aria-label="내 장비 보관함">
-          <div className="powerRankingSectionHead">
+          <div className="powerRankingSectionHead" id="equipment-inventory">
             <div>
               <p className="powerRankingSectionEyebrow">My Equipment</p>
               <h1>내 장비</h1>
@@ -195,7 +195,7 @@ const EquipmentPage = () => {
             </article>
           </div>
 
-          <div className="powerRankingSectionHead">
+          <div className="powerRankingSectionHead" id="equipment-enhancement">
             <div>
               <p className="powerRankingSectionEyebrow">Equipped</p>
               <h2>착용 중 장비</h2>
