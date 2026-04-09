@@ -62,6 +62,14 @@ const getHonorRankLabel = (rank: number): string => {
   return "3RD";
 };
 
+const getVoteQueueHeatClass = (count: number): string => {
+  if (count >= 8) return "isHeat4";
+  if (count >= 5) return "isHeat3";
+  if (count >= 3) return "isHeat2";
+  if (count >= 1) return "isHeat1";
+  return "";
+};
+
 const getEventLabel = (event: PowerRankingEventLog): string => {
   if (event.eventType === "vote_down") {
     return `${event.actorNickname}님이 ${event.personName} 인기도를 내렸습니다.`;
@@ -1073,6 +1081,8 @@ const PowerRankingPage = () => {
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
+                    const upHeatClass = getVoteQueueHeatClass(upQueueCount);
+                    const downHeatClass = getVoteQueueHeatClass(downQueueCount);
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
@@ -1167,14 +1177,14 @@ const PowerRankingPage = () => {
                             <div className="powerRankingActions powerRankingVoteActions">
                               <button
                                 type="button"
-                                className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${isUpBursting ? "isBursting" : ""}`.trim()}
+                                className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${upHeatClass} ${isUpBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
                                 {upQueueCount > 0 ? `▲ 올리기 (${upQueueCount})` : "▲ 올리기"}
                               </button>
                               <button
                                 type="button"
-                                className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${isDownBursting ? "isBursting" : ""}`.trim()}
+                                className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${downHeatClass} ${isDownBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
                                 {downQueueCount > 0 ? `▼ 내리기 (${downQueueCount})` : "▼ 내리기"}

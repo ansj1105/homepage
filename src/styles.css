@@ -6944,6 +6944,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingVoteActionButton {
   position: relative;
+  overflow: hidden;
   min-width: 128px;
   min-height: 48px;
   padding: 0 18px;
@@ -6957,7 +6958,21 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   transition:
     transform 140ms ease,
     box-shadow 160ms ease,
-    filter 160ms ease;
+    filter 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.powerRankingPageMaple .powerRankingVoteActionButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.24), transparent 52%),
+    linear-gradient(180deg, rgba(214, 47, 47, calc(var(--vote-heat, 0) * 0.14)), rgba(122, 18, 18, calc(var(--vote-heat, 0) * 0.3)));
+  opacity: calc(var(--vote-heat, 0) * 1.15);
+  transition: opacity 160ms ease;
 }
 
 .powerRankingPageMaple .powerRankingVoteActionButton:hover {
@@ -6970,6 +6985,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isUp {
+  --vote-heat: 0;
   border-color: rgba(22, 58, 112, 0.22);
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.42), transparent 55%),
@@ -6979,12 +6995,37 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isDown {
+  --vote-heat: 0;
   border-color: rgba(17, 28, 44, 0.22);
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.38), transparent 55%),
     linear-gradient(180deg, #e2e7ef, #b8c4d6);
   color: #111c2c;
   box-shadow: 0 10px 24px rgba(17, 28, 44, 0.16);
+}
+
+.powerRankingPageMaple .powerRankingVoteActionButton.isHeat1 {
+  --vote-heat: 0.32;
+}
+
+.powerRankingPageMaple .powerRankingVoteActionButton.isHeat2 {
+  --vote-heat: 0.52;
+  border-color: rgba(160, 42, 42, 0.28);
+  box-shadow: 0 12px 26px rgba(150, 42, 42, 0.18);
+}
+
+.powerRankingPageMaple .powerRankingVoteActionButton.isHeat3 {
+  --vote-heat: 0.74;
+  border-color: rgba(166, 34, 34, 0.36);
+  color: #4e0f0f;
+  box-shadow: 0 14px 28px rgba(155, 28, 28, 0.24);
+}
+
+.powerRankingPageMaple .powerRankingVoteActionButton.isHeat4 {
+  --vote-heat: 0.92;
+  border-color: rgba(156, 22, 22, 0.48);
+  color: #3d0909;
+  box-shadow: 0 16px 32px rgba(145, 18, 18, 0.3);
 }
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isBursting {
