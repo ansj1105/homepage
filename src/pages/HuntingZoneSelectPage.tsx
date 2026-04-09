@@ -72,8 +72,13 @@ const HuntingZoneSelectPage = () => {
                     >
                       <strong>{zone.badge}</strong>
                       <span>{zone.name}</span>
+                      <small>{zone.zoneType === "normal" ? "일반 사냥터" : zone.zoneType === "elite" ? "정예 사냥터" : zone.zoneType === "boss" ? "보스 사냥터" : "이벤트 사냥터"}</small>
                       <small>{zone.chapterLabel}</small>
+                      <small>{zone.roleSummary}</small>
                       <small>{isUnlocked ? `권장 전투력 ${zone.recommendedPower}` : `레벨 ${zone.unlockLevel} 필요`}</small>
+                      <small>클릭 소모 {zone.clickCost}</small>
+                      {zone.dailyEntryLimit ? <small>일일 입장 {zone.dailyEntryLimit}회</small> : null}
+                      {zone.seasonLabel ? <small>{zone.seasonLabel} · {zone.isSeasonOpen ? "오픈 중" : "준비 중"}</small> : null}
                       <small>몬스터: {zone.monsterNames.join(", ")}</small>
                       <small>드랍: {zone.previewDrops.join(", ")}</small>
                     </button>
@@ -89,7 +94,11 @@ const HuntingZoneSelectPage = () => {
                     <p className="powerRankingSectionEyebrow">{zoneDetail.badge}</p>
                     <h2>{zoneDetail.name}</h2>
                   </div>
-                  <p className="powerRankingSectionHint">{zoneDetail.description}</p>
+                  <p className="powerRankingSectionHint">
+                    {zoneDetail.description} · {zoneDetail.roleSummary} · 클릭 소모 {zoneDetail.clickCost}
+                    {zoneDetail.dailyEntryLimit ? ` · 일일 입장 ${zoneDetail.dailyEntryLimit}회` : ""}
+                    {zoneDetail.seasonLabel ? ` · ${zoneDetail.seasonLabel}` : ""}
+                  </p>
                 </div>
 
                 <div className="huntingMonsterGrid">

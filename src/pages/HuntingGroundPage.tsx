@@ -69,7 +69,10 @@ const HuntingGroundPage = () => {
                 <article className="powerRankingDashboardCard">
                   <span>현재 지역</span>
                   <strong>{currentZone?.name ?? "-"}</strong>
-                  <p>{currentZone?.chapterLabel ?? "미선택"}</p>
+                  <p>
+                    {currentZone?.chapterLabel ?? "미선택"}
+                    {currentZone ? ` · ${currentZone.zoneType === "normal" ? "일반" : currentZone.zoneType === "elite" ? "정예" : currentZone.zoneType === "boss" ? "보스" : "이벤트"}` : ""}
+                  </p>
                 </article>
                 <article className="powerRankingDashboardCard">
                   <span>현재 대상</span>

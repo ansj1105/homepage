@@ -39,11 +39,16 @@ export interface HuntingZoneDefinition {
   id: string;
   badge: string;
   chapterLabel: string;
+  zoneType: "normal" | "elite" | "boss" | "event";
+  roleSummary: string;
   name: string;
   description: string;
   unlockLevel: number;
   recommendedPower: number;
   clickCost: number;
+  dailyEntryLimit?: number;
+  seasonLabel?: string;
+  isSeasonOpen?: boolean;
   monsters: HuntingMonsterDefinition[];
 }
 
@@ -70,6 +75,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
     id: "beginner-yard",
     badge: "CH 1",
     chapterLabel: "입문 구역",
+    zoneType: "normal",
+    roleSummary: "기본 장비, 골드, 재료 드랍",
     name: "초급 사냥터",
     description: "클릭 감각을 익히고 강화석과 포션을 모으는 기본 진입 구간입니다.",
     unlockLevel: 1,
@@ -141,11 +148,13 @@ export const huntingZones: HuntingZoneDefinition[] = [
     id: "midnight-campus",
     badge: "CH 2",
     chapterLabel: "중급 구역",
+    zoneType: "elite",
+    roleSummary: "희귀 장비, 강화석 드랍 강화",
     name: "야간 캠퍼스",
     description: "강화 루프가 본격적으로 열리며 보호 주문서가 드랍되기 시작합니다.",
     unlockLevel: 3,
     recommendedPower: 130,
-    clickCost: 1,
+    clickCost: 2,
     monsters: [
       {
         id: "ledger-bat",
@@ -212,11 +221,14 @@ export const huntingZones: HuntingZoneDefinition[] = [
     id: "council-vault",
     badge: "CH 3",
     chapterLabel: "심화 구역",
+    zoneType: "boss",
+    roleSummary: "세트 장비 조각, 카드 관련 아이템",
     name: "집행부 금고",
     description: "희귀 재료와 장기 성장 재화를 모으는 방치형 핵심 구간입니다.",
     unlockLevel: 6,
     recommendedPower: 260,
-    clickCost: 1,
+    clickCost: 3,
+    dailyEntryLimit: 3,
     monsters: [
       {
         id: "vault-mimic",
@@ -284,11 +296,15 @@ export const huntingZones: HuntingZoneDefinition[] = [
     id: "festival-street",
     badge: "CH 4",
     chapterLabel: "축제 구역",
+    zoneType: "event",
+    roleSummary: "시즌 토큰, 한정 장비, 기간 한정 오픈",
     name: "축제 거리",
     description: "몬스터 종류가 늘어나고 자동 사냥과 클릭 화력을 모두 요구하는 구간입니다.",
     unlockLevel: 9,
     recommendedPower: 420,
     clickCost: 1,
+    seasonLabel: "봄 축제 시즌",
+    isSeasonOpen: true,
     monsters: [
       {
         id: "booth-spirit",
@@ -356,11 +372,13 @@ export const huntingZones: HuntingZoneDefinition[] = [
     id: "archive-labyrinth",
     badge: "CH 5",
     chapterLabel: "최종 구역",
+    zoneType: "elite",
+    roleSummary: "최상위 희귀 재료와 장기 파밍 구간",
     name: "기록 보관 미궁",
     description: "현재 빌드의 최고 난도 구간입니다. 공격력과 장기 파밍 효율을 동시에 봅니다.",
     unlockLevel: 12,
     recommendedPower: 620,
-    clickCost: 1,
+    clickCost: 3,
     monsters: [
       {
         id: "index-wraith",

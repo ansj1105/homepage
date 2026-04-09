@@ -18,6 +18,8 @@ type CombatSession = {
   monsterId: string;
   currentHp: number;
   totalClicks: number;
+  bossEntryUsageDate: string;
+  bossEntryUsage: Record<string, number>;
   attackBuffCharges: number;
   dropBuffKills: number;
   protectionCharges: number;
@@ -26,6 +28,14 @@ type CombatSession = {
 };
 
 const combatSessions = new Map<string, CombatSession>();
+
+const getTodayKey = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const toZoneSummary = (zoneId: string): HuntingZoneSummary => {
   const zone = getHuntingZone(zoneId);
@@ -37,11 +47,16 @@ const toZoneSummary = (zoneId: string): HuntingZoneSummary => {
     id: zone.id,
     badge: zone.badge,
     chapterLabel: zone.chapterLabel,
+    zoneType: zone.zoneType,
+    roleSummary: zone.roleSummary,
     name: zone.name,
     description: zone.description,
     unlockLevel: zone.unlockLevel,
     recommendedPower: zone.recommendedPower,
     clickCost: zone.clickCost,
+    dailyEntryLimit: zone.dailyEntryLimit,
+    seasonLabel: zone.seasonLabel,
+    isSeasonOpen: zone.isSeasonOpen,
     monsterNames: zone.monsters.map((monster) => monster.name),
     previewDrops: Array.from(new Set(zone.monsters.flatMap((monster) => monster.dropTable.map((drop) => drop.label)))).slice(0, 6),
     hasBoss: zone.monsters.some((monster) => monster.isBoss)
@@ -87,6 +102,8 @@ const createDefaultSession = (): CombatSession => {
     monsterId: monster.id,
     currentHp: monster.maxHp,
     totalClicks: 0,
+    bossEntryUsageDate: getTodayKey(),
+    bossEntryUsage: {},
     attackBuffCharges: 0,
     dropBuffKills: 0,
     protectionCharges: 0,
@@ -98,6 +115,10 @@ const createDefaultSession = (): CombatSession => {
 const getSession = (userId: string): CombatSession => {
   const existing = combatSessions.get(userId);
   if (existing) {
+    if (existing.bossEntryUsageDate !== getTodayKey()) {
+      existing.bossEntryUsageDate = getTodayKey();
+      existing.bossEntryUsage = {};
+    }
     return existing;
   }
   const next = createDefaultSession();
@@ -119,6 +140,9 @@ const syncSessionTarget = (session: CombatSession, zoneId?: string, monsterId?: 
   const monsterChanged = session.monsterId !== targetMonster.id;
 
   if (zoneChanged || monsterChanged) {
+    if (targetZone.zoneType === "event" && targetZone.isSeasonOpen === false) {
+      throw new Error("이벤트 사냥터는 현재 오픈 기간이 아닙니다.");
+    }
     session.zoneId = targetZone.id;
     session.monsterId = targetMonster.id;
     session.currentHp = targetMonster.maxHp;
@@ -174,11 +198,16 @@ const buildState = (profile: HuntingProfile, session: CombatSession): HuntingCom
   return {
     zoneId: zone.id,
     zoneName: zone.name,
+    zoneType: zone.zoneType,
     monster: toMonsterView(zone.id, session.monsterId, session.currentHp),
     estimatedDamage: getEstimatedDamage(profile, session, session.monsterId),
     remainingClicks: Math.max(0, DAILY_CLICK_LIMIT - session.totalClicks),
     totalClicks: session.totalClicks,
     clickCost: zone.clickCost,
+    remainingBossEntries:
+      zone.zoneType === "boss" && zone.dailyEntryLimit
+        ? Math.max(0, zone.dailyEntryLimit - (session.bossEntryUsage[zone.id] ?? 0))
+        : undefined,
     critRate: Math.min(0.38, 0.08 + Math.min(0.18, profile.recommendationCoefficient * 0.002)),
     attackBuffCharges: session.attackBuffCharges,
     dropBuffKills: session.dropBuffKills,
@@ -244,6 +273,20 @@ export const clickCombat = (
     throw new Error("존재하지 않는 몬스터입니다.");
   }
 
+  const zone = getHuntingZone(session.zoneId);
+  if (!zone) {
+    throw new Error("존재하지 않는 사냥터입니다.");
+  }
+  if (session.totalClicks + zone.clickCost > DAILY_CLICK_LIMIT) {
+    throw new Error("남은 클릭 수가 부족합니다.");
+  }
+  if (zone.zoneType === "boss" && zone.dailyEntryLimit) {
+    const used = session.bossEntryUsage[zone.id] ?? 0;
+    if (used >= zone.dailyEntryLimit) {
+      throw new Error("오늘 보스 사냥터 입장 제한을 모두 사용했습니다.");
+    }
+  }
+
   const critRate = Math.min(0.38, 0.08 + Math.min(0.18, profile.recommendationCoefficient * 0.002));
   const wasCritical = Math.random() < critRate;
   const attackBuffMultiplier = session.attackBuffCharges > 0 ? 1.28 : 1;
@@ -253,7 +296,10 @@ export const clickCombat = (
     Math.floor(profile.battlePower * attackBuffMultiplier * skillMultiplier * (wasCritical ? 1.75 : 1) - monster.defense)
   );
 
-  session.totalClicks += 1;
+  session.totalClicks += zone.clickCost;
+  if (zone.zoneType === "boss" && zone.dailyEntryLimit) {
+    session.bossEntryUsage[zone.id] = (session.bossEntryUsage[zone.id] ?? 0) + 1;
+  }
   session.attackBuffCharges = Math.max(0, session.attackBuffCharges - 1);
   session.currentHp -= damage;
 

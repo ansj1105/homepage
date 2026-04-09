@@ -398,11 +398,16 @@ export interface HuntingZoneSummary {
   id: string;
   badge: string;
   chapterLabel: string;
+  zoneType: "normal" | "elite" | "boss" | "event";
+  roleSummary: string;
   name: string;
   description: string;
   unlockLevel: number;
   recommendedPower: number;
   clickCost: number;
+  dailyEntryLimit?: number;
+  seasonLabel?: string;
+  isSeasonOpen?: boolean;
   monsterNames: string[];
   previewDrops: string[];
   hasBoss: boolean;
@@ -447,11 +452,13 @@ export interface HuntingCombatReward {
 export interface HuntingCombatState {
   zoneId: string;
   zoneName: string;
+  zoneType: "normal" | "elite" | "boss" | "event";
   monster: HuntingMonsterView;
   estimatedDamage: number;
   remainingClicks: number;
   totalClicks: number;
   clickCost: number;
+  remainingBossEntries?: number;
   critRate: number;
   attackBuffCharges: number;
   dropBuffKills: number;

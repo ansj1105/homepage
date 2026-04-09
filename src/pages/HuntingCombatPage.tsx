@@ -92,11 +92,15 @@ const HuntingCombatPage = () => {
                         style={{ width: `${Math.max(0, (combatState.monster.currentHp / combatState.monster.maxHp) * 100)}%` }}
                       />
                     </div>
-                    <div className="huntingCombatMeta">
-                      <span>HP {combatState.monster.currentHp} / {combatState.monster.maxHp}</span>
-                      <span>예상 데미지 {combatState.estimatedDamage}</span>
-                      <span>치명타 {Math.round(combatState.critRate * 100)}%</span>
-                    </div>
+                      <div className="huntingCombatMeta">
+                        <span>HP {combatState.monster.currentHp} / {combatState.monster.maxHp}</span>
+                        <span>예상 데미지 {combatState.estimatedDamage}</span>
+                        <span>치명타 {Math.round(combatState.critRate * 100)}%</span>
+                        <span>클릭 소모 {combatState.clickCost}</span>
+                        {combatState.remainingBossEntries !== undefined ? (
+                          <span>보스 입장 잔여 {combatState.remainingBossEntries}</span>
+                        ) : null}
+                      </div>
                     <div className="huntingCombatActions">
                       <button type="button" className="powerRankingItemButton isPositive" disabled={isAttacking} onClick={() => void attack()}>
                         {isAttacking ? "공격 중..." : "클릭 공격"}
