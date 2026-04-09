@@ -5543,6 +5543,13 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple {
   background: #e8edf4;
+  background-image: none !important;
+}
+
+.powerRankingPageMaple .powerRankingShell::before,
+.powerRankingPageMaple .powerRankingHeroMaple,
+.powerRankingPageMaple .boardHero {
+  background-image: none !important;
 }
 
 .powerRankingPageMaple .powerRankingShell {
