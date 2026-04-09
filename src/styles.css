@@ -7514,6 +7514,26 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingPodiumGrid {
     grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorRank1,
+  .powerRankingPageMaple .powerRankingHonorRank2,
+  .powerRankingPageMaple .powerRankingHonorRank3 {
+    grid-column: auto;
+    min-height: 0;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorRank1 {
+    order: 1;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorRank2 {
+    order: 2;
+  }
+
+  .powerRankingPageMaple .powerRankingHonorRank3 {
+    order: 3;
   }
 
   .powerRankingPageMaple .powerRankingBoardHeader,
@@ -7684,6 +7704,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 @media (max-width: 560px) {
+  .powerRankingPageMaple .powerRankingPodiumGrid {
+    gap: 12px;
+  }
+
   .powerRankingPageMaple .powerRankingHero h1 {
     font-size: clamp(30px, 12vw, 42px);
   }
@@ -7757,6 +7781,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 @media (max-width: 420px) {
+  .powerRankingPageMaple .powerRankingPodiumGrid {
+    gap: 10px;
+  }
+
   .powerRankingPageMaple .powerRankingShell {
     width: calc(100vw - 16px);
     padding-top: 16px;
