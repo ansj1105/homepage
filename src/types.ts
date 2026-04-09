@@ -336,6 +336,7 @@ export interface ShopItem {
   priceAmount: number;
   itemType: "consumable" | "material";
   code: string;
+  category?: string;
 }
 
 export interface ShopBuyRequest {
@@ -361,6 +362,7 @@ export interface EquipmentCollectionEntry {
 export interface SetCollectionEntry {
   id: string;
   name: string;
+  typeLabel?: string;
   requirement: string;
   bonusSummary: string;
 }
@@ -476,7 +478,19 @@ export interface HuntingCombatClickRequest {
 }
 
 export interface HuntingCombatConsumableRequest {
-  consumableCode: "healing-potion" | "berserk-tonic" | "lucky-scroll" | "protection-scroll";
+  consumableCode:
+    | "healing-potion"
+    | "medium-healing-potion"
+    | "power-potion"
+    | "berserk-tonic"
+    | "lucky-scroll"
+    | "harvest-booster"
+    | "energy-bar"
+    | "energy-drink"
+    | "fan-letter"
+    | "cheering-stick"
+    | "viral-ticket"
+    | "protection-scroll";
 }
 
 export interface HuntingCombatClickResponse {

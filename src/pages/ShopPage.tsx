@@ -84,7 +84,7 @@ const ShopPage = () => {
                 <div className="powerRankingInventoryBody">
                   <div className="powerRankingInventoryHeading">
                     <strong>{item.name}</strong>
-                    <span>{item.itemType === "consumable" ? "소비" : "재료"}</span>
+                    <span>{item.category ?? (item.itemType === "consumable" ? "소비" : "재료")}</span>
                   </div>
                   <p>{item.description}</p>
                   <div className="powerRankingInventoryTags">

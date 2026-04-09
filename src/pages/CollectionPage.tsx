@@ -64,7 +64,7 @@ const CollectionPage = () => {
             <article className="powerRankingDashboardCard">
               <span>세트 달성</span>
               <strong>{equippedCount}</strong>
-              <p>장착 부위 수에 따라 세트 보너스 달성 여부가 바뀝니다.</p>
+              <p>세트 유형별 보너스 방향과 현재 달성 상태를 확인합니다.</p>
             </article>
           </div>
 
@@ -108,11 +108,12 @@ const CollectionPage = () => {
                 <div className="powerRankingInventoryBody">
                   <div className="powerRankingInventoryHeading">
                     <strong>{setItem.name}</strong>
-                    <span>{equippedCount >= Number(setItem.id.split("-")[1]) ? "달성" : "미달성"}</span>
+                    <span>{setItem.typeLabel ?? "세트"}</span>
                   </div>
                   <p>{setItem.requirement}</p>
                   <div className="powerRankingInventoryTags">
                     <span className="powerRankingInventoryPill">{setItem.bonusSummary}</span>
+                    <span className="powerRankingInventoryPill isMuted">{equippedCount >= 2 ? "활성 가능" : "장비 필요"}</span>
                   </div>
                 </div>
               </article>

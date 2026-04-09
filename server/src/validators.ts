@@ -262,8 +262,16 @@ const huntingCombatClickSchema = z.object({
 const huntingCombatConsumableSchema = z.object({
   consumableCode: z.enum([
     "healing-potion",
+    "medium-healing-potion",
+    "power-potion",
     "berserk-tonic",
     "lucky-scroll",
+    "harvest-booster",
+    "energy-bar",
+    "energy-drink",
+    "fan-letter",
+    "cheering-stick",
+    "viral-ticket",
     "protection-scroll"
   ])
 });

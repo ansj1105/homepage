@@ -217,7 +217,17 @@ export const useHuntingGame = () => {
         endurance:
           code === "healing-potion"
             ? Math.min(MAX_ENDURANCE, current.endurance + 35)
-            : current.endurance,
+            : code === "medium-healing-potion"
+              ? Math.min(MAX_ENDURANCE, current.endurance + 60)
+              : current.endurance,
+        cardSupportPoints:
+          code === "fan-letter"
+            ? current.cardSupportPoints + 2
+            : code === "cheering-stick"
+              ? current.cardSupportPoints + 4
+              : code === "viral-ticket"
+                ? current.cardSupportPoints + 6
+                : current.cardSupportPoints,
         consumables: {
           ...current.consumables,
           [code]: Math.max(0, current.consumables[code] - 1)

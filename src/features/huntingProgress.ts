@@ -3,8 +3,16 @@ import type { PowerRankingEquipmentCode } from "../types";
 export type HuntingMaterialCode = "club-coin" | "enhancement-stone" | "refined-stone" | "ancient-core";
 export type HuntingConsumableCode =
   | "healing-potion"
+  | "medium-healing-potion"
+  | "power-potion"
   | "berserk-tonic"
   | "lucky-scroll"
+  | "harvest-booster"
+  | "energy-bar"
+  | "energy-drink"
+  | "fan-letter"
+  | "cheering-stick"
+  | "viral-ticket"
   | "protection-scroll";
 
 export type HuntingProgress = {
@@ -42,11 +50,22 @@ export const materialMeta: Record<HuntingMaterialCode, { name: string; descripti
   "ancient-core": { name: "고대 코어", description: "상위 사냥터에서 얻는 희귀 성장 재료입니다." }
 };
 
-export const consumableMeta: Record<HuntingConsumableCode, { name: string; description: string }> = {
-  "healing-potion": { name: "회복 포션", description: "지구력 35를 회복합니다." },
-  "berserk-tonic": { name: "광폭 토닉", description: "다음 8회 공격의 최종 공격력을 끌어올립니다." },
-  "lucky-scroll": { name: "행운 스크롤", description: "다음 5회 처치 동안 드랍 효율이 증가합니다." },
-  "protection-scroll": { name: "보호 주문서", description: "고강화 실패 시 추가 손실을 막아줍니다." }
+export const consumableMeta: Record<
+  HuntingConsumableCode,
+  { name: string; description: string; category: "회복형" | "공격 버프형" | "드랍 버프형" | "클릭 회복형" | "카드 성장형" | "보호형" }
+> = {
+  "healing-potion": { name: "작은 회복 물약", description: "지구력 35를 회복합니다.", category: "회복형" },
+  "medium-healing-potion": { name: "중형 회복 물약", description: "지구력 60을 회복합니다.", category: "회복형" },
+  "power-potion": { name: "힘의 물약", description: "다음 6회 공격의 기본 위력을 올립니다.", category: "공격 버프형" },
+  "berserk-tonic": { name: "광폭 스크롤", description: "다음 8회 공격의 최종 공격력을 크게 끌어올립니다.", category: "공격 버프형" },
+  "lucky-scroll": { name: "행운의 가루", description: "다음 5회 처치 동안 드랍 효율이 증가합니다.", category: "드랍 버프형" },
+  "harvest-booster": { name: "채집 증폭제", description: "다음 7회 처치 동안 재료 드랍 수량이 증가합니다.", category: "드랍 버프형" },
+  "energy-bar": { name: "에너지 바", description: "오늘의 클릭 여유를 12 회복합니다.", category: "클릭 회복형" },
+  "energy-drink": { name: "고농축 에너지 드링크", description: "오늘의 클릭 여유를 24 회복합니다.", category: "클릭 회복형" },
+  "fan-letter": { name: "팬레터", description: "선택한 카드의 성장 포인트를 2 올립니다.", category: "카드 성장형" },
+  "cheering-stick": { name: "응원봉", description: "선택한 카드의 성장 포인트를 4 올립니다.", category: "카드 성장형" },
+  "viral-ticket": { name: "바이럴 티켓", description: "선택한 카드의 성장 포인트를 6 올립니다.", category: "카드 성장형" },
+  "protection-scroll": { name: "보호 주문서", description: "고강화 실패 시 추가 손실을 막아줍니다.", category: "보호형" }
 };
 
 export const createDefaultProgress = (): HuntingProgress => ({
@@ -64,8 +83,16 @@ export const createDefaultProgress = (): HuntingProgress => ({
   },
   consumables: {
     "healing-potion": 0,
+    "medium-healing-potion": 0,
+    "power-potion": 0,
     "berserk-tonic": 0,
     "lucky-scroll": 0,
+    "harvest-booster": 0,
+    "energy-bar": 0,
+    "energy-drink": 0,
+    "fan-letter": 0,
+    "cheering-stick": 0,
+    "viral-ticket": 0,
     "protection-scroll": 0
   },
   enhancementLevels: {},

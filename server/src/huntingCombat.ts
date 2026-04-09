@@ -339,24 +339,61 @@ export const useCombatConsumable = (
 ): HuntingCombatState => {
   const session = getSession(userId);
   const labelMap: Record<HuntingCombatConsumableRequest["consumableCode"], string> = {
-    "healing-potion": "회복 포션",
-    "berserk-tonic": "광폭 토닉",
-    "lucky-scroll": "행운 스크롤",
+    "healing-potion": "작은 회복 물약",
+    "medium-healing-potion": "중형 회복 물약",
+    "power-potion": "힘의 물약",
+    "berserk-tonic": "광폭 스크롤",
+    "lucky-scroll": "행운의 가루",
+    "harvest-booster": "채집 증폭제",
+    "energy-bar": "에너지 바",
+    "energy-drink": "고농축 에너지 드링크",
+    "fan-letter": "팬레터",
+    "cheering-stick": "응원봉",
+    "viral-ticket": "바이럴 티켓",
     "protection-scroll": "보호 주문서"
   };
 
   switch (payload.consumableCode) {
     case "healing-potion":
       session.totalClicks = Math.max(0, session.totalClicks - 15);
-      appendLog(session, "회복 포션 사용 · 남은 클릭 여유 +15");
+      appendLog(session, "작은 회복 물약 사용 · 남은 클릭 여유 +15");
+      break;
+    case "medium-healing-potion":
+      session.totalClicks = Math.max(0, session.totalClicks - 25);
+      appendLog(session, "중형 회복 물약 사용 · 남은 클릭 여유 +25");
+      break;
+    case "power-potion":
+      session.attackBuffCharges = Math.max(session.attackBuffCharges, 6);
+      appendLog(session, "힘의 물약 사용 · 다음 6회 공격 강화");
       break;
     case "berserk-tonic":
       session.attackBuffCharges = 8;
-      appendLog(session, "광폭 토닉 사용 · 다음 8회 공격 강화");
+      appendLog(session, "광폭 스크롤 사용 · 다음 8회 공격 강화");
       break;
     case "lucky-scroll":
       session.dropBuffKills = 5;
-      appendLog(session, "행운 스크롤 사용 · 다음 5회 처치 드랍 상승");
+      appendLog(session, "행운의 가루 사용 · 다음 5회 처치 드랍 상승");
+      break;
+    case "harvest-booster":
+      session.dropBuffKills = Math.max(session.dropBuffKills, 7);
+      appendLog(session, "채집 증폭제 사용 · 다음 7회 처치 재료 드랍 상승");
+      break;
+    case "energy-bar":
+      session.totalClicks = Math.max(0, session.totalClicks - 12);
+      appendLog(session, "에너지 바 사용 · 남은 클릭 여유 +12");
+      break;
+    case "energy-drink":
+      session.totalClicks = Math.max(0, session.totalClicks - 24);
+      appendLog(session, "고농축 에너지 드링크 사용 · 남은 클릭 여유 +24");
+      break;
+    case "fan-letter":
+      appendLog(session, "팬레터 사용 · 카드 성장 포인트 +2");
+      break;
+    case "cheering-stick":
+      appendLog(session, "응원봉 사용 · 카드 성장 포인트 +4");
+      break;
+    case "viral-ticket":
+      appendLog(session, "바이럴 티켓 사용 · 카드 성장 포인트 +6");
       break;
     case "protection-scroll":
       session.protectionCharges += 1;

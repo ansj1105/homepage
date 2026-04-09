@@ -750,22 +750,39 @@ export const createApp = () => {
     try {
       res.json([
         {
-          id: "set-2",
-          name: "2세트 보너스",
-          requirement: "장비 2부위 장착",
-          bonusSummary: "세트 배수 x1.15"
+          id: "balanced-freshman",
+          name: "초심자 탐험가 세트",
+          typeLabel: "균형형",
+          requirement: "입문 구역 장비 2부위 이상 장착",
+          bonusSummary: "전투력과 드랍 효율을 고르게 보정"
         },
         {
-          id: "set-3",
-          name: "3세트 보너스",
-          requirement: "장비 3부위 장착",
-          bonusSummary: "세트 배수 x1.35"
+          id: "honor-knight",
+          name: "명예 기사 세트",
+          typeLabel: "전투형",
+          requirement: "성채 계열 장비 3부위 이상 장착",
+          bonusSummary: "무기 공격력과 전투 배수 상승"
         },
         {
-          id: "set-5",
-          name: "5세트 보너스",
-          requirement: "장비 5부위 장착",
-          bonusSummary: "세트 배수 x1.80"
+          id: "golden-harvester",
+          name: "황금 수확자 세트",
+          typeLabel: "파밍형",
+          requirement: "평원 계열 장비 3부위 이상 장착",
+          bonusSummary: "골드와 재료 드랍 효율 상승"
+        },
+        {
+          id: "starlight-idol",
+          name: "별빛 아이돌 세트",
+          typeLabel: "카드형",
+          requirement: "무대 도시 계열 장비 3부위 이상 장착",
+          bonusSummary: "카드 성장 포인트 획득량 상승"
+        },
+        {
+          id: "gale-chaser",
+          name: "질풍 추적자 세트",
+          typeLabel: "클릭형",
+          requirement: "신발/장갑 중심 장비 2부위 이상 장착",
+          bonusSummary: "오늘의 클릭 여유와 자동 사냥 템포 상승"
         }
       ]);
     } catch (error) {
