@@ -35,9 +35,17 @@ export type HuntingProgress = {
   cardLevels: Record<string, number>;
   cardPopularity: Record<string, number>;
   totalDefeated: number;
+  totalClickCount: number;
+  totalBossDefeated: number;
+  totalConsumablesUsed: number;
   todayClickCount: number;
   todayDefeatedCount: number;
+  dailyEnhanceCount: number;
+  dailyConsumableUseCount: number;
+  dailyCardPopularityGain: number;
+  weeklyBossDefeatedCount: number;
   lastDailyResetDate: string;
+  lastWeeklyResetDate: string;
   selectedCardTargetId: string;
   cardSupportPoints: number;
 };
@@ -50,6 +58,17 @@ const getTodayDateKey = (): string => {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+
+const getWeekDateKey = (): string => {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  now.setDate(now.getDate() + diff);
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const date = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
 };
 
 export const materialMeta: Record<HuntingMaterialCode, { name: string; description: string }> = {
@@ -114,9 +133,17 @@ export const createDefaultProgress = (): HuntingProgress => ({
   cardLevels: {},
   cardPopularity: {},
   totalDefeated: 0,
+  totalClickCount: 0,
+  totalBossDefeated: 0,
+  totalConsumablesUsed: 0,
   todayClickCount: 0,
   todayDefeatedCount: 0,
+  dailyEnhanceCount: 0,
+  dailyConsumableUseCount: 0,
+  dailyCardPopularityGain: 0,
+  weeklyBossDefeatedCount: 0,
   lastDailyResetDate: getTodayDateKey(),
+  lastWeeklyResetDate: getWeekDateKey(),
   selectedCardTargetId: "",
   cardSupportPoints: 0
 });
@@ -131,7 +158,9 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
     }
     const parsed = JSON.parse(raw) as Partial<HuntingProgress>;
     const currentDateKey = getTodayDateKey();
+    const currentWeekKey = getWeekDateKey();
     const needsDailyReset = parsed.lastDailyResetDate !== currentDateKey;
+    const needsWeeklyReset = parsed.lastWeeklyResetDate !== currentWeekKey;
     return {
       ...createDefaultProgress(),
       ...parsed,
@@ -146,9 +175,18 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
       enhancementLevels: parsed.enhancementLevels ?? {},
       cardLevels: parsed.cardLevels ?? {},
       cardPopularity: parsed.cardPopularity ?? {},
+      totalClickCount: parsed.totalClickCount ?? 0,
+      totalBossDefeated: parsed.totalBossDefeated ?? 0,
+      totalConsumablesUsed: parsed.totalConsumablesUsed ?? 0,
       todayClickCount: needsDailyReset ? 0 : parsed.todayClickCount ?? 0,
       todayDefeatedCount: needsDailyReset ? 0 : parsed.todayDefeatedCount ?? 0,
+      dailyEnhanceCount: needsDailyReset ? 0 : parsed.dailyEnhanceCount ?? 0,
+      dailyConsumableUseCount: needsDailyReset ? 0 : parsed.dailyConsumableUseCount ?? 0,
+      dailyCardPopularityGain: needsDailyReset ? 0 : parsed.dailyCardPopularityGain ?? 0,
+      weeklyBossDefeatedCount: needsWeeklyReset ? 0 : parsed.weeklyBossDefeatedCount ?? 0,
       lastDailyResetDate: currentDateKey
+      ,
+      lastWeeklyResetDate: currentWeekKey
     };
   } catch {
     return createDefaultProgress();

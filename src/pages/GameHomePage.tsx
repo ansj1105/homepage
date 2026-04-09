@@ -33,7 +33,6 @@ const GameHomePage = () => {
       return;
     }
 
-    setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
     const saved = loadHuntingProgress(getHuntingStorageKey(user.id));
     setProgress(saved);
     apiClient
@@ -54,25 +53,138 @@ const GameHomePage = () => {
   }, [navigate, user]);
 
   const remainingClicks = Math.max(0, (home?.huntingProfile.dailyClickLimit ?? 300) - (progress?.todayClickCount ?? 0));
-  const missions = useMemo(
+  const equippedCount = Object.keys(home?.huntingProfile.equippedItems ?? {}).length;
+  const ownedEquipmentCount = (home?.huntingProfile.equipmentInventory.length ?? 0) + equippedCount;
+  const selectedCardLevel = progress?.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0;
+  const selectedCardPopularity = progress?.selectedCardTargetId ? (progress.cardPopularity[progress.selectedCardTargetId] ?? 0) : 0;
+
+  const dailyMissions = useMemo(
     () => [
       {
-        label: "오늘 클릭 30회",
+        label: "클릭 100회 달성",
         current: progress?.todayClickCount ?? 0,
-        target: 30
+        target: 100,
+        reward: "골드 +120 / 에너지 바 +1"
       },
       {
-        label: "오늘 처치 15마리",
+        label: "몬스터 50마리 처치",
         current: progress?.todayDefeatedCount ?? 0,
-        target: 15
+        target: 50,
+        reward: "강화석 +3"
       },
       {
-        label: "장비 3부위 장착",
-        current: Object.keys(home?.huntingProfile.equippedItems ?? {}).length,
-        target: 3
+        label: "장비 1회 강화",
+        current: progress?.dailyEnhanceCount ?? 0,
+        target: 1,
+        reward: "고급 강화석 +1"
+      },
+      {
+        label: "카드 인기도 20 올리기",
+        current: progress?.dailyCardPopularityGain ?? 0,
+        target: 20,
+        reward: "카드 조각 +4"
+      },
+      {
+        label: "소비 아이템 3개 사용",
+        current: progress?.dailyConsumableUseCount ?? 0,
+        target: 3,
+        reward: "에너지 바 +1 / 카드 조각 +2"
       }
     ],
-    [home?.huntingProfile.equippedItems, progress?.todayClickCount, progress?.todayDefeatedCount]
+    [
+      progress?.todayClickCount,
+      progress?.todayDefeatedCount,
+      progress?.dailyEnhanceCount,
+      progress?.dailyCardPopularityGain,
+      progress?.dailyConsumableUseCount
+    ]
+  );
+
+  const weeklyMissions = useMemo(
+    () => [
+      {
+        label: "보스 10회 처치",
+        current: progress?.weeklyBossDefeatedCount ?? 0,
+        target: 10
+      },
+      {
+        label: "희귀 장비 3개 획득",
+        current: ownedEquipmentCount,
+        target: 3
+      },
+      {
+        label: "세트 4개 부위 장착",
+        current: equippedCount,
+        target: 4
+      },
+      {
+        label: "카드 레벨 1 상승",
+        current: Math.max(0, selectedCardLevel - 1),
+        target: 1
+      }
+    ],
+    [progress?.weeklyBossDefeatedCount, ownedEquipmentCount, equippedCount, selectedCardLevel]
+  );
+
+  const achievements = useMemo(
+    () => [
+      {
+        label: "총 클릭 1,000회",
+        current: progress?.totalClickCount ?? 0,
+        displayCurrent: progress?.totalClickCount ?? 0,
+        target: 1000
+      },
+      {
+        label: "장비 +10 달성",
+        current: Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0)),
+        displayCurrent: Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0)),
+        target: 10
+      },
+      {
+        label: "특정 세트 완성",
+        current: equippedCount,
+        displayCurrent: equippedCount,
+        target: 6
+      },
+      {
+        label: "특정 카드 인기 100 달성",
+        current: selectedCardPopularity,
+        displayCurrent: selectedCardPopularity,
+        target: 100
+      }
+    ],
+    [progress?.totalClickCount, progress?.enhancementLevels, equippedCount, selectedCardPopularity]
+  );
+
+  const growthAxes = useMemo(
+    () => [
+      {
+        label: "유저 레벨",
+        value: `Lv.${progress?.level ?? 1}`,
+        summary: "클릭 / 처치 / 미션 보상으로 경험치를 쌓습니다."
+      },
+      {
+        label: "장비 성장",
+        value: `${equippedCount}부위 / +${Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0))}`,
+        summary: "강화, 세트 조합, 등급 교체로 전투력이 오릅니다."
+      },
+      {
+        label: "카드 성장",
+        value: `${selectedCardLevel > 0 ? `Lv.${selectedCardLevel}` : "미선택"}`,
+        summary: "인기도, 카드 레벨, 카드 패시브가 전투와 파밍에 연결됩니다."
+      },
+      {
+        label: "사냥터 해금",
+        value: `${progress?.level ?? 1}레벨`,
+        summary: "더 높은 지역이 열리며 보스와 세트 장비가 확장됩니다."
+      },
+      {
+        label: "컬렉션 성장",
+        value: `${ownedEquipmentCount}장비`,
+        summary: "도감, 세트 도감, 카드 수집이 장기 성장 목표가 됩니다."
+      }
+    ],
+    [progress?.level, progress?.enhancementLevels, selectedCardLevel, ownedEquipmentCount, equippedCount]
   );
 
   const quickLinks = [
@@ -240,13 +352,35 @@ const GameHomePage = () => {
             <section className="powerRankingInventorySection">
               <div className="powerRankingSectionHead">
                 <div>
-                  <p className="powerRankingSectionEyebrow">Today Mission</p>
-                  <h2>오늘의 미션</h2>
+                  <p className="powerRankingSectionEyebrow">Daily Mission</p>
+                  <h2>일일 미션</h2>
                 </div>
               </div>
 
               <div className="powerRankingDashboardGrid">
-                {missions.map((mission) => {
+                {dailyMissions.map((mission) => {
+                  const ratio = Math.min(100, Math.round((mission.current / mission.target) * 100));
+                  return (
+                    <article key={mission.label} className="powerRankingDashboardCard">
+                      <span>{mission.label}</span>
+                      <strong>{mission.current} / {mission.target}</strong>
+                      <p>진행률 {ratio}% · 보상 {mission.reward}</p>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="powerRankingInventorySection">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Weekly Mission</p>
+                  <h2>주간 미션</h2>
+                </div>
+              </div>
+
+              <div className="powerRankingDashboardGrid">
+                {weeklyMissions.map((mission) => {
                   const ratio = Math.min(100, Math.round((mission.current / mission.target) * 100));
                   return (
                     <article key={mission.label} className="powerRankingDashboardCard">
@@ -256,6 +390,47 @@ const GameHomePage = () => {
                     </article>
                   );
                 })}
+              </div>
+            </section>
+
+            <section className="powerRankingInventorySection">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Achievement</p>
+                  <h2>업적</h2>
+                </div>
+              </div>
+
+              <div className="powerRankingDashboardGrid">
+                {achievements.map((achievement) => {
+                  const ratio = Math.min(100, Math.round((achievement.current / achievement.target) * 100));
+                  return (
+                    <article key={achievement.label} className="powerRankingDashboardCard">
+                      <span>{achievement.label}</span>
+                      <strong>{achievement.displayCurrent} / {achievement.target}</strong>
+                      <p>달성도 {ratio}%</p>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="powerRankingInventorySection">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Growth Axis</p>
+                  <h2>성장 축</h2>
+                </div>
+              </div>
+
+              <div className="powerRankingDashboardGrid">
+                {growthAxes.map((axis) => (
+                  <article key={axis.label} className="powerRankingDashboardCard">
+                    <span>{axis.label}</span>
+                    <strong>{axis.value}</strong>
+                    <p>{axis.summary}</p>
+                  </article>
+                ))}
               </div>
             </section>
           </>

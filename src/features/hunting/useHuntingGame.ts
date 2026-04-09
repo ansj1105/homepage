@@ -49,9 +49,12 @@ const updateProgressFromCombat = (
     exp: nextExp,
     selectedStageId: result.state.zoneId,
     selectedMonsterId: result.state.monster.id,
+    totalClickCount: current.totalClickCount + 1,
     todayClickCount: current.todayClickCount + 1,
     totalDefeated: current.totalDefeated + (result.defeated ? 1 : 0),
-    todayDefeatedCount: current.todayDefeatedCount + (result.defeated ? 1 : 0)
+    totalBossDefeated: current.totalBossDefeated + (result.defeated && result.state.monster.isBoss ? 1 : 0),
+    todayDefeatedCount: current.todayDefeatedCount + (result.defeated ? 1 : 0),
+    weeklyBossDefeatedCount: current.weeklyBossDefeatedCount + (result.defeated && result.state.monster.isBoss ? 1 : 0)
   };
 };
 
@@ -206,7 +209,11 @@ export const useHuntingGame = () => {
                 (current.cardPopularity[current.selectedCardTargetId] ?? 0) +
                 Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
             }
-          : current.cardPopularity
+          : current.cardPopularity,
+        dailyCardPopularityGain:
+          current.selectedCardTargetId
+            ? current.dailyCardPopularityGain + Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
+            : current.dailyCardPopularityGain
       }));
       if (result.rewards.length > 0) {
         window.alert(result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", "));
@@ -251,6 +258,8 @@ export const useHuntingGame = () => {
               : code === "viral-ticket"
                 ? current.cardSupportPoints + 6
                 : current.cardSupportPoints,
+        totalConsumablesUsed: current.totalConsumablesUsed + 1,
+        dailyConsumableUseCount: current.dailyConsumableUseCount + 1,
         consumables: {
           ...current.consumables,
           [code]: Math.max(0, current.consumables[code] - 1)

@@ -117,7 +117,8 @@ const EquipmentEnhancementPage = () => {
         enhancementLevels: {
           ...progress.enhancementLevels,
           [item.code]: result.nextLevel
-        }
+        },
+        dailyEnhanceCount: progress.dailyEnhanceCount + 1
       };
       setProgress(nextProgress);
 
