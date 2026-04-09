@@ -738,13 +738,7 @@ const PowerRankingPage = () => {
           aria-label="hidden blessing"
           onClick={handleHiddenBlessing}
         />
-        <CommunityTopBar
-          equipmentInventory={equipmentInventory}
-          itemInventory={inventory}
-          equippedItems={equippedItems}
-          onEquipEquipment={handleEquipEquipment}
-          equipSubmittingCode={submittingForId?.startsWith("equip-") ? submittingForId.replace("equip-", "") : null}
-        />
+        <CommunityTopBar />
 
         <header className="powerRankingHero powerRankingHeroMaple">
           <div className="powerRankingHeroCopy">

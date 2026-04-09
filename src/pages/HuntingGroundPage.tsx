@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
-import { getPowerRankingEquipmentEnhancementPlan } from "../data/powerRankingEquipment";
-import type { HuntingProfile, PowerRankingEquipmentCode, PowerRankingPerson } from "../types";
+import {
+  consumableMeta,
+  createDefaultProgress,
+  getExpToNextLevel,
+  getHuntingStorageKey,
+  loadHuntingProgress,
+  materialMeta,
+  MAX_ENDURANCE,
+  saveHuntingProgress,
+  type HuntingConsumableCode,
+  type HuntingMaterialCode,
+  type HuntingProgress
+} from "../features/huntingProgress";
+import type { HuntingProfile, PowerRankingPerson } from "../types";
 import { getOrCreateDeviceId } from "../utils/deviceId";
-
-type HuntingMaterialCode = "club-coin" | "enhancement-stone" | "refined-stone" | "ancient-core";
-type HuntingConsumableCode = "healing-potion" | "berserk-tonic" | "lucky-scroll" | "protection-scroll";
 type DropReward =
   | { kind: "material"; code: HuntingMaterialCode; quantity: number }
   | { kind: "consumable"; code: HuntingConsumableCode; quantity: number };
@@ -45,36 +55,6 @@ type StageMonsterState = StageMonster & {
   defeatedCount: number;
 };
 
-type HuntingProgress = {
-  level: number;
-  exp: number;
-  endurance: number;
-  selectedStageId: string;
-  selectedMonsterId: string;
-  autoAttackEnabled: boolean;
-  materials: Record<HuntingMaterialCode, number>;
-  consumables: Record<HuntingConsumableCode, number>;
-  enhancementLevels: Partial<Record<PowerRankingEquipmentCode, number>>;
-  totalDefeated: number;
-  selectedCardTargetId: string;
-  cardSupportPoints: number;
-};
-
-const MAX_ENDURANCE = 100;
-
-const materialMeta: Record<HuntingMaterialCode, { name: string; description: string }> = {
-  "club-coin": { name: "동연 코인", description: "사냥터 경제의 기본 화폐입니다." },
-  "enhancement-stone": { name: "강화석", description: "장비 강화의 기본 재료입니다." },
-  "refined-stone": { name: "정제 강화석", description: "+8 이상 강화 보조 재료로 사용됩니다." },
-  "ancient-core": { name: "고대 코어", description: "상위 사냥터에서 얻는 희귀 성장 재료입니다." }
-};
-
-const consumableMeta: Record<HuntingConsumableCode, { name: string; description: string }> = {
-  "healing-potion": { name: "회복 포션", description: "지구력 35를 회복합니다." },
-  "berserk-tonic": { name: "광폭 토닉", description: "다음 8회 공격의 최종 공격력을 끌어올립니다." },
-  "lucky-scroll": { name: "행운 스크롤", description: "다음 5회 처치 동안 드랍 효율이 증가합니다." },
-  "protection-scroll": { name: "보호 주문서", description: "고강화 실패 시 추가 손실을 막아줍니다." }
-};
 
 const stageDefinitions: StageDefinition[] = [
   {
@@ -275,6 +255,140 @@ const stageDefinitions: StageDefinition[] = [
         ]
       }
     ]
+  },
+  {
+    id: "festival-street",
+    name: "축제 거리",
+    badge: "STAGE 4",
+    description: "몬스터 종류가 늘어나고 자동 사냥과 클릭 화력을 모두 요구하는 구간입니다.",
+    unlockLevel: 9,
+    recommendedPower: 420,
+    monsters: [
+      {
+        id: "booth-spirit",
+        name: "부스 정령",
+        typeLabel: "지원형 / 재화 분산",
+        rarityLabel: "Elite",
+        patternLabel: "코인과 포션을 고르게 공급하는 축제형 몬스터",
+        maxHp: 2240,
+        defense: 88,
+        isBoss: false,
+        reward: "코인, 포션, 강화석",
+        flavor: "축제 부스 사이를 떠다니며 소모품을 흘립니다.",
+        expReward: 178,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 260, max: 360 },
+          { kind: "material", code: "enhancement-stone", rate: 0.92, min: 5, max: 9 },
+          { kind: "consumable", code: "healing-potion", rate: 0.24, min: 1, max: 2 }
+        ]
+      },
+      {
+        id: "cheer-lion",
+        name: "응원 사자",
+        typeLabel: "돌격형 / 카드 지원",
+        rarityLabel: "Elite",
+        patternLabel: "응원 포인트 파밍과 광폭 토닉 확보에 특화",
+        maxHp: 2480,
+        defense: 96,
+        isBoss: false,
+        reward: "광폭 토닉, 보호 주문서",
+        flavor: "응원단의 열기를 끌어모은 야수형 몬스터입니다.",
+        expReward: 192,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 280, max: 390 },
+          { kind: "material", code: "refined-stone", rate: 0.52, min: 2, max: 3 },
+          { kind: "consumable", code: "berserk-tonic", rate: 0.18, min: 1, max: 1 },
+          { kind: "consumable", code: "protection-scroll", rate: 0.18, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "night-parade-queen",
+        name: "야행 퍼레이드 퀸",
+        typeLabel: "보스 / 드랍 혼합형",
+        rarityLabel: "Festival Boss",
+        patternLabel: "소비 아이템과 희귀 재료를 동시에 뿌리는 축제 보스",
+        maxHp: 2860,
+        defense: 108,
+        isBoss: true,
+        reward: "희귀 재료, 보호 주문서",
+        flavor: "패턴은 화려하지만 순수 전투력 검사를 강하게 요구합니다.",
+        expReward: 220,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 340, max: 460 },
+          { kind: "material", code: "enhancement-stone", rate: 0.95, min: 6, max: 10 },
+          { kind: "material", code: "ancient-core", rate: 0.28, min: 1, max: 2 },
+          { kind: "consumable", code: "lucky-scroll", rate: 0.22, min: 1, max: 1 },
+          { kind: "consumable", code: "protection-scroll", rate: 0.24, min: 1, max: 1 }
+        ]
+      }
+    ]
+  },
+  {
+    id: "archive-labyrinth",
+    name: "기록 보관 미궁",
+    badge: "STAGE 5",
+    description: "현재 빌드의 최고 난도 구간입니다. 공격력과 장기 파밍 효율을 동시에 봅니다.",
+    unlockLevel: 12,
+    recommendedPower: 620,
+    monsters: [
+      {
+        id: "index-wraith",
+        name: "목차 망령",
+        typeLabel: "추적형 / 희귀 재화",
+        rarityLabel: "Mythic",
+        patternLabel: "고대 코어와 정제 강화석을 안정적으로 공급",
+        maxHp: 3380,
+        defense: 122,
+        isBoss: false,
+        reward: "고대 코어, 정제 강화석",
+        flavor: "기록 깊은 곳에서 정밀 재료만 골라 떨어뜨립니다.",
+        expReward: 256,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 420, max: 560 },
+          { kind: "material", code: "refined-stone", rate: 0.64, min: 2, max: 4 },
+          { kind: "material", code: "ancient-core", rate: 0.32, min: 1, max: 2 }
+        ]
+      },
+      {
+        id: "ledger-hydra",
+        name: "장부 히드라",
+        typeLabel: "다중두 / 클릭 압박",
+        rarityLabel: "Mythic",
+        patternLabel: "클릭 누적과 자동 사냥 효율을 동시에 시험",
+        maxHp: 3720,
+        defense: 136,
+        isBoss: false,
+        reward: "대량 코인, 스크롤류",
+        flavor: "머리가 늘어날수록 화력이 부족하면 체감 난도가 급상승합니다.",
+        expReward: 274,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 460, max: 620 },
+          { kind: "material", code: "enhancement-stone", rate: 0.98, min: 7, max: 11 },
+          { kind: "consumable", code: "berserk-tonic", rate: 0.24, min: 1, max: 1 },
+          { kind: "consumable", code: "lucky-scroll", rate: 0.24, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "grand-archive-core",
+        name: "대기록 핵심체",
+        typeLabel: "최종 보스 / 전투력 검사",
+        rarityLabel: "Final Boss",
+        patternLabel: "최고 난도 장기 파밍 보스. 장비와 강화 연동 확인용",
+        maxHp: 4280,
+        defense: 152,
+        isBoss: true,
+        reward: "최고급 재료 패키지",
+        flavor: "현재 구조에서 가장 높은 전투력과 장비 성장을 요구합니다.",
+        expReward: 320,
+        dropTable: [
+          { kind: "material", code: "club-coin", rate: 1, min: 520, max: 720 },
+          { kind: "material", code: "enhancement-stone", rate: 1, min: 8, max: 12 },
+          { kind: "material", code: "refined-stone", rate: 0.72, min: 3, max: 5 },
+          { kind: "material", code: "ancient-core", rate: 0.38, min: 1, max: 3 },
+          { kind: "consumable", code: "protection-scroll", rate: 0.28, min: 1, max: 1 }
+        ]
+      }
+    ]
   }
 ];
 
@@ -285,60 +399,8 @@ const createStageState = (stage: StageDefinition): StageMonsterState[] =>
     defeatedCount: 0
   }));
 
-const createDefaultProgress = (): HuntingProgress => ({
-  level: 1,
-  exp: 0,
-  endurance: MAX_ENDURANCE,
-  selectedStageId: stageDefinitions[0].id,
-  selectedMonsterId: stageDefinitions[0].monsters[0].id,
-  autoAttackEnabled: false,
-  materials: {
-    "club-coin": 0,
-    "enhancement-stone": 0,
-    "refined-stone": 0,
-    "ancient-core": 0
-  },
-  consumables: {
-    "healing-potion": 0,
-    "berserk-tonic": 0,
-    "lucky-scroll": 0,
-    "protection-scroll": 0
-  },
-  enhancementLevels: {},
-  totalDefeated: 0,
-  selectedCardTargetId: "",
-  cardSupportPoints: 0
-});
-
-const getExpToNextLevel = (level: number): number => 80 + (level - 1) * 45;
-
 const getRandomInt = (min: number, max: number): number =>
   Math.floor(Math.random() * (max - min + 1)) + min;
-
-const loadProgress = (storageKey: string): HuntingProgress => {
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) {
-      return createDefaultProgress();
-    }
-    const parsed = JSON.parse(raw) as Partial<HuntingProgress>;
-    return {
-      ...createDefaultProgress(),
-      ...parsed,
-      materials: {
-        ...createDefaultProgress().materials,
-        ...(parsed.materials ?? {})
-      },
-      consumables: {
-        ...createDefaultProgress().consumables,
-        ...(parsed.consumables ?? {})
-      },
-      enhancementLevels: parsed.enhancementLevels ?? {}
-    };
-  } catch {
-    return createDefaultProgress();
-  }
-};
 
 const HuntingGroundPage = () => {
   const { user } = useUserAuth();
@@ -346,19 +408,17 @@ const HuntingGroundPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [combatLog, setCombatLog] = useState<string[]>([]);
-  const [equipSubmittingCode, setEquipSubmittingCode] = useState<string | null>(null);
   const [progress, setProgress] = useState<HuntingProgress>(() => createDefaultProgress());
   const [stageMonsters, setStageMonsters] = useState<StageMonsterState[]>(() => createStageState(stageDefinitions[0]));
   const [rankingPeople, setRankingPeople] = useState<PowerRankingPerson[]>([]);
   const [attackBuffCharges, setAttackBuffCharges] = useState(0);
   const [dropBuffKills, setDropBuffKills] = useState(0);
-  const [protectionReady, setProtectionReady] = useState(true);
 
   useEffect(() => {
     document.title = "동아리연합회 사냥터";
   }, []);
 
-  const storageKey = useMemo(() => (user ? `dongyeon-hunting:${user.id}` : ""), [user]);
+  const storageKey = useMemo(() => (user ? getHuntingStorageKey(user.id) : ""), [user]);
 
   useEffect(() => {
     if (!user || !storageKey) {
@@ -369,7 +429,7 @@ const HuntingGroundPage = () => {
       return;
     }
 
-    const nextProgress = loadProgress(storageKey);
+    const nextProgress = loadHuntingProgress(storageKey);
     const selectedStage =
       stageDefinitions.find((stage) => stage.id === nextProgress.selectedStageId) ?? stageDefinitions[0];
 
@@ -381,7 +441,7 @@ const HuntingGroundPage = () => {
     if (!user || !storageKey) {
       return;
     }
-    window.localStorage.setItem(storageKey, JSON.stringify(progress));
+    saveHuntingProgress(storageKey, progress);
   }, [progress, storageKey, user]);
 
   const refreshProfile = async () => {
@@ -423,18 +483,6 @@ const HuntingGroundPage = () => {
           }
     );
   }, [rankingPeople]);
-
-  const handleEquipEquipment = async (equipmentCode: PowerRankingEquipmentCode) => {
-    setEquipSubmittingCode(equipmentCode);
-    try {
-      await apiClient.equipPowerRankingEquipment({ equipmentCode });
-      await refreshProfile();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "장비를 착용하지 못했습니다.");
-    } finally {
-      setEquipSubmittingCode(null);
-    }
-  };
 
   const activeStage = useMemo(
     () => stageDefinitions.find((stage) => stage.id === progress.selectedStageId) ?? stageDefinitions[0],
@@ -696,8 +744,7 @@ const HuntingGroundPage = () => {
       return;
     }
     if (code === "protection-scroll") {
-      setProtectionReady(true);
-      appendLog("보호 주문서를 준비했습니다. 다음 고강화 시도에서 손실을 막습니다.");
+      setErrorMessage("보호 주문서는 내 장비 페이지의 강화에서 자동으로 사용됩니다.");
       return;
     }
 
@@ -737,80 +784,12 @@ const HuntingGroundPage = () => {
     }
   };
 
-  const handleEnhanceEquipment = (equipmentCode: PowerRankingEquipmentCode) => {
-    const currentLevel = progress.enhancementLevels[equipmentCode] ?? 0;
-    if (currentLevel >= 10) {
-      setErrorMessage("이미 최대 강화 단계입니다.");
-      return;
-    }
-
-    const targetTier = getPowerRankingEquipmentEnhancementPlan(equipmentCode).find(
-      (tier) => tier.level === currentLevel + 1
-    );
-    if (!targetTier) {
-      return;
-    }
-
-    if (progress.materials["enhancement-stone"] < targetTier.stoneCost) {
-      setErrorMessage("강화석이 부족합니다.");
-      return;
-    }
-
-    const useProtection = protectionReady && progress.consumables["protection-scroll"] > 0 && targetTier.level >= 8;
-    const isSuccess = Math.random() < targetTier.successRate;
-
-    setProgress((current) => {
-      const nextMaterials = { ...current.materials };
-      const nextConsumables = { ...current.consumables };
-      const nextEnhancementLevels = { ...current.enhancementLevels };
-
-      nextMaterials["enhancement-stone"] = Math.max(0, nextMaterials["enhancement-stone"] - targetTier.stoneCost);
-
-      if (useProtection) {
-        nextConsumables["protection-scroll"] = Math.max(0, nextConsumables["protection-scroll"] - 1);
-      }
-
-      if (isSuccess) {
-        nextEnhancementLevels[equipmentCode] = currentLevel + 1;
-      } else if (targetTier.failurePenalty === "강화석 추가 소모" && !useProtection) {
-        nextMaterials["refined-stone"] = Math.max(0, nextMaterials["refined-stone"] - 1);
-      }
-
-      return {
-        ...current,
-        materials: nextMaterials,
-        consumables: nextConsumables,
-        enhancementLevels: nextEnhancementLevels
-      };
-    });
-
-    if (useProtection) {
-      setProtectionReady(false);
-    }
-
-    if (isSuccess) {
-      appendLog(`${equipmentCode} 강화 성공! +${currentLevel + 1} 달성`);
-      return;
-    }
-
-    appendLog(
-      `${equipmentCode} 강화 실패. ${
-        useProtection ? "보호 주문서가 손실을 막았습니다." : `패널티: ${targetTier.failurePenalty}`
-      }`
-    );
-  };
-
   const nextExpRequired = getExpToNextLevel(progress.level);
 
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
-        <CommunityTopBar
-          equipmentInventory={profile?.equipmentInventory ?? []}
-          equippedItems={profile?.equippedItems ?? {}}
-          onEquipEquipment={handleEquipEquipment}
-          equipSubmittingCode={equipSubmittingCode}
-        />
+        <CommunityTopBar />
 
         <header className="powerRankingHero powerRankingHeroMaple">
           <div className="powerRankingHeroCopy">
@@ -1143,67 +1122,67 @@ const HuntingGroundPage = () => {
             <section className="powerRankingInventorySection huntingEnhancementSection">
               <div className="powerRankingSectionHead">
                 <div>
-                  <p className="powerRankingSectionEyebrow">Equipment Growth</p>
-                  <h2>장비 강화</h2>
+                  <p className="powerRankingSectionEyebrow">Equipment Link</p>
+                  <h2>장비 관리는 내 장비에서</h2>
                 </div>
                 <p className="powerRankingSectionHint">
-                  현재 장착 중인 장비만 강화하며, 강화 효과는 사냥터 전투력에 즉시 반영됩니다.
+                  사냥터에서는 전투와 드랍만 보고, 착용/강화/소비 확인은 내 장비 페이지에서 처리하도록 분리했습니다.
                 </p>
               </div>
 
-              <div className="huntingEnhancementSummary">
-                <span className="powerRankingInventoryPill">강화 보너스 +{enhancementBonus}</span>
-                <span className="powerRankingInventoryPill isMuted">
-                  보호 주문서 준비 {protectionReady ? "ON" : "OFF"}
-                </span>
+              <div className="huntingEnhancementGrid">
+                <article className="powerRankingInventoryCard huntingEnhancementCard">
+                  <div className="powerRankingInventoryBody">
+                    <div className="powerRankingInventoryHeading">
+                      <strong>현재 전투 장비 상태</strong>
+                      <span>장착 {equippedList.length} / 5부위</span>
+                    </div>
+                    <p>강화 보너스 +{enhancementBonus}, 무기 공격력 {profile?.weaponAttack ?? 0}, 장비 세트 x{profile?.setMultiplier.toFixed(2) ?? "1.00"}가 현재 전투력에 반영 중입니다.</p>
+                    <div className="powerRankingInventoryTags">
+                      <span className="powerRankingInventoryPill">강화 보너스 +{enhancementBonus}</span>
+                      <span className="powerRankingInventoryPill">장비 수 {equippedList.length}</span>
+                      <span className="powerRankingInventoryPill isMuted">강화석 {progress.materials["enhancement-stone"]}개</span>
+                    </div>
+                    <Link to="/dongyeon-equipment" className="powerRankingItemButton isPositive">
+                      내 장비로 이동
+                    </Link>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section className="powerRankingInventorySection huntingInfoSection">
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Integration Check</p>
+                  <h2>사냥 / 파워랭킹 연동 상태</h2>
+                </div>
+                <p className="powerRankingSectionHint">
+                  현재 빌드에서 어떤 값이 서로 연결돼 있는지 한눈에 보이도록 정리했습니다.
+                </p>
               </div>
 
-              <div className="huntingEnhancementGrid">
-                {equippedList.length === 0 ? (
-                  <article className="powerRankingInventoryEmpty">장착한 장비가 없어 강화할 수 없습니다.</article>
-                ) : (
-                  equippedList.map((item) => {
-                    const currentLevel = progress.enhancementLevels[item.code] ?? 0;
-                    const nextTier = getPowerRankingEquipmentEnhancementPlan(item.code).find(
-                      (tier) => tier.level === currentLevel + 1
-                    );
-
-                    return (
-                      <article key={item.code} className="powerRankingInventoryCard huntingEnhancementCard">
-                        <div className="powerRankingInventoryVisual">
-                          <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
-                          <span className="powerRankingInventoryBadge">+{currentLevel}</span>
-                        </div>
-                        <div className="powerRankingInventoryBody">
-                          <div className="powerRankingInventoryHeading">
-                            <strong>{item.name}</strong>
-                            <span>{item.effectSummary}</span>
-                          </div>
-                          <p>{item.description}</p>
-                          {nextTier ? (
-                            <div className="powerRankingInventoryTags">
-                              <span className="powerRankingInventoryPill">다음 성공률 {Math.round(nextTier.successRate * 100)}%</span>
-                              <span className="powerRankingInventoryPill">강화석 {nextTier.stoneCost}개</span>
-                              <span className="powerRankingInventoryPill isMuted">실패 {nextTier.failurePenalty}</span>
-                            </div>
-                          ) : (
-                            <div className="powerRankingInventoryTags">
-                              <span className="powerRankingInventoryPill">최대 강화</span>
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            className="powerRankingItemButton isPositive"
-                            disabled={!nextTier}
-                            onClick={() => handleEnhanceEquipment(item.code)}
-                          >
-                            {nextTier ? `+${nextTier.level} 강화 시도` : "강화 완료"}
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })
-                )}
+              <div className="huntingInfoGrid">
+                <article className="powerRankingDashboardCard">
+                  <span>파워랭킹 추천 누적</span>
+                  <strong>{profile?.recommendationCoefficient ?? 0}</strong>
+                  <p>사용자가 올린 추천 누적 수치가 무기 고정 공격력 계산에 반영됩니다.</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>장착 장비 수</span>
+                  <strong>{equippedList.length}</strong>
+                  <p>장착 수에 따라 세트 배수가 오르고, 각 부위 효과가 사냥 전투력에 들어갑니다.</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>강화 누적</span>
+                  <strong>+{enhancementBonus}</strong>
+                  <p>내 장비에서 올린 강화 단계가 사냥터 전투력에 바로 더해집니다.</p>
+                </article>
+                <article className="powerRankingDashboardCard">
+                  <span>응원 카드 대상</span>
+                  <strong>{selectedCardTarget?.name ?? "-"}</strong>
+                  <p>사냥으로 모은 응원 포인트는 파워랭킹 인기도 상승에 사용됩니다.</p>
+                </article>
               </div>
             </section>
 
