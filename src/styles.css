@@ -175,11 +175,35 @@ body {
   box-shadow: 0 16px 36px rgba(16, 36, 63, 0.14);
 }
 
+.communityTopBarEquipmentSectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.communityTopBarEquipmentSectionHead strong {
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+
+.communityTopBarEquipmentSectionHead span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .communityTopBarEquipmentSlots {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 14px;
+}
+
+.communityTopBarEquipmentDivider {
+  height: 1px;
+  margin: 14px 0;
+  background: linear-gradient(90deg, transparent, rgba(15, 50, 95, 0.18), transparent);
 }
 
 .communityTopBarEquipmentSlot {
@@ -5542,7 +5566,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple {
-  background: #e8edf4;
+  background: #1f2329;
   background-image: none !important;
 }
 
@@ -7555,10 +7579,6 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 @media (max-width: 560px) {
-  .powerRankingPageMaple {
-    background-size: 100% 100%, 100% 260px, cover;
-  }
-
   .powerRankingPageMaple .powerRankingHero h1 {
     font-size: clamp(30px, 12vw, 42px);
   }

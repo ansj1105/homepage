@@ -100,6 +100,10 @@ const CommunityTopBar = ({
                 </button>
                 {isEquipmentOpen ? (
                   <div className="communityTopBarEquipmentPanel">
+                    <div className="communityTopBarEquipmentSectionHead">
+                      <strong>착용 중 장비</strong>
+                      <span>슬롯별로 현재 적용 중인 효과</span>
+                    </div>
                     <div className="communityTopBarEquipmentSlots">
                       {(Object.keys(powerRankingEquipmentSlotLabels) as PowerRankingEquipmentSlot[]).map((slot) => {
                         const equipped = equippedItems[slot];
@@ -120,6 +124,11 @@ const CommunityTopBar = ({
                       })}
                     </div>
 
+                    <div className="communityTopBarEquipmentDivider" />
+                    <div className="communityTopBarEquipmentSectionHead">
+                      <strong>보관함 인벤토리</strong>
+                      <span>획득한 장비를 구분선 아래에서 바로 착용</span>
+                    </div>
                     <div className="communityTopBarEquipmentInventory">
                       {equipmentInventory.length === 0 ? (
                         <p className="communityTopBarEquipmentEmpty">추천을 통해 장비를 획득하세요.</p>
