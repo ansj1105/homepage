@@ -175,6 +175,26 @@ body {
   box-shadow: 0 16px 36px rgba(16, 36, 63, 0.14);
 }
 
+.communityTopBarInventorySummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.communityTopBarInventorySummary span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 50, 95, 0.12);
+  border-radius: 999px;
+  background: #f4f8ff;
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .communityTopBarEquipmentSectionHead {
   display: flex;
   align-items: center;
@@ -292,6 +312,23 @@ body {
 }
 
 .communityTopBarEquipmentCard span {
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.communityTopBarInventoryCard {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.communityTopBarInventoryFallback {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 50, 95, 0.08);
+  background: #f7faff;
   color: var(--brand-deep);
   font-size: 12px;
   font-weight: 800;
@@ -5660,6 +5697,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   background: rgba(9, 14, 26, 0.96);
 }
 
+.powerRankingPageMaple .communityTopBarInventorySummary span {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8f2ff;
+}
+
 .powerRankingPageMaple .communityTopBarEquipmentSlot,
 .powerRankingPageMaple .communityTopBarEquipmentCard {
   border-color: rgba(255, 255, 255, 0.1);
@@ -5679,7 +5722,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .communityTopBarEquipmentSlotItem img,
-.powerRankingPageMaple .communityTopBarEquipmentCard img {
+.powerRankingPageMaple .communityTopBarEquipmentCard img,
+.powerRankingPageMaple .communityTopBarInventoryFallback {
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.08);
 }

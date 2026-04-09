@@ -740,6 +740,7 @@ const PowerRankingPage = () => {
         />
         <CommunityTopBar
           equipmentInventory={equipmentInventory}
+          itemInventory={inventory}
           equippedItems={equippedItems}
           onEquipEquipment={handleEquipEquipment}
           equipSubmittingCode={submittingForId?.startsWith("equip-") ? submittingForId.replace("equip-", "") : null}
