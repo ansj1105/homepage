@@ -235,6 +235,19 @@ const equipmentEnhanceSchema = z.object({
   useProtection: z.boolean()
 });
 
+const cardSelectSchema = z.object({
+  cardId: z.string().uuid()
+});
+
+const cardUpgradeSchema = z.object({
+  cardId: z.string().uuid(),
+  pointCost: z.number().int().min(1).max(999)
+});
+
+const shopBuySchema = z.object({
+  itemId: z.string().trim().min(1).max(80)
+});
+
 const huntingCombatClickSchema = z.object({
   zoneId: z.string().trim().min(1).max(80),
   monsterId: z.string().trim().min(1).max(80)
@@ -417,6 +430,9 @@ export const parsePowerRankingEquip = (value: unknown): import("./types").PowerR
 export const parseEquipmentUnequip = (value: unknown) => equipmentUnequipSchema.parse(value);
 export const parseItemSell = (value: unknown) => itemSellSchema.parse(value);
 export const parseEquipmentEnhance = (value: unknown) => equipmentEnhanceSchema.parse(value);
+export const parseCardSelect = (value: unknown) => cardSelectSchema.parse(value);
+export const parseCardUpgrade = (value: unknown) => cardUpgradeSchema.parse(value);
+export const parseShopBuy = (value: unknown) => shopBuySchema.parse(value);
 export const parseHuntingCombatClick = (value: unknown) => huntingCombatClickSchema.parse(value);
 export const parseHuntingCombatConsumable = (value: unknown) =>
   huntingCombatConsumableSchema.parse(value);

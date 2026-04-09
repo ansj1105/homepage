@@ -7,6 +7,9 @@ import type {
   BoardReplyCreateRequest,
   BoardReplyDeleteRequest,
   BoardReplyUpdateRequest,
+  CardEntry,
+  CardSelectRequest,
+  CardUpgradeRequest,
   InquiryCreateRequest,
   InquiryItem,
   MainPageContent,
@@ -41,7 +44,11 @@ import type {
   PowerRankingVoteRequest,
   PublicSiteSettings,
   ResourceItem,
+  MonsterCollectionEntry,
+  SetCollectionEntry,
   SiteContent,
+  ShopBuyRequest,
+  ShopItem,
   TodayVisitorRequest,
   TodayVisitorResponse,
   UserLoginRequest,
@@ -154,6 +161,17 @@ export const apiClient = {
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
   getGameHome: () => request<GameHomeResponse>("/api/game/home"),
   getInventory: () => request<InventoryResponse>("/api/inventory"),
+  getCards: () => request<CardEntry[]>("/api/cards"),
+  selectCard: (payload: CardSelectRequest) =>
+    request<{ selectedCardId: string }>("/api/cards/select", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  upgradeCard: (payload: CardUpgradeRequest) =>
+    request<{ cardId: string; pointCost: number; upgraded: boolean }>("/api/cards/upgrade", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
   getHuntingProfile: () => request<HuntingProfile>("/api/hunting/stage-1"),
   getHuntingZones: () => request<HuntingZoneSummary[]>("/api/zones"),
   getHuntingZone: (zoneId: string) => request<HuntingZoneDetail>(`/api/zones/${zoneId}`),
@@ -182,6 +200,15 @@ export const apiClient = {
     request<EquipmentEnhancePreview>(
       `/api/equipment/${encodeURIComponent(equipmentCode)}/enhance-preview?currentLevel=${currentLevel}`
     ),
+  getShopItems: () => request<ShopItem[]>("/api/shop/items"),
+  buyShopItem: (payload: ShopBuyRequest) =>
+    request<{ item: ShopItem }>("/api/shop/buy", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  getEquipmentCollection: () => request<any[]>("/api/collection/equipment"),
+  getMonsterCollection: () => request<MonsterCollectionEntry[]>("/api/collection/monsters"),
+  getSetCollection: () => request<SetCollectionEntry[]>("/api/collection/sets"),
   getPowerRankingEvents: () => request<PowerRankingEventLog[]>("/api/power-ranking/events"),
   getBoardPosts: (search = "") =>
     request<BoardPost[]>(`/api/board/posts?search=${encodeURIComponent(search)}`),

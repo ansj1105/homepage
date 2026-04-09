@@ -1,6 +1,8 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import { ZodError } from "zod";
 import { getPowerRankingEquipmentEnhancePreview } from "../../src/data/powerRankingEquipment";
+import { shopCatalog } from "../../src/data/shopCatalog";
+import { huntingZones } from "../../src/data/huntingZones";
 import { createToken, verifyToken } from "./auth";
 import {
   clickCombat,
@@ -78,6 +80,8 @@ import {
   parseBoardReplyCreate,
   parseBoardReplyDelete,
   parseBoardReplyUpdate,
+  parseCardSelect,
+  parseCardUpgrade,
   parseEquipmentEnhance,
   parseEquipmentUnequip,
   parseHuntingCombatClick,
@@ -93,6 +97,7 @@ import {
   parsePowerRankingNoteCreate,
   parsePowerRankingNoteUpdate,
   parsePowerRankingVoteAction,
+  parseShopBuy,
   parseTodayVisitor,
   parsePublicSiteSettingsUpsert,
   parseResourceUpsert,
@@ -636,6 +641,133 @@ export const createApp = () => {
         listPowerRankingInventory(user.id)
       ]);
       res.json({ equipment, consumables });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/cards", async (_req, res, next) => {
+    try {
+      const cards = await listPowerRankingPeople("all");
+      res.json(
+        cards.slice(0, 12).map((card, index) => ({
+          id: card.id,
+          name: card.name,
+          popularity: card.score,
+          rank: card.rank,
+          imageUrl: card.profileImageUrl,
+          grade: index < 1 ? "legendary" : index < 3 ? "epic" : index < 6 ? "rare" : "common",
+          bonusSummary: index < 1 ? "선택 시 카드 성장 +12%" : index < 3 ? "선택 시 카드 성장 +8%" : "선택 시 카드 성장 +5%"
+        }))
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/cards/select", async (req, res, next) => {
+    try {
+      const payload = parseCardSelect(req.body);
+      const cards = await listPowerRankingPeople("all");
+      const card = cards.find((item) => item.id === payload.cardId);
+      if (!card) {
+        res.status(404).json({ message: "선택할 카드가 없습니다." });
+        return;
+      }
+      res.json({ selectedCardId: payload.cardId });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/cards/upgrade", async (req, res, next) => {
+    try {
+      const payload = parseCardUpgrade(req.body);
+      res.json({ cardId: payload.cardId, pointCost: payload.pointCost, upgraded: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/shop/items", async (_req, res, next) => {
+    try {
+      res.json(shopCatalog);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/shop/buy", async (req, res, next) => {
+    try {
+      const payload = parseShopBuy(req.body);
+      const item = shopCatalog.find((entry) => entry.id === payload.itemId);
+      if (!item) {
+        res.status(404).json({ message: "구매할 수 없는 아이템입니다." });
+        return;
+      }
+      res.json({ item });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/collection/equipment", async (_req, res, next) => {
+    try {
+      const equipment = Object.values((await import("../../src/data/powerRankingEquipment")).powerRankingEquipmentCatalog);
+      res.json(
+        equipment.map((item) => ({
+          code: item.code,
+          name: item.name,
+          slot: item.slot,
+          imageUrl: item.imageUrl,
+          effectSummary: item.effectSummary
+        }))
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/collection/monsters", async (_req, res, next) => {
+    try {
+      res.json(
+        huntingZones.flatMap((zone) =>
+          zone.monsters.map((monster) => ({
+            id: monster.id,
+            name: monster.name,
+            zoneName: zone.name,
+            rarityLabel: monster.rarityLabel,
+            imageUrl: monster.imageUrl
+          }))
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/collection/sets", async (_req, res, next) => {
+    try {
+      res.json([
+        {
+          id: "set-2",
+          name: "2세트 보너스",
+          requirement: "장비 2부위 장착",
+          bonusSummary: "세트 배수 x1.15"
+        },
+        {
+          id: "set-3",
+          name: "3세트 보너스",
+          requirement: "장비 3부위 장착",
+          bonusSummary: "세트 배수 x1.35"
+        },
+        {
+          id: "set-5",
+          name: "5세트 보너스",
+          requirement: "장비 5부위 장착",
+          bonusSummary: "세트 배수 x1.80"
+        }
+      ]);
     } catch (error) {
       next(error);
     }

@@ -5,6 +5,8 @@ import { defaultPublicSiteSettings } from "./data/siteSettingsDefaults";
 import MainPage from "./features/legacy-main/LegacyMainPage";
 import AdminPage from "./pages/AdminPage";
 import BoardPage from "./pages/BoardPage";
+import CardsPage from "./pages/CardsPage";
+import CollectionPage from "./pages/CollectionPage";
 import EquipmentPage from "./pages/EquipmentPage";
 import EquipmentEnhancementPage from "./pages/EquipmentEnhancementPage";
 import GameHomePage from "./pages/GameHomePage";
@@ -15,6 +17,7 @@ import HuntingZoneSelectPage from "./pages/HuntingZoneSelectPage";
 import LoginPage from "./pages/LoginPage";
 import PowerRankingPage from "./pages/PowerRankingPage";
 import InventoryPage from "./pages/InventoryPage";
+import ShopPage from "./pages/ShopPage";
 import SignupPage from "./pages/SignupPage";
 import { VisitorProvider } from "./visitor/VisitorContext";
 import {
@@ -138,6 +141,12 @@ const App = () => (
         <Route path="/dongyeon-power-ranking" element={<PowerRankingPage />} />
         <Route path="/board" element={<BoardPage />} />
         <Route path="/dongyeon-board" element={<BoardPage />} />
+        <Route path="/cards" element={<CardsPage />} />
+        <Route path="/dongyeon-cards" element={<CardsPage />} />
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/dongyeon-shop" element={<ShopPage />} />
+        <Route path="/collection" element={<CollectionPage />} />
+        <Route path="/dongyeon-collection" element={<CollectionPage />} />
         <Route path="/game-home" element={<GameHomePage />} />
         <Route path="/dongyeon-game-home" element={<GameHomePage />} />
         <Route path="/equipment" element={<EquipmentPage />} />

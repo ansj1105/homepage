@@ -306,6 +306,62 @@ export interface EquipmentEnhanceResponse {
   nextLevel: number;
 }
 
+export interface CardEntry {
+  id: string;
+  name: string;
+  popularity: number;
+  rank: number;
+  imageUrl: string;
+  grade: "common" | "rare" | "epic" | "legendary";
+  bonusSummary: string;
+}
+
+export interface CardSelectRequest {
+  cardId: string;
+}
+
+export interface CardUpgradeRequest {
+  cardId: string;
+  pointCost: number;
+}
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  priceCurrency: "club-coin";
+  priceAmount: number;
+  itemType: "consumable" | "material";
+  code: string;
+}
+
+export interface ShopBuyRequest {
+  itemId: string;
+}
+
+export interface MonsterCollectionEntry {
+  id: string;
+  name: string;
+  zoneName: string;
+  rarityLabel: string;
+  imageUrl: string;
+}
+
+export interface EquipmentCollectionEntry {
+  code: PowerRankingEquipmentCode;
+  name: string;
+  slot: PowerRankingEquipmentSlot;
+  imageUrl: string;
+  effectSummary: string;
+}
+
+export interface SetCollectionEntry {
+  id: string;
+  name: string;
+  requirement: string;
+  bonusSummary: string;
+}
+
 export interface HuntingProfile {
   recommendationCoefficient: number;
   weaponAttack: number;
