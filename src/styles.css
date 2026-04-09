@@ -6812,6 +6812,17 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 10px;
 }
 
+.powerRankingPageMaple .powerRankingItemActionCard {
+  display: grid;
+  gap: 6px;
+}
+
+.powerRankingPageMaple .powerRankingItemActionHint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .powerRankingPageMaple .powerRankingItemButton {
   min-height: 44px;
   padding: 0 16px;

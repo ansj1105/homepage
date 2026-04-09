@@ -881,6 +881,20 @@ const PowerRankingPage = () => {
                             <div className="powerRankingInventoryTags">
                               <span className="powerRankingInventoryPill">보유 수량 {item.quantity}</span>
                             </div>
+                            <details className="powerRankingEquipmentDetails">
+                              <summary>상세보기</summary>
+                              <div className="powerRankingEquipmentDetailsBody">
+                                <p>
+                                  {item.name}은 {item.code === "byeokbangjun-blanket" ? "상대 인기도를 크게 내리는" : "상대 인기도를 크게 올리는"} 소비 아이템입니다.
+                                </p>
+                                <div className="powerRankingInventoryTags">
+                                  <span className="powerRankingInventoryPill">
+                                    효과량 {item.code === "byeokbangjun-blanket" ? "-100" : "+100"}
+                                  </span>
+                                  <span className="powerRankingInventoryPill isMuted">사용 시 확인창 표시</span>
+                                </div>
+                              </div>
+                            </details>
                           </div>
                         </article>
                       ))
@@ -992,6 +1006,8 @@ const PowerRankingPage = () => {
                     const loveItem = inventoryByCode["seoeuntaek-love"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
+                    const blanketDisabledReason = !blanketItem || blanketItem.quantity < 1 ? "담요 보유 수량이 없습니다." : null;
+                    const loveDisabledReason = !loveItem || loveItem.quantity < 1 ? "사랑 보유 수량이 없습니다." : null;
                     const personItemUseLogs = eventLogs
                       .filter((event) => event.personId === person.id && event.eventType === "item_use")
                       .slice(0, 5);
@@ -1094,26 +1110,36 @@ const PowerRankingPage = () => {
                           </div>
 
                           <div className="powerRankingItemActions">
-                            <button
-                              type="button"
-                              className="powerRankingItemButton"
-                              disabled={!blanketItem || blanketItem.quantity < 1 || isUsingBlanket}
-                              onClick={() => void handleUseItem(person.id, "byeokbangjun-blanket")}
-                            >
-                              {isUsingBlanket
-                                ? "사용 중..."
-                                : `벽방준의 담요 ${blanketItem ? `x${blanketItem.quantity}` : "x0"}`}
-                            </button>
-                            <button
-                              type="button"
-                              className="powerRankingItemButton isPositive"
-                              disabled={!loveItem || loveItem.quantity < 1 || isUsingLove}
-                              onClick={() => void handleUseItem(person.id, "seoeuntaek-love")}
-                            >
-                              {isUsingLove
-                                ? "사용 중..."
-                                : `서은택의 사랑 ${loveItem ? `x${loveItem.quantity}` : "x0"}`}
-                            </button>
+                            <div className="powerRankingItemActionCard">
+                              <button
+                                type="button"
+                                className="powerRankingItemButton"
+                                disabled={!blanketItem || blanketItem.quantity < 1 || isUsingBlanket}
+                                onClick={() => void handleUseItem(person.id, "byeokbangjun-blanket")}
+                              >
+                                {isUsingBlanket
+                                  ? "사용 중..."
+                                  : `벽방준의 담요 ${blanketItem ? `x${blanketItem.quantity}` : "x0"}`}
+                              </button>
+                              <span className="powerRankingItemActionHint">
+                                {isUsingBlanket ? "확인 후 사용 처리 중입니다." : blanketDisabledReason ?? "사용 시 확인창이 뜬 뒤 인기도 -100이 적용됩니다."}
+                              </span>
+                            </div>
+                            <div className="powerRankingItemActionCard">
+                              <button
+                                type="button"
+                                className="powerRankingItemButton isPositive"
+                                disabled={!loveItem || loveItem.quantity < 1 || isUsingLove}
+                                onClick={() => void handleUseItem(person.id, "seoeuntaek-love")}
+                              >
+                                {isUsingLove
+                                  ? "사용 중..."
+                                  : `서은택의 사랑 ${loveItem ? `x${loveItem.quantity}` : "x0"}`}
+                              </button>
+                              <span className="powerRankingItemActionHint">
+                                {isUsingLove ? "확인 후 사용 처리 중입니다." : loveDisabledReason ?? "사용 시 확인창이 뜬 뒤 인기도 +100이 적용됩니다."}
+                              </span>
+                            </div>
                           </div>
 
                           <div className="powerRankingLogGrid powerRankingRowLogGrid">
