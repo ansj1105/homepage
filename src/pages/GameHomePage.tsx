@@ -11,6 +11,14 @@ import {
   MAX_ENDURANCE,
   type HuntingProgress
 } from "../features/huntingProgress";
+import {
+  applyMissionRewards,
+  getAchievements,
+  getDailyMissions,
+  getMissionRewardText,
+  getWeeklyMissions,
+  type MissionEntry
+} from "../features/missions";
 import type { GameHomeResponse, PowerRankingEquipmentSlot } from "../types";
 import { useTodayVisitors } from "../visitor/VisitorContext";
 
@@ -58,102 +66,15 @@ const GameHomePage = () => {
   const selectedCardLevel = progress?.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0;
   const selectedCardPopularity = progress?.selectedCardTargetId ? (progress.cardPopularity[progress.selectedCardTargetId] ?? 0) : 0;
 
-  const dailyMissions = useMemo(
-    () => [
-      {
-        label: "클릭 100회 달성",
-        current: progress?.todayClickCount ?? 0,
-        target: 100,
-        reward: "골드 +120 / 에너지 바 +1"
-      },
-      {
-        label: "몬스터 50마리 처치",
-        current: progress?.todayDefeatedCount ?? 0,
-        target: 50,
-        reward: "강화석 +3"
-      },
-      {
-        label: "장비 1회 강화",
-        current: progress?.dailyEnhanceCount ?? 0,
-        target: 1,
-        reward: "고급 강화석 +1"
-      },
-      {
-        label: "카드 인기도 20 올리기",
-        current: progress?.dailyCardPopularityGain ?? 0,
-        target: 20,
-        reward: "카드 조각 +4"
-      },
-      {
-        label: "소비 아이템 3개 사용",
-        current: progress?.dailyConsumableUseCount ?? 0,
-        target: 3,
-        reward: "에너지 바 +1 / 카드 조각 +2"
-      }
-    ],
-    [
-      progress?.todayClickCount,
-      progress?.todayDefeatedCount,
-      progress?.dailyEnhanceCount,
-      progress?.dailyCardPopularityGain,
-      progress?.dailyConsumableUseCount
-    ]
-  );
-
+  const maxEnhanceLevel = Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0));
+  const dailyMissions = useMemo(() => (progress ? getDailyMissions(progress) : []), [progress]);
   const weeklyMissions = useMemo(
-    () => [
-      {
-        label: "보스 10회 처치",
-        current: progress?.weeklyBossDefeatedCount ?? 0,
-        target: 10
-      },
-      {
-        label: "희귀 장비 3개 획득",
-        current: ownedEquipmentCount,
-        target: 3
-      },
-      {
-        label: "세트 4개 부위 장착",
-        current: equippedCount,
-        target: 4
-      },
-      {
-        label: "카드 레벨 1 상승",
-        current: Math.max(0, selectedCardLevel - 1),
-        target: 1
-      }
-    ],
-    [progress?.weeklyBossDefeatedCount, ownedEquipmentCount, equippedCount, selectedCardLevel]
+    () => (progress ? getWeeklyMissions(progress, equippedCount, ownedEquipmentCount, selectedCardLevel) : []),
+    [progress, equippedCount, ownedEquipmentCount, selectedCardLevel]
   );
-
   const achievements = useMemo(
-    () => [
-      {
-        label: "총 클릭 1,000회",
-        current: progress?.totalClickCount ?? 0,
-        displayCurrent: progress?.totalClickCount ?? 0,
-        target: 1000
-      },
-      {
-        label: "장비 +10 달성",
-        current: Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0)),
-        displayCurrent: Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0)),
-        target: 10
-      },
-      {
-        label: "특정 세트 완성",
-        current: equippedCount,
-        displayCurrent: equippedCount,
-        target: 6
-      },
-      {
-        label: "특정 카드 인기 100 달성",
-        current: selectedCardPopularity,
-        displayCurrent: selectedCardPopularity,
-        target: 100
-      }
-    ],
-    [progress?.totalClickCount, progress?.enhancementLevels, equippedCount, selectedCardPopularity]
+    () => (progress ? getAchievements(progress, maxEnhanceLevel, equippedCount, selectedCardPopularity) : []),
+    [progress, maxEnhanceLevel, equippedCount, selectedCardPopularity]
   );
 
   const growthAxes = useMemo(
@@ -186,6 +107,15 @@ const GameHomePage = () => {
     ],
     [progress?.level, progress?.enhancementLevels, selectedCardLevel, ownedEquipmentCount, equippedCount]
   );
+
+  const handleClaimMission = (mission: MissionEntry) => {
+    if (!progress || mission.claimed || mission.current < mission.target) {
+      return;
+    }
+    const next = applyMissionRewards(progress, mission);
+    setProgress(next);
+    setErrorMessage(`${mission.label} 보상 수령 완료 · ${getMissionRewardText(mission)}`);
+  };
 
   const quickLinks = [
     { label: "사냥터 허브", to: "/dongyeon-hunting-ground" },
@@ -364,7 +294,15 @@ const GameHomePage = () => {
                     <article key={mission.label} className="powerRankingDashboardCard">
                       <span>{mission.label}</span>
                       <strong>{mission.current} / {mission.target}</strong>
-                      <p>진행률 {ratio}% · 보상 {mission.reward}</p>
+                      <p>진행률 {ratio}% · 보상 {mission.rewardSummary}</p>
+                      <button
+                        type="button"
+                        className="powerRankingItemButton isPositive"
+                        disabled={mission.claimed || mission.current < mission.target}
+                        onClick={() => handleClaimMission(mission)}
+                      >
+                        {mission.claimed ? "수령 완료" : "보상 수령"}
+                      </button>
                     </article>
                   );
                 })}
@@ -387,6 +325,14 @@ const GameHomePage = () => {
                       <span>{mission.label}</span>
                       <strong>{mission.current} / {mission.target}</strong>
                       <p>진행률 {ratio}%</p>
+                      <button
+                        type="button"
+                        className="powerRankingItemButton isPositive"
+                        disabled={mission.claimed || mission.current < mission.target}
+                        onClick={() => handleClaimMission(mission)}
+                      >
+                        {mission.claimed ? "수령 완료" : "보상 수령"}
+                      </button>
                     </article>
                   );
                 })}
@@ -407,8 +353,16 @@ const GameHomePage = () => {
                   return (
                     <article key={achievement.label} className="powerRankingDashboardCard">
                       <span>{achievement.label}</span>
-                      <strong>{achievement.displayCurrent} / {achievement.target}</strong>
+                      <strong>{achievement.current} / {achievement.target}</strong>
                       <p>달성도 {ratio}%</p>
+                      <button
+                        type="button"
+                        className="powerRankingItemButton isPositive"
+                        disabled={achievement.claimed || achievement.current < achievement.target}
+                        onClick={() => handleClaimMission(achievement)}
+                      >
+                        {achievement.claimed ? "수령 완료" : "보상 수령"}
+                      </button>
                     </article>
                   );
                 })}

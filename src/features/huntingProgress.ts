@@ -44,6 +44,9 @@ export type HuntingProgress = {
   dailyConsumableUseCount: number;
   dailyCardPopularityGain: number;
   weeklyBossDefeatedCount: number;
+  claimedDailyMissionIds: string[];
+  claimedWeeklyMissionIds: string[];
+  claimedAchievementIds: string[];
   lastDailyResetDate: string;
   lastWeeklyResetDate: string;
   selectedCardTargetId: string;
@@ -142,6 +145,9 @@ export const createDefaultProgress = (): HuntingProgress => ({
   dailyConsumableUseCount: 0,
   dailyCardPopularityGain: 0,
   weeklyBossDefeatedCount: 0,
+  claimedDailyMissionIds: [],
+  claimedWeeklyMissionIds: [],
+  claimedAchievementIds: [],
   lastDailyResetDate: getTodayDateKey(),
   lastWeeklyResetDate: getWeekDateKey(),
   selectedCardTargetId: "",
@@ -184,8 +190,10 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
       dailyConsumableUseCount: needsDailyReset ? 0 : parsed.dailyConsumableUseCount ?? 0,
       dailyCardPopularityGain: needsDailyReset ? 0 : parsed.dailyCardPopularityGain ?? 0,
       weeklyBossDefeatedCount: needsWeeklyReset ? 0 : parsed.weeklyBossDefeatedCount ?? 0,
-      lastDailyResetDate: currentDateKey
-      ,
+      claimedDailyMissionIds: needsDailyReset ? [] : parsed.claimedDailyMissionIds ?? [],
+      claimedWeeklyMissionIds: needsWeeklyReset ? [] : parsed.claimedWeeklyMissionIds ?? [],
+      claimedAchievementIds: parsed.claimedAchievementIds ?? [],
+      lastDailyResetDate: currentDateKey,
       lastWeeklyResetDate: currentWeekKey
     };
   } catch {
