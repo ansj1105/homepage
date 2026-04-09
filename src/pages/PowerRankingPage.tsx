@@ -24,6 +24,12 @@ type VoteQueueItem = {
   personId: string;
   delta: PowerRankingVoteDelta;
 };
+type PowerRankingUserNotification = {
+  id: string;
+  tone: "reward" | "info";
+  title: string;
+  body: string;
+};
 
 const collator = new Intl.Collator("ko");
 const PROFILE_MAX_BYTES = 5 * 1024 * 1024;
@@ -209,12 +215,16 @@ const PowerRankingPage = () => {
   const [equippedItems, setEquippedItems] = useState<Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>>({});
   const [eventLogs, setEventLogs] = useState<PowerRankingEventLog[]>([]);
   const [rewardMessage, setRewardMessage] = useState("");
+  const [notifications, setNotifications] = useState<PowerRankingUserNotification[]>([]);
   const [memoVisibleCounts, setMemoVisibleCounts] = useState<Record<string, number>>({});
   const [countdownSeconds, setCountdownSeconds] = useState(getSecondsUntilNextHour());
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
+  const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
   const previousRanksRef = useRef<Map<string, number>>(new Map());
   const voteQueueRef = useRef<VoteQueueItem[]>([]);
   const isProcessingVoteQueueRef = useRef(false);
+  const actionBurstTimerRef = useRef<number | null>(null);
+  const notificationTimersRef = useRef<number[]>([]);
 
   useEffect(() => {
     document.title = "동아리연합회";
@@ -262,6 +272,16 @@ const PowerRankingPage = () => {
     }, 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (actionBurstTimerRef.current) {
+        window.clearTimeout(actionBurstTimerRef.current);
+      }
+      notificationTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    []
+  );
 
   useEffect(() => {
     const poller = window.setInterval(() => {
@@ -411,6 +431,15 @@ const PowerRankingPage = () => {
     );
   };
 
+  const pushNotification = (notification: Omit<PowerRankingUserNotification, "id">) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setNotifications((current) => [{ id, ...notification }, ...current].slice(0, 4));
+    const timer = window.setTimeout(() => {
+      setNotifications((current) => current.filter((item) => item.id !== id));
+    }, 4200);
+    notificationTimersRef.current.push(timer);
+  };
+
   const refreshSideData = async () => {
     const eventsPromise = apiClient
       .getPowerRankingEvents()
@@ -485,10 +514,24 @@ const PowerRankingPage = () => {
           updatePerson(result.person);
           await refreshPeople();
           if (result.droppedItem) {
-            setRewardMessage(`${result.droppedItem.name} 획득! 1% 드롭에 당첨되었습니다.`);
+            const message = `${result.droppedItem.name} 획득! 1% 드롭에 당첨되었습니다.`;
+            setRewardMessage(message);
+            pushNotification({
+              tone: "reward",
+              title: "아이템 획득",
+              body: message
+            });
+            window.alert(message);
             await refreshSideData();
           } else if (result.droppedEquipment) {
-            setRewardMessage(`${result.droppedEquipment.name} 장비 획득! 내 장비에서 바로 착용할 수 있습니다.`);
+            const message = `${result.droppedEquipment.name} 장비 획득! 내 장비에서 바로 착용할 수 있습니다.`;
+            setRewardMessage(message);
+            pushNotification({
+              tone: "reward",
+              title: "장비 획득",
+              body: message
+            });
+            window.alert(message);
             await refreshSideData();
           }
           setSortMode("score");
@@ -510,6 +553,14 @@ const PowerRankingPage = () => {
       return;
     }
     setErrorMessage("");
+    const nextBurstKey = `${personId}:${delta}:${Date.now()}`;
+    setActionBurstKey(nextBurstKey);
+    if (actionBurstTimerRef.current) {
+      window.clearTimeout(actionBurstTimerRef.current);
+    }
+    actionBurstTimerRef.current = window.setTimeout(() => {
+      setActionBurstKey((current) => (current === nextBurstKey ? null : current));
+    }, 520);
     voteQueueRef.current.push({ personId, delta });
     adjustPendingVoteCount(personId, delta, 1);
     void processVoteQueue();
@@ -541,7 +592,13 @@ const PowerRankingPage = () => {
       updatePerson(result.person);
       setInventory(result.inventory);
       await refreshSideData();
-      setRewardMessage(`${result.usedItem.name} 사용이 반영되었습니다.`);
+      const message = `${result.usedItem.name} 사용이 반영되었습니다.`;
+      setRewardMessage(message);
+      pushNotification({
+        tone: "info",
+        title: "아이템 사용",
+        body: message
+      });
       setSortMode("score");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "아이템을 사용하지 못했습니다.");
@@ -565,7 +622,13 @@ const PowerRankingPage = () => {
       });
       setEquipmentInventory(equipment.inventory);
       setEquippedItems(equipment.equipped);
-      setRewardMessage("장비 착용이 반영되었습니다.");
+      const message = "장비 착용이 반영되었습니다.";
+      setRewardMessage(message);
+      pushNotification({
+        tone: "info",
+        title: "장비 착용",
+        body: message
+      });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "장비를 착용하지 못했습니다.");
     } finally {
@@ -758,6 +821,19 @@ const PowerRankingPage = () => {
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
         {rewardMessage ? <div className="powerRankingRewardBanner">{rewardMessage}</div> : null}
+        {notifications.length > 0 ? (
+          <div className="powerRankingNotificationStack" aria-live="polite" aria-label="유저 알림">
+            {notifications.map((notification) => (
+              <article
+                key={notification.id}
+                className={`powerRankingNotificationCard ${notification.tone === "reward" ? "isReward" : "isInfo"}`}
+              >
+                <strong>{notification.title}</strong>
+                <p>{notification.body}</p>
+              </article>
+            ))}
+          </div>
+        ) : null}
 
         {isLoading ? (
           <div className="powerRankingLoading">목록을 불러오는 중입니다.</div>
@@ -1006,6 +1082,8 @@ const PowerRankingPage = () => {
                     const loveItem = inventoryByCode["seoeuntaek-love"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
+                    const isUpBursting = actionBurstKey?.startsWith(`${person.id}:1:`) ?? false;
+                    const isDownBursting = actionBurstKey?.startsWith(`${person.id}:-1:`) ?? false;
                     const blanketDisabledReason = !blanketItem || blanketItem.quantity < 1 ? "담요 보유 수량이 없습니다." : null;
                     const loveDisabledReason = !loveItem || loveItem.quantity < 1 ? "사랑 보유 수량이 없습니다." : null;
                     const personItemUseLogs = eventLogs
@@ -1094,14 +1172,14 @@ const PowerRankingPage = () => {
                             <div className="powerRankingActions powerRankingVoteActions">
                               <button
                                 type="button"
-                                className="powerRankingVoteButton"
+                                className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${isUpBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
                                 {upQueueCount > 0 ? `▲ 올리기 (${upQueueCount})` : "▲ 올리기"}
                               </button>
                               <button
                                 type="button"
-                                className="powerRankingDownvoteButton"
+                                className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${isDownBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
                                 {downQueueCount > 0 ? `▼ 내리기 (${downQueueCount})` : "▼ 내리기"}

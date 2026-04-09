@@ -846,7 +846,7 @@ export const changePowerRankingScore = async (
     droppedEquipment = await grantPowerRankingEquipment(userId, equipmentCode);
   }
 
-  const person = await loadPowerRankingPersonByPeriod(personId, period);
+  const person = (await loadPowerRankingPersonByPeriod(personId, period)) ?? (await loadPowerRankingPersonByPeriod(personId, "all"));
   if (!person) {
     return null;
   }
@@ -965,7 +965,7 @@ export const usePowerRankingItem = async (
     client.release();
   }
 
-  const person = await loadPowerRankingPersonByPeriod(personId, period);
+  const person = (await loadPowerRankingPersonByPeriod(personId, period)) ?? (await loadPowerRankingPersonByPeriod(personId, "all"));
   if (!person) {
     return null;
   }
