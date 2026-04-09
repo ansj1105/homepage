@@ -7274,6 +7274,37 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   line-height: 1.6;
 }
 
+.powerRankingPageMaple .huntingBattleRankingBoard {
+  overflow-x: auto;
+}
+
+.powerRankingPageMaple .huntingBattleRankingHeader,
+.powerRankingPageMaple .huntingBattleRankingRow {
+  display: grid;
+  grid-template-columns: 88px minmax(120px, 1.2fr) minmax(100px, 1fr) 120px 110px 110px 110px 140px;
+  align-items: center;
+  gap: 16px;
+}
+
+.powerRankingPageMaple .huntingBattleRankingRow {
+  min-width: 980px;
+}
+
+.powerRankingPageMaple .huntingBattleRankingCell {
+  display: grid;
+  gap: 4px;
+}
+
+.powerRankingPageMaple .huntingBattleRankingCell strong,
+.powerRankingPageMaple .huntingBattleRankingCell span {
+  color: #142033;
+}
+
+.powerRankingPageMaple .huntingBattleRankingCell strong {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
 .powerRankingPageMaple .huntingStageActions {
   display: flex;
   align-items: center;

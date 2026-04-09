@@ -30,6 +30,7 @@ import {
   changePowerRankingScore,
   equipPowerRankingEquipment,
   getHuntingProfile,
+  listHuntingBattleRanking,
   listPowerRankingEquipmentState,
   listPowerRankingEventLogs,
   listPowerRankingInventory,
@@ -524,6 +525,15 @@ export const createApp = () => {
       }
       const profile = await getHuntingProfile(user.id);
       res.json(profile);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/hunting/ranking", async (_req, res, next) => {
+    try {
+      const ranking = await listHuntingBattleRanking();
+      res.json(ranking);
     } catch (error) {
       next(error);
     }

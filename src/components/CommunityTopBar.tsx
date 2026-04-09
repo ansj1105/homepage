@@ -81,6 +81,14 @@ const CommunityTopBar = ({
         >
           사냥터
         </NavLink>
+        <NavLink
+          to="/dongyeon-hunting-battle-ranking"
+          className={({ isActive }) =>
+            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
+          }
+        >
+          전투력 랭킹
+        </NavLink>
         {!user ? (
           <>
             <NavLink

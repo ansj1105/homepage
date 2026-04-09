@@ -15,6 +15,7 @@ import type {
   PowerRankingEquipRequest,
   PowerRankingEventLog,
   HuntingProfile,
+  HuntingBattleRankingEntry,
   PowerRankingInventoryItem,
   PowerRankingItemUseRequest,
   PowerRankingItemUseResponse,
@@ -137,6 +138,7 @@ export const apiClient = {
   getPowerRanking: (period: PowerRankingPeriod) =>
     request<PowerRankingPerson[]>(`/api/power-ranking?period=${period}`),
   getHuntingProfile: () => request<HuntingProfile>("/api/hunting/stage-1"),
+  getHuntingBattleRanking: () => request<HuntingBattleRankingEntry[]>("/api/hunting/ranking"),
   getPowerRankingInventory: () => request<PowerRankingInventoryItem[]>("/api/power-ranking/inventory"),
   getPowerRankingEquipment: () => request<PowerRankingEquipmentState>("/api/power-ranking/equipment"),
   getPowerRankingEvents: () => request<PowerRankingEventLog[]>("/api/power-ranking/events"),

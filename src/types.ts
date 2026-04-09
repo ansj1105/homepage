@@ -280,6 +280,21 @@ export interface HuntingProfile {
   equippedItems: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;
 }
 
+export interface HuntingBattleRankingEntry {
+  userId: string;
+  username: string;
+  name: string;
+  nickname: string;
+  rank: number;
+  battlePower: number;
+  recommendationCoefficient: number;
+  weaponAttack: number;
+  equippedCount: number;
+  apparelMultiplier: number;
+  setMultiplier: number;
+  updatedAt: string;
+}
+
 export interface PowerRankingInventoryItem extends PowerRankingItemCatalogEntry {
   quantity: number;
   createdAt: string;

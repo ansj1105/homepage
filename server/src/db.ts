@@ -10,6 +10,7 @@ import type {
   BoardReply,
   CmsPage,
   HuntingProfile,
+  HuntingBattleRankingEntry,
   InquiryItem,
   MainPageContent,
   MainPageSettings,
@@ -1195,6 +1196,48 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
     equipmentInventory: equipmentState.inventory,
     equippedItems: equipmentState.equipped
   };
+};
+
+export const listHuntingBattleRanking = async (): Promise<HuntingBattleRankingEntry[]> => {
+  const usersResult = await pool.query<UserRow>(
+    `SELECT id, username, password_hash, name, nickname, created_at, updated_at
+     FROM app_users
+     ORDER BY created_at ASC`
+  );
+
+  const profiles = await Promise.all(
+    usersResult.rows.map(async (user) => {
+      const profile = await getHuntingProfile(user.id);
+      return {
+        userId: user.id,
+        username: user.username,
+        name: user.name,
+        nickname: user.nickname,
+        battlePower: profile.battlePower,
+        recommendationCoefficient: profile.recommendationCoefficient,
+        weaponAttack: profile.weaponAttack,
+        equippedCount: Object.keys(profile.equippedItems).length,
+        apparelMultiplier: profile.apparelMultiplier,
+        setMultiplier: profile.setMultiplier,
+        updatedAt: user.updated_at
+      };
+    })
+  );
+
+  return profiles
+    .sort((a, b) => {
+      if (b.battlePower !== a.battlePower) {
+        return b.battlePower - a.battlePower;
+      }
+      if (b.weaponAttack !== a.weaponAttack) {
+        return b.weaponAttack - a.weaponAttack;
+      }
+      return a.nickname.localeCompare(b.nickname, "ko");
+    })
+    .map((entry, index) => ({
+      ...entry,
+      rank: index + 1
+    }));
 };
 
 export const updatePowerRankingProfileImage = async (
