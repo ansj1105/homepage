@@ -13,6 +13,7 @@ export interface PowerRankingEquipmentEnhancementTier {
 }
 
 export const powerRankingEquipmentSlotLabels: Record<PowerRankingEquipmentSlot, string> = {
+  weapon: "무기",
   head: "머리",
   top: "상의",
   bottom: "하의",
@@ -21,6 +22,30 @@ export const powerRankingEquipmentSlotLabels: Record<PowerRankingEquipmentSlot, 
 };
 
 export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentCatalogEntry> = {
+  "training-branch": {
+    code: "training-branch",
+    slot: "weapon",
+    name: "수련용 나뭇가지",
+    description: "초보 숲에서 얻는 가장 기본적인 무기입니다.",
+    imageUrl: "/assets/equipment/crown-of-cheers.svg",
+    effectSummary: "무기 공격력 +18"
+  },
+  "iron-pickaxe": {
+    code: "iron-pickaxe",
+    slot: "weapon",
+    name: "철제 곡괭이",
+    description: "돌언덕 광산에서 얻는 채광 겸용 무기입니다.",
+    imageUrl: "/assets/equipment/titan-gauntlet.svg",
+    effectSummary: "무기 공격력 +38"
+  },
+  "fallen-order-blade": {
+    code: "fallen-order-blade",
+    slot: "weapon",
+    name: "몰락 기사단의 검",
+    description: "폐허 기사단 성채에서 얻는 본격 전투 무기입니다.",
+    imageUrl: "/assets/equipment/commander-jacket.svg",
+    effectSummary: "무기 공격력 +72"
+  },
   "crown-of-cheers": {
     code: "crown-of-cheers",
     slot: "head",
@@ -146,6 +171,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
 export const powerRankingEquipmentCodes = Object.keys(powerRankingEquipmentCatalog);
 
 const enhancementStoneBaseBySlot: Record<PowerRankingEquipmentSlot, number> = {
+  weapon: 2,
   head: 1,
   top: 2,
   bottom: 2,
@@ -158,7 +184,8 @@ const enhancementStoneBonusByCode: Partial<Record<PowerRankingEquipmentCode, num
   "golden-harness": 1,
   "midnight-slacks": 1,
   "aurora-skirt": 1,
-  "titan-gauntlet": 1
+  "titan-gauntlet": 1,
+  "fallen-order-blade": 2
 };
 
 export const getPowerRankingEquipmentEnhancementPlan = (

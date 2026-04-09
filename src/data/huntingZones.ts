@@ -85,7 +85,7 @@ export const huntingZones: HuntingZoneDefinition[] = [
     monsters: [
       {
         id: "slime-chairman",
-        name: "숲 이끼 슬라임",
+        name: "슬라임",
         imageUrl: monsterImageUrls["slime-chairman"],
         typeLabel: "일반형",
         rarityLabel: "Common",
@@ -104,8 +104,27 @@ export const huntingZones: HuntingZoneDefinition[] = [
       },
       {
         id: "poster-goblin",
-        name: "새싹 도적",
+        name: "나무 정령",
         imageUrl: monsterImageUrls["poster-goblin"],
+        typeLabel: "탱커형",
+        rarityLabel: "Uncommon",
+        patternLabel: "HP가 높아 초보 화력을 시험하는 숲의 탱커형 몬스터",
+        flavor: "묵직한 몸집으로 길목을 막아서는 오래 버티는 정령입니다.",
+        maxHp: 320,
+        defense: 16,
+        expReward: 24,
+        isBoss: false,
+        rewardSummary: "낡은 모자, 작은 회복 물약",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "골드", rate: 1, min: 22, max: 38 },
+          { kind: "material", code: "enhancement-stone", label: "낡은 모자", rate: 0.22, min: 1, max: 1 },
+          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.2, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "ledger-bat",
+        name: "숲도둑",
+        imageUrl: monsterImageUrls["ledger-bat"],
         typeLabel: "유리몸형",
         rarityLabel: "Uncommon",
         patternLabel: "HP는 낮지만 골드를 많이 주는 몬스터",
@@ -123,7 +142,7 @@ export const huntingZones: HuntingZoneDefinition[] = [
       },
       {
         id: "canteen-wolf",
-        name: "덤불 늑대 우두머리",
+        name: "숲의 늑대왕",
         imageUrl: monsterImageUrls["canteen-wolf"],
         typeLabel: "보스형",
         rarityLabel: "Boss",
@@ -231,9 +250,9 @@ export const huntingZones: HuntingZoneDefinition[] = [
     monsters: [
       {
         id: "vault-mimic",
-        name: "성채 미믹",
+        name: "부패 기사",
         imageUrl: monsterImageUrls["vault-mimic"],
-        typeLabel: "보상형",
+        typeLabel: "일반형",
         rarityLabel: "Epic",
         patternLabel: "세트 장비 조각과 중급 강화석을 자주 뿌리는 보상형",
         flavor: "성채 보물창고에서 튀어나오는 보상 특화 몬스터입니다.",
@@ -250,9 +269,9 @@ export const huntingZones: HuntingZoneDefinition[] = [
       },
       {
         id: "executive-specter",
-        name: "폐허 기사 망령",
+        name: "망령 궁수",
         imageUrl: monsterImageUrls["executive-specter"],
-        typeLabel: "탱커형",
+        typeLabel: "유리몸형",
         rarityLabel: "Epic",
         patternLabel: "HP가 높고 세트 조각 드랍을 안정적으로 주는 탱커형",
         flavor: "폐허가 된 성채 복도에서 오래 버티는 기사단 망령입니다.",
@@ -269,13 +288,13 @@ export const huntingZones: HuntingZoneDefinition[] = [
         ]
       },
       {
-        id: "council-dragon",
-        name: "폐허 기사단장",
-        imageUrl: monsterImageUrls["council-dragon"],
-        typeLabel: "보스형",
+        id: "hall-keeper",
+        name: "철갑 수호자",
+        imageUrl: monsterImageUrls["hall-keeper"],
+        typeLabel: "탱커형",
         rarityLabel: "Legendary Boss",
-        patternLabel: "세트 장비 조각과 카드 관련 아이템을 주는 보스형",
-        flavor: "성채 중앙을 지키는 기사단장으로 보스 파밍의 핵심입니다.",
+        patternLabel: "세트 장비 조각과 카드 관련 아이템을 주는 철갑 보스형",
+        flavor: "성채 핵심부를 지키는 중장갑 수호자입니다.",
         maxHp: 1820,
         defense: 74,
         expReward: 150,
@@ -286,6 +305,27 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "enhancement-stone", label: "중급 강화석", rate: 0.88, min: 5, max: 8 },
           { kind: "material", code: "refined-stone", label: "기사단 휘장", rate: 0.5, min: 2, max: 3 },
           { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.22, min: 1, max: 2 },
+          { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "council-dragon",
+        name: "타락한 기사단장",
+        imageUrl: monsterImageUrls["council-dragon"],
+        typeLabel: "보스형",
+        rarityLabel: "Final Boss",
+        patternLabel: "성채 최심부에서 세트와 카드 조각을 집중 드랍하는 최종 보스",
+        flavor: "폐허 기사단 성채의 마지막 우두머리입니다.",
+        maxHp: 2140,
+        defense: 84,
+        expReward: 168,
+        isBoss: true,
+        rewardSummary: "기사단 세트, 보스 카드 조각",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "기사단 세트 조각", rate: 1, min: 240, max: 340 },
+          { kind: "material", code: "enhancement-stone", label: "중급 강화석", rate: 0.92, min: 5, max: 8 },
+          { kind: "material", code: "refined-stone", label: "기사단 휘장", rate: 0.52, min: 2, max: 3 },
+          { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.28, min: 1, max: 2 },
           { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 }
         ]
       }

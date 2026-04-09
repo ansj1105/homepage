@@ -186,6 +186,9 @@ const powerRankingItemUseSchema = z.object({
 
 const powerRankingEquipSchema = z.object({
   equipmentCode: z.enum([
+    "training-branch",
+    "iron-pickaxe",
+    "fallen-order-blade",
     "crown-of-cheers",
     "star-visor",
     "mint-beret",
@@ -205,7 +208,7 @@ const powerRankingEquipSchema = z.object({
 });
 
 const equipmentUnequipSchema = z.object({
-  slot: z.enum(["head", "top", "bottom", "shoes", "gloves"])
+  slot: z.enum(["weapon", "head", "top", "bottom", "shoes", "gloves"])
 });
 
 const itemSellSchema = z.object({
@@ -215,6 +218,9 @@ const itemSellSchema = z.object({
 
 const equipmentEnhanceSchema = z.object({
   equipmentCode: z.enum([
+    "training-branch",
+    "iron-pickaxe",
+    "fallen-order-blade",
     "crown-of-cheers",
     "star-visor",
     "mint-beret",

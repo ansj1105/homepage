@@ -1190,7 +1190,9 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
   const equippedCount = equippedItems.length;
 
   let setMultiplier = 1;
-  if (equippedCount >= 5) {
+  if (equippedCount >= 6) {
+    setMultiplier = 2;
+  } else if (equippedCount >= 5) {
     setMultiplier = 1.8;
   } else if (equippedCount >= 4) {
     setMultiplier = 1.55;
@@ -1200,7 +1202,15 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
     setMultiplier = 1.15;
   }
 
-  const weaponAttack = Math.max(90, 90 + Math.floor(recommendationCoefficient * 0.42));
+  const equippedWeapon = equipmentState.equipped.weapon ?? null;
+  let weaponAttack = Math.max(90, 90 + Math.floor(recommendationCoefficient * 0.42));
+  if (equippedWeapon?.code === "training-branch") {
+    weaponAttack += 18;
+  } else if (equippedWeapon?.code === "iron-pickaxe") {
+    weaponAttack += 38;
+  } else if (equippedWeapon?.code === "fallen-order-blade") {
+    weaponAttack += 72;
+  }
   let apparelPercentBonus = 0;
   let effectMultiplier = 1;
   let flatBonus = 0;

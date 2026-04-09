@@ -206,8 +206,11 @@ export type PowerRankingPeriod = "all" | "weekly" | "daily";
 export type PowerRankingVoteDelta = 1 | -1;
 export type PowerRankingItemCode = "byeokbangjun-blanket" | "seoeuntaek-love";
 export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
-export type PowerRankingEquipmentSlot = "head" | "top" | "bottom" | "shoes" | "gloves";
+export type PowerRankingEquipmentSlot = "weapon" | "head" | "top" | "bottom" | "shoes" | "gloves";
 export type PowerRankingEquipmentCode =
+  | "training-branch"
+  | "iron-pickaxe"
+  | "fallen-order-blade"
   | "crown-of-cheers"
   | "star-visor"
   | "mint-beret"
