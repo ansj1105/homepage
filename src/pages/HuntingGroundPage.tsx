@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
@@ -17,7 +16,6 @@ import {
   type HuntingProgress
 } from "../features/huntingProgress";
 import type { HuntingProfile, PowerRankingPerson } from "../types";
-import { getOrCreateDeviceId } from "../utils/deviceId";
 type DropReward =
   | { kind: "material"; code: HuntingMaterialCode; quantity: number }
   | { kind: "consumable"; code: HuntingConsumableCode; quantity: number };
@@ -514,8 +512,6 @@ const HuntingGroundPage = () => {
     () => rankingPeople.find((person) => person.id === progress.selectedCardTargetId) ?? null,
     [progress.selectedCardTargetId, rankingPeople]
   );
-  const equippedHeadItem = profile?.equippedItems.head ?? null;
-
   const equippedList = useMemo(
     () => Object.values(profile?.equippedItems ?? {}),
     [profile?.equippedItems]
@@ -533,7 +529,6 @@ const HuntingGroundPage = () => {
   const playerLevelAttackBonus = Math.max(0, (progress.level - 1) * 12);
   const attackBuffMultiplier = attackBuffCharges > 0 ? 1.28 : 1;
   const autoGrowthMultiplier = profile?.autoGrowthMultiplier ?? 1;
-  const cardGrowthMultiplier = profile?.cardGrowthMultiplier ?? 1;
   const fatigueDropMultiplier =
     progress.endurance >= 60 ? 1 : progress.endurance >= 30 ? 0.88 : 0.74;
   const dropRateMultiplier =
@@ -746,75 +741,6 @@ const HuntingGroundPage = () => {
     }
   };
 
-  const handleUseConsumable = (code: HuntingConsumableCode) => {
-    if (progress.consumables[code] < 1) {
-      setErrorMessage("보유한 소비 아이템이 없습니다.");
-      return;
-    }
-
-    setErrorMessage("");
-    setProgress((current) => ({
-      ...current,
-      consumables: {
-        ...current.consumables,
-        [code]: Math.max(0, current.consumables[code] - 1)
-      },
-      endurance: code === "healing-potion" ? Math.min(MAX_ENDURANCE, current.endurance + 35) : current.endurance
-    }));
-
-    if (code === "berserk-tonic") {
-      setAttackBuffCharges(8);
-      appendLog("광폭 토닉 사용. 다음 8회 공격의 화력이 증가합니다.");
-      return;
-    }
-    if (code === "lucky-scroll") {
-      setDropBuffKills(5);
-      appendLog("행운 스크롤 사용. 다음 5회 처치 드랍률이 상승합니다.");
-      return;
-    }
-    if (code === "protection-scroll") {
-      setErrorMessage("보호 주문서는 내 장비 페이지의 강화에서 자동으로 사용됩니다.");
-      return;
-    }
-
-    appendLog("회복 포션 사용. 지구력을 회복했습니다.");
-  };
-
-  const handleSendCardSupport = async () => {
-    if (!selectedCardTarget) {
-      setErrorMessage("응원할 카드를 먼저 선택하세요.");
-      return;
-    }
-    if (!equippedHeadItem) {
-      setErrorMessage("모자를 착용해야 응원 카드를 성장시킬 수 있습니다.");
-      return;
-    }
-    if (progress.cardSupportPoints < 5) {
-      setErrorMessage("응원 포인트가 부족합니다. 몬스터를 더 처치하세요.");
-      return;
-    }
-
-    setErrorMessage("");
-    try {
-      await apiClient.submitPowerRankingVote(selectedCardTarget.id, {
-        deviceId: getOrCreateDeviceId(),
-        delta: 1,
-        period: "all"
-      });
-      setProgress((current) => ({
-        ...current,
-        cardSupportPoints: Math.max(0, current.cardSupportPoints - 5)
-      }));
-      const refreshedPeople = await apiClient.getPowerRanking("all");
-      setRankingPeople(refreshedPeople);
-      appendLog(`${selectedCardTarget.name} 카드에 모자 응원을 보내 인기도를 올렸습니다.`);
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "응원 카드를 적용하지 못했습니다.");
-    }
-  };
-
-  const nextExpRequired = getExpToNextLevel(progress.level);
-
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
@@ -898,10 +824,7 @@ const HuntingGroundPage = () => {
               <a href="#hunting-my-info" className="huntingSubNavLink">내 정보</a>
               <a href="#hunting-status" className="huntingSubNavLink">내 상태</a>
               <a href="#hunting-stage" className="huntingSubNavLink">사냥터</a>
-              <a href="#hunting-profile" className="huntingSubNavLink">내 프로필</a>
-              <a href="#hunting-economy" className="huntingSubNavLink">재화</a>
-              <a href="#hunting-equipment" className="huntingSubNavLink">장비</a>
-              <a href="#hunting-intro" className="huntingSubNavLink">소개</a>
+              <a href="#hunting-log" className="huntingSubNavLink">전투 로그</a>
             </nav>
 
             <section className="powerRankingDashboardSection huntingLoopSection" id="hunting-status">
@@ -1115,263 +1038,7 @@ const HuntingGroundPage = () => {
               ) : null}
             </section>
 
-            <section className="powerRankingInventorySection huntingCardSupportSection" id="hunting-profile">
-              <div className="powerRankingSectionHead">
-                <div>
-                  <p className="powerRankingSectionEyebrow">Hat Card Support</p>
-                  <h2>모자 응원 카드 선택</h2>
-                </div>
-                <p className="powerRankingSectionHint">
-                  머리 장비는 전투 배수보다 카드 성장 효율에 집중됩니다. 응원 포인트 5를 모으면 선택한 카드의 인기도를 올릴 수 있습니다.
-                </p>
-              </div>
-
-              <div className="huntingCardSupportPanel">
-                <div className="huntingCardSupportMeta">
-                  <span className="powerRankingInventoryPill">착용 모자 {equippedHeadItem ? equippedHeadItem.name : "없음"}</span>
-                  <span className="powerRankingInventoryPill isMuted">카드 성장 x{cardGrowthMultiplier.toFixed(2)}</span>
-                  <span className="powerRankingInventoryPill">응원 포인트 {progress.cardSupportPoints} / 5</span>
-                </div>
-
-                <div className="huntingCardTargetGrid">
-                  {rankingPeople.slice(0, 8).map((person) => (
-                    <button
-                      key={person.id}
-                      type="button"
-                      className={`huntingCardTarget ${progress.selectedCardTargetId === person.id ? "isActive" : ""}`}
-                      onClick={() =>
-                        setProgress((current) => ({
-                          ...current,
-                          selectedCardTargetId: person.id
-                        }))
-                      }
-                    >
-                      <strong>{person.name}</strong>
-                      <span>현재 인기도 {person.score}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="huntingCardSupportActions">
-                  <p>
-                    현재 선택: <strong>{selectedCardTarget?.name ?? "-"}</strong>
-                  </p>
-                  <button
-                    type="button"
-                    className="powerRankingItemButton isPositive"
-                    disabled={!equippedHeadItem || progress.cardSupportPoints < 5 || !selectedCardTarget}
-                    onClick={() => void handleSendCardSupport()}
-                  >
-                    선택 카드 인기도 올리기
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <section className="powerRankingInventorySection huntingResourceSection" id="hunting-economy">
-              <div className="powerRankingSectionHead">
-                <div>
-                  <p className="powerRankingSectionEyebrow">Inventory & Economy</p>
-                  <h2>재료 / 소비 아이템</h2>
-                </div>
-                <p className="powerRankingSectionHint">
-                  강화석과 재화를 모으고, 소비 아이템으로 효율을 끌어올릴 수 있습니다.
-                </p>
-              </div>
-
-              <div className="huntingResourceGrid">
-                <article className="powerRankingLogCard">
-                  <strong>재료 인벤토리</strong>
-                  <ul className="huntingResourceList">
-                    {(Object.keys(materialMeta) as HuntingMaterialCode[]).map((code) => (
-                      <li key={code}>
-                        <div>
-                          <strong>{materialMeta[code].name}</strong>
-                          <p>{materialMeta[code].description}</p>
-                        </div>
-                        <span>x{progress.materials[code]}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-
-                <article className="powerRankingLogCard">
-                  <strong>소비 아이템</strong>
-                  <ul className="huntingResourceList">
-                    {(Object.keys(consumableMeta) as HuntingConsumableCode[]).map((code) => (
-                      <li key={code}>
-                        <div>
-                          <strong>{consumableMeta[code].name}</strong>
-                          <p>{consumableMeta[code].description}</p>
-                        </div>
-                        <div className="huntingConsumableAction">
-                          <span>x{progress.consumables[code]}</span>
-                          <button
-                            type="button"
-                            className="powerRankingBackLink"
-                            disabled={progress.consumables[code] < 1}
-                            onClick={() => handleUseConsumable(code)}
-                          >
-                            사용
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              </div>
-            </section>
-
-            <section className="powerRankingInventorySection huntingEnhancementSection" id="hunting-equipment">
-              <div className="powerRankingSectionHead">
-                <div>
-                  <p className="powerRankingSectionEyebrow">Equipment Link</p>
-                  <h2>장비 관리는 내 장비에서</h2>
-                </div>
-                <p className="powerRankingSectionHint">
-                  사냥터에서는 전투와 드랍만 보고, 착용/강화/소비 확인은 내 장비 페이지에서 처리하도록 분리했습니다.
-                </p>
-              </div>
-
-              <div className="huntingEnhancementGrid">
-                <article className="powerRankingInventoryCard huntingEnhancementCard">
-                  <div className="powerRankingInventoryBody">
-                    <div className="powerRankingInventoryHeading">
-                      <strong>현재 전투 장비 상태</strong>
-                      <span>장착 {equippedList.length} / 5부위</span>
-                    </div>
-                    <p>강화 보너스 +{enhancementBonus}, 무기 공격력 {profile?.weaponAttack ?? 0}, 장비 세트 x{profile?.setMultiplier.toFixed(2) ?? "1.00"}가 현재 전투력에 반영 중입니다.</p>
-                    <div className="powerRankingInventoryTags">
-                      <span className="powerRankingInventoryPill">강화 보너스 +{enhancementBonus}</span>
-                      <span className="powerRankingInventoryPill">장비 수 {equippedList.length}</span>
-                      <span className="powerRankingInventoryPill isMuted">강화석 {progress.materials["enhancement-stone"]}개</span>
-                    </div>
-                    <Link to="/dongyeon-equipment" className="powerRankingItemButton isPositive">
-                      내 장비로 이동
-                    </Link>
-                  </div>
-                </article>
-              </div>
-            </section>
-
-            <section className="powerRankingInventorySection huntingInfoSection" id="hunting-intro">
-              <div className="powerRankingSectionHead">
-                <div>
-                  <p className="powerRankingSectionEyebrow">Integration Check</p>
-                  <h2>사냥 / 파워랭킹 연동 상태</h2>
-                </div>
-                <p className="powerRankingSectionHint">
-                  현재 빌드에서 어떤 값이 서로 연결돼 있는지 한눈에 보이도록 정리했습니다.
-                </p>
-              </div>
-
-              <div className="huntingInfoGrid">
-                <article className="powerRankingDashboardCard">
-                  <span>파워랭킹 추천 누적</span>
-                  <strong>{profile?.recommendationCoefficient ?? 0}</strong>
-                  <p>사용자가 올린 추천 누적 수치가 무기 고정 공격력 계산에 반영됩니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>장착 장비 수</span>
-                  <strong>{equippedList.length}</strong>
-                  <p>장착 수에 따라 세트 배수가 오르고, 각 부위 효과가 사냥 전투력에 들어갑니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>강화 누적</span>
-                  <strong>+{enhancementBonus}</strong>
-                  <p>내 장비에서 올린 강화 단계가 사냥터 전투력에 바로 더해집니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>응원 카드 대상</span>
-                  <strong>{selectedCardTarget?.name ?? "-"}</strong>
-                  <p>사냥으로 모은 응원 포인트는 파워랭킹 인기도 상승에 사용됩니다.</p>
-                </article>
-              </div>
-            </section>
-
-            <section className="powerRankingInventorySection huntingInfoSection">
-              <div className="powerRankingSectionHead">
-                <div>
-                  <p className="powerRankingSectionEyebrow">Battle Formula</p>
-                  <h2>전투력 계산</h2>
-                </div>
-                <p className="powerRankingSectionHint">
-                  무기 고정 공격력을 기준으로 상의/하의는 합산 퍼센트 1회만 적용하고, 세트 효과는 별도 배수로 분리합니다.
-                </p>
-              </div>
-
-              <div className="huntingInfoGrid">
-                <article className="powerRankingDashboardCard">
-                  <span>무기 공격력</span>
-                  <strong>{profile?.weaponAttack ?? 0}</strong>
-                  <p>무기 고정값을 크게 두어 의상 퍼센트가 전부를 먹지 않게 조정했습니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>의상 배수</span>
-                  <strong>x{profile?.apparelMultiplier.toFixed(2) ?? "1.00"}</strong>
-                  <p>상의/하의 퍼센트는 합산 후 한 번만 곱연산합니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>세트 배수</span>
-                  <strong>x{profile?.setMultiplier.toFixed(2) ?? "1.00"}</strong>
-                  <p>장착 부위 수에 따라 배수가 적용됩니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>기타 효과 배수</span>
-                  <strong>x{profile?.effectMultiplier.toFixed(2) ?? "1.00"}</strong>
-                  <p>머리/신발 유틸은 직접 전투보다 낮게 두고, 순수 전투 계열만 별도 반영합니다.</p>
-                </article>
-              </div>
-
-              <div className="huntingInfoGrid">
-                <article className="powerRankingDashboardCard">
-                  <span>고정 보너스</span>
-                  <strong>+{profile?.flatBonus ?? 0}</strong>
-                  <p>장비와 강화에서 직접 더해지는 추가 전투력입니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>드랍 배수</span>
-                  <strong>x{(profile?.dropRateMultiplier ?? 1).toFixed(2)}</strong>
-                  <p>장갑 드랍 증가는 상한을 두고 압축 적용됩니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>카드 성장 배수</span>
-                  <strong>x{cardGrowthMultiplier.toFixed(2)}</strong>
-                  <p>머리 장비는 카드/자동 성장 효율 역할만 맡고 전투 기여는 상한으로 제한합니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>보스 추가 롤</span>
-                  <strong>{Math.round((profile?.bossBonusRollRate ?? 0) * 100)}%</strong>
-                  <p>보스 드랍은 확률 기반 추가 롤로 제한해 경제 붕괴를 막습니다.</p>
-                </article>
-                <article className="powerRankingDashboardCard">
-                  <span>성장 진행도</span>
-                  <strong>{progress.exp} / {nextExpRequired}</strong>
-                  <p>처치 경험치가 누적되면 사냥 레벨이 오르고 공격력이 상승합니다.</p>
-                </article>
-              </div>
-
-              <div className="huntingBreakdownCard">
-                <strong>적용 효과</strong>
-                <ul className="powerRankingDashboardList">
-                  {(profile?.effectBreakdown.length ?? 0) > 0 ? (
-                    profile?.effectBreakdown.map((item) => <li key={item}>{item}</li>)
-                  ) : (
-                    <li>착용 장비가 없어 기본 전투력만 적용 중입니다.</li>
-                  )}
-                  <li>사냥 레벨 보너스 +{playerLevelAttackBonus}</li>
-                  <li>장비 강화 보너스 +{enhancementBonus}</li>
-                  <li>자동 성장 배수 x{autoGrowthMultiplier.toFixed(2)}</li>
-                  <li>카드 성장 배수 x{cardGrowthMultiplier.toFixed(2)}</li>
-                  <li>현재 총 드랍 배수 x{dropRateMultiplier.toFixed(2)}</li>
-                  <li>현재 피로도 배수 x{fatigueDropMultiplier.toFixed(2)}</li>
-                  <li>행운 스크롤 남은 처치 수 {dropBuffKills}</li>
-                  <li>광폭 토닉 남은 공격 수 {attackBuffCharges}</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="powerRankingLogSection">
+            <section className="powerRankingLogSection" id="hunting-log">
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Combat Log</p>
