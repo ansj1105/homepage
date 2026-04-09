@@ -5683,9 +5683,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .communityTopBarLink.isActive {
-  border-color: #f5c15d;
-  background: linear-gradient(180deg, #efd28a, #d7ab58);
-  color: #382100;
+  border-color: #163a70;
+  background: linear-gradient(180deg, #234f91, #163a70);
+  color: #ffffff;
 }
 
 .powerRankingPageMaple .communityTopBarLink.isGhost {
@@ -5834,7 +5834,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingEyebrow {
-  color: #8b5a00;
+  color: #163a70;
   text-shadow: none;
 }
 
@@ -5893,9 +5893,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingSortButton.isActive {
-  border-color: #f5c15d;
-  background: linear-gradient(180deg, #f8d27d, #e7ab45);
-  color: #352000;
+  border-color: #163a70;
+  background: linear-gradient(180deg, #234f91, #163a70);
+  color: #ffffff;
 }
 
 .powerRankingPageMaple .powerRankingDownvoteButton:disabled,
@@ -5982,10 +5982,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingRewardBanner {
   margin-top: 18px;
   padding: 16px 18px;
-  border: 1px solid rgba(173, 124, 18, 0.2);
+  border: 1px solid rgba(22, 58, 112, 0.18);
   border-radius: 0;
-  background: #fff4d8;
-  color: #5a3b00;
+  background: #eef4fb;
+  color: #163a70;
   font-size: 14px;
   font-weight: 800;
 }
@@ -6011,8 +6011,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingNotificationCard.isReward {
-  background: linear-gradient(180deg, rgba(255, 250, 230, 0.98), rgba(255, 239, 194, 0.96));
-  color: #5a3b00;
+  background: linear-gradient(180deg, rgba(239, 244, 251, 0.98), rgba(223, 235, 248, 0.96));
+  color: #163a70;
 }
 
 .powerRankingPageMaple .powerRankingNotificationCard.isInfo {
@@ -7121,8 +7121,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   align-items: center;
   padding: 0 10px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #f8d27d, #e7ab45);
-  color: #352000;
+  background: linear-gradient(180deg, #234f91, #163a70);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
