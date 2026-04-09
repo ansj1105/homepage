@@ -6156,9 +6156,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingInventoryCard,
 .powerRankingPageMaple .powerRankingInventoryEmpty,
 .powerRankingPageMaple .powerRankingLogCard {
-  border: 1px solid rgba(16, 36, 63, 0.08);
+  border: 1px solid #cfe0f4;
   border-radius: 0;
-  background: #ffffff;
+  background: #f6faff;
   box-shadow: none;
 }
 
@@ -6273,9 +6273,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingEquipmentDetails {
-  border: 1px solid rgba(16, 36, 63, 0.08);
+  border: 1px solid #cfe0f4;
   border-radius: 0;
-  background: #ffffff;
+  background: #f6faff;
 }
 
 .powerRankingPageMaple .powerRankingEquipmentDetails summary {
@@ -6320,9 +6320,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 6px 12px;
   align-items: center;
   padding: 10px 12px;
-  border: 1px solid rgba(16, 36, 63, 0.08);
+  border: 1px solid #cfe0f4;
   border-radius: 0;
-  background: #ffffff;
+  background: #f6faff;
 }
 
 .powerRankingPageMaple .powerRankingEquipmentEnhancementList li span,
@@ -6372,9 +6372,9 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingLogList li {
   padding: 12px 14px;
-  border: 1px solid rgba(16, 36, 63, 0.08);
+  border: 1px solid #cfe0f4;
   border-radius: 0;
-  background: #ffffff;
+  background: #f6faff;
 }
 
 .powerRankingPageMaple .powerRankingLogList p {
