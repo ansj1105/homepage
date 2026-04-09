@@ -25,144 +25,144 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
   "training-branch": {
     code: "training-branch",
     slot: "weapon",
-    name: "수련용 나뭇가지",
-    description: "초보 숲에서 얻는 가장 기본적인 무기입니다.",
+    name: "캠퍼스 가이드 봉",
+    description: "캠퍼스 가이드 구역에서 주워 드는 입문용 응원 봉형 무기입니다.",
     imageUrl: "/assets/equipment/crown-of-cheers.svg",
     effectSummary: "무기 공격력 +18"
   },
   "iron-pickaxe": {
     code: "iron-pickaxe",
     slot: "weapon",
-    name: "철제 곡괭이",
-    description: "돌언덕 광산에서 얻는 채광 겸용 무기입니다.",
+    name: "연구성과 곡괭이",
+    description: "연구성과 광맥을 캐내는 광산 전용 실전 무기입니다.",
     imageUrl: "/assets/equipment/titan-gauntlet.svg",
     effectSummary: "무기 공격력 +38"
   },
   "fallen-order-blade": {
     code: "fallen-order-blade",
     slot: "weapon",
-    name: "몰락 기사단의 검",
-    description: "폐허 기사단 성채에서 얻는 본격 전투 무기입니다.",
+    name: "헤리티지 블레이드",
+    description: "헤리티지와 전통의 무게를 담은 성채 등급 검입니다.",
     imageUrl: "/assets/equipment/commander-jacket.svg",
     effectSummary: "무기 공격력 +72"
   },
   "crown-of-cheers": {
     code: "crown-of-cheers",
     slot: "head",
-    name: "환호의 왕관",
-    description: "추천 시 적용 수치가 2배가 됩니다.",
+    name: "연세포커스 크라운",
+    description: "연세포커스의 시선을 모아 추천 수치를 크게 끌어올립니다.",
     imageUrl: "/assets/equipment/crown-of-cheers.svg",
     effectSummary: "추천량 2배"
   },
   "star-visor": {
     code: "star-visor",
     slot: "head",
-    name: "별빛 바이저",
-    description: "추천 또는 비추천 첫 반영 시 추가로 +5 보정을 받습니다.",
+    name: "연세다움 바이저",
+    description: "연세다움의 첫 인상을 살려 하루 첫 반영에 추가 보정을 줍니다.",
     imageUrl: "/assets/equipment/star-visor.svg",
     effectSummary: "하루 첫 반영 +5"
   },
   "mint-beret": {
     code: "mint-beret",
     slot: "head",
-    name: "민트 베레모",
-    description: "소비 아이템 드롭 확률이 증가합니다.",
+    name: "학생홍보대사 베레모",
+    description: "학생홍보대사처럼 동선을 넓게 보며 소비 아이템 드롭을 끌어올립니다.",
     imageUrl: "/assets/equipment/mint-beret.svg",
     effectSummary: "소비 아이템 드롭률 +1.5%"
   },
   "commander-jacket": {
     code: "commander-jacket",
     slot: "top",
-    name: "사령관 재킷",
-    description: "추천 시 추가로 +1 수치를 더합니다.",
+    name: "연세비전 재킷",
+    description: "연세비전의 추진력을 담아 추천 수치를 추가로 올립니다.",
     imageUrl: "/assets/equipment/commander-jacket.svg",
     effectSummary: "추천량 +1"
   },
   "ribbon-cardigan": {
     code: "ribbon-cardigan",
     slot: "top",
-    name: "리본 가디건",
-    description: "소비 아이템과 장비 드롭 확률이 모두 조금씩 증가합니다.",
+    name: "브로슈어 가디건",
+    description: "브로슈어처럼 정보가 잘 퍼지도록 전체 드롭 효율을 높입니다.",
     imageUrl: "/assets/equipment/ribbon-cardigan.svg",
     effectSummary: "전체 드롭률 +1%"
   },
   "golden-harness": {
     code: "golden-harness",
     slot: "top",
-    name: "골든 하네스",
-    description: "아이템 사용 시 적용 수치가 추가됩니다.",
+    name: "발전기금 하네스",
+    description: "지원 효과를 증폭해 소비 아이템 사용 위력을 늘립니다.",
     imageUrl: "/assets/equipment/golden-harness.svg",
     effectSummary: "소비 아이템 위력 +20"
   },
   "midnight-slacks": {
     code: "midnight-slacks",
     slot: "bottom",
-    name: "미드나잇 슬랙스",
-    description: "비추천 시 적용 수치가 2배가 됩니다.",
+    name: "수강신청 슬랙스",
+    description: "빠른 판단이 필요한 상황에서 내리기 수치를 강하게 밀어줍니다.",
     imageUrl: "/assets/equipment/midnight-slacks.svg",
     effectSummary: "인기도 내리기 2배"
   },
   "wave-denim": {
     code: "wave-denim",
     slot: "bottom",
-    name: "웨이브 데님",
-    description: "비추천 반영 시 추가로 -1 수치를 더합니다.",
+    name: "학사일정 데님",
+    description: "학사일정처럼 정확하게 맞춰 비추천 반영을 더 날카롭게 만듭니다.",
     imageUrl: "/assets/equipment/wave-denim.svg",
     effectSummary: "인기도 내리기 -1 추가"
   },
   "aurora-skirt": {
     code: "aurora-skirt",
     slot: "bottom",
-    name: "오로라 스커트",
-    description: "장비 아이템 드롭 확률이 증가합니다.",
+    name: "장학금 스커트",
+    description: "장학금 안내처럼 보상을 선명하게 보여 장비 드롭을 끌어올립니다.",
     imageUrl: "/assets/equipment/aurora-skirt.svg",
     effectSummary: "장비 드롭률 +1.5%"
   },
   "thunder-boots": {
     code: "thunder-boots",
     slot: "shoes",
-    name: "썬더 부츠",
-    description: "하루 첫 반영 시 추가로 +5 보정을 받습니다.",
+    name: "캠퍼스 견학 부츠",
+    description: "캠퍼스를 먼저 훑고 들어가 하루 첫 반영에 보정을 더합니다.",
     imageUrl: "/assets/equipment/thunder-boots.svg",
     effectSummary: "하루 첫 반영 +5"
   },
   "crystal-sneakers": {
     code: "crystal-sneakers",
     slot: "shoes",
-    name: "크리스털 스니커즈",
-    description: "소비 아이템 드롭 확률이 증가합니다.",
+    name: "정기 견학 스니커즈",
+    description: "동선을 효율적으로 밟아 소비 아이템을 더 잘 발견합니다.",
     imageUrl: "/assets/equipment/crystal-sneakers.svg",
     effectSummary: "소비 아이템 드롭률 +1%"
   },
   "ember-heels": {
     code: "ember-heels",
     slot: "shoes",
-    name: "엠버 힐",
-    description: "장비 아이템 드롭 확률이 증가합니다.",
+    name: "교환프로그램 워커",
+    description: "새 구역을 넓게 돌아다니며 장비 아이템 드롭을 높입니다.",
     imageUrl: "/assets/equipment/ember-heels.svg",
     effectSummary: "장비 드롭률 +1%"
   },
   "titan-gauntlet": {
     code: "titan-gauntlet",
     slot: "gloves",
-    name: "타이탄 건틀릿",
-    description: "추천과 비추천 모두 기본 수치에 +1 보정을 더합니다.",
+    name: "학사지원 건틀릿",
+    description: "학사지원실의 정밀함처럼 모든 반영 수치를 안정적으로 보정합니다.",
     imageUrl: "/assets/equipment/titan-gauntlet.svg",
     effectSummary: "모든 반영 수치 +1"
   },
   "silk-gloves": {
     code: "silk-gloves",
     slot: "gloves",
-    name: "실크 글러브",
-    description: "소비 아이템 사용 시 위력이 추가됩니다.",
+    name: "연구활동 글러브",
+    description: "연구활동의 밀도를 담아 소비 아이템 사용 위력을 올립니다.",
     imageUrl: "/assets/equipment/silk-gloves.svg",
     effectSummary: "소비 아이템 위력 +10"
   },
   "pulse-gloves": {
     code: "pulse-gloves",
     slot: "gloves",
-    name: "펄스 글러브",
-    description: "추천 시 아이템 드롭을 노리기 좋습니다.",
+    name: "메리트 글러브",
+    description: "메리트를 쌓듯 드롭 효율을 끌어올리는 파밍 특화 장갑입니다.",
     imageUrl: "/assets/equipment/pulse-gloves.svg",
     effectSummary: "전체 드롭률 +0.8%"
   }
