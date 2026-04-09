@@ -1,4 +1,23 @@
-import type { PowerRankingEquipmentCatalogEntry } from "../types";
+import type {
+  PowerRankingEquipmentCatalogEntry,
+  PowerRankingEquipmentCode,
+  PowerRankingEquipmentSlot
+} from "../types";
+
+export interface PowerRankingEquipmentEnhancementTier {
+  level: number;
+  successRate: number;
+  stoneCost: number;
+  failurePenalty: string;
+}
+
+export const powerRankingEquipmentSlotLabels: Record<PowerRankingEquipmentSlot, string> = {
+  head: "머리",
+  top: "상의",
+  bottom: "하의",
+  shoes: "신발",
+  gloves: "장갑"
+};
 
 export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentCatalogEntry> = {
   "crown-of-cheers": {
@@ -124,3 +143,39 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
 };
 
 export const powerRankingEquipmentCodes = Object.keys(powerRankingEquipmentCatalog);
+
+const enhancementStoneBaseBySlot: Record<PowerRankingEquipmentSlot, number> = {
+  head: 1,
+  top: 2,
+  bottom: 2,
+  shoes: 1,
+  gloves: 1
+};
+
+const enhancementStoneBonusByCode: Partial<Record<PowerRankingEquipmentCode, number>> = {
+  "crown-of-cheers": 1,
+  "golden-harness": 1,
+  "midnight-slacks": 1,
+  "aurora-skirt": 1,
+  "titan-gauntlet": 1
+};
+
+export const getPowerRankingEquipmentEnhancementPlan = (
+  equipmentCode: PowerRankingEquipmentCode
+): PowerRankingEquipmentEnhancementTier[] => {
+  const equipment = powerRankingEquipmentCatalog[equipmentCode];
+  const baseStoneCost = enhancementStoneBaseBySlot[equipment.slot] + (enhancementStoneBonusByCode[equipmentCode] ?? 0);
+
+  return [
+    { level: 1, successRate: 1, stoneCost: baseStoneCost, failurePenalty: "없음" },
+    { level: 2, successRate: 1, stoneCost: baseStoneCost + 1, failurePenalty: "없음" },
+    { level: 3, successRate: 1, stoneCost: baseStoneCost + 1, failurePenalty: "없음" },
+    { level: 4, successRate: 1, stoneCost: baseStoneCost + 2, failurePenalty: "없음" },
+    { level: 5, successRate: 1, stoneCost: baseStoneCost + 2, failurePenalty: "없음" },
+    { level: 6, successRate: 0.8, stoneCost: baseStoneCost + 3, failurePenalty: "없음" },
+    { level: 7, successRate: 0.65, stoneCost: baseStoneCost + 4, failurePenalty: "없음" },
+    { level: 8, successRate: 0.5, stoneCost: baseStoneCost + 5, failurePenalty: "강화석 추가 소모" },
+    { level: 9, successRate: 0.35, stoneCost: baseStoneCost + 6, failurePenalty: "유지" },
+    { level: 10, successRate: 0.2, stoneCost: baseStoneCost + 8, failurePenalty: "유지" }
+  ];
+};

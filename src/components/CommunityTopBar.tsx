@@ -8,14 +8,7 @@ import type {
   PowerRankingEquipmentSlot,
   PowerRankingEquippedItem
 } from "../types";
-
-const equipmentSlotLabels: Record<PowerRankingEquipmentSlot, string> = {
-  head: "머리",
-  top: "상의",
-  bottom: "하의",
-  shoes: "신발",
-  gloves: "장갑"
-};
+import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 
 type CommunityTopBarProps = {
   equipmentInventory?: PowerRankingEquipmentInventoryItem[];
@@ -108,11 +101,11 @@ const CommunityTopBar = ({
                 {isEquipmentOpen ? (
                   <div className="communityTopBarEquipmentPanel">
                     <div className="communityTopBarEquipmentSlots">
-                      {(Object.keys(equipmentSlotLabels) as PowerRankingEquipmentSlot[]).map((slot) => {
+                      {(Object.keys(powerRankingEquipmentSlotLabels) as PowerRankingEquipmentSlot[]).map((slot) => {
                         const equipped = equippedItems[slot];
                         return (
                           <div key={slot} className="communityTopBarEquipmentSlot">
-                            <span>{equipmentSlotLabels[slot]}</span>
+                            <span>{powerRankingEquipmentSlotLabels[slot]}</span>
                             {equipped ? (
                               <div className="communityTopBarEquipmentSlotItem">
                                 <img src={equipped.imageUrl} alt={equipped.name} />
@@ -136,7 +129,7 @@ const CommunityTopBar = ({
                             <img src={item.imageUrl} alt={item.name} />
                             <div>
                               <strong>{item.name}</strong>
-                              <p>{equipmentSlotLabels[item.slot]} · {item.effectSummary}</p>
+                              <p>{powerRankingEquipmentSlotLabels[item.slot]} · {item.effectSummary}</p>
                               <span>보유 {item.quantity}</span>
                             </div>
                             <button

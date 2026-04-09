@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
+import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import type {
   PowerRankingEquipmentCode,
   PowerRankingEquipmentInventoryItem,
@@ -70,6 +71,21 @@ const getEventLabel = (event: PowerRankingEventLog): string => {
 
 const getAnonymousDownvoteLabel = (event: PowerRankingEventLog): string =>
   `익명 유저가 ${event.personName} 인기도를 내렸습니다.`;
+
+const getItemUseConfirmMessage = (
+  personName: string,
+  itemCode: PowerRankingItemCode
+): string | null => {
+  if (itemCode === "seoeuntaek-love") {
+    return `${personName}에게 서은택의 사랑을 쓰시겠습니까?`;
+  }
+
+  if (itemCode === "byeokbangjun-blanket") {
+    return `${personName}에게 벽방준의 담요를 쓰시겠습니까?`;
+  }
+
+  return null;
+};
 
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -505,6 +521,14 @@ const PowerRankingPage = () => {
       navigate("/dongyeon-login");
       return;
     }
+
+    const targetPerson = people.find((person) => person.id === personId);
+    const confirmMessage = targetPerson ? getItemUseConfirmMessage(targetPerson.name, itemCode) : null;
+
+    if (confirmMessage && !window.confirm(confirmMessage)) {
+      return;
+    }
+
     setSubmittingForId(`item-${personId}-${itemCode}`);
     setErrorMessage("");
     setRewardMessage("");
@@ -822,30 +846,73 @@ const PowerRankingPage = () => {
               <div className="powerRankingSectionHead">
                 <div>
                   <p className="powerRankingSectionEyebrow">Item Inventory</p>
-                  <h2>유저 카드 아이템</h2>
+                  <h2>인벤토리</h2>
                 </div>
                 <p className="powerRankingSectionHint">
-                  올리기나 내리기 반영 시 1% 확률로 아이템을 획득합니다.
+                  올리기나 내리기 반영 시 아이템과 장비를 획득할 수 있으며, 장비는 상세보기에서 강화 확률과 강화석 요구량까지 확인할 수 있습니다.
                 </p>
               </div>
 
-              <div className="powerRankingInventoryGrid">
-                {inventory.length === 0 ? (
-                  <article className="powerRankingInventoryEmpty">
-                    로그인 후 랭킹 액션을 반영하면 아이템이 드롭됩니다.
-                  </article>
-                ) : (
-                  inventory.map((item) => (
-                    <article key={item.code} className="powerRankingInventoryCard">
-                      <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
-                      <div className="powerRankingInventoryBody">
-                        <strong>{item.name}</strong>
-                        <p>{item.description}</p>
-                        <span>보유 수량 {item.quantity}</span>
-                      </div>
-                    </article>
-                  ))
-                )}
+              <div className="powerRankingInventoryCollection">
+                <div className="powerRankingInventoryGroup">
+                  <div className="powerRankingInventoryGroupHead">
+                    <strong>소비 아이템</strong>
+                    <span>기본 드롭 확률 1%</span>
+                  </div>
+
+                  <div className="powerRankingInventoryGrid">
+                    {inventory.length === 0 ? (
+                      <article className="powerRankingInventoryEmpty">
+                        로그인 후 랭킹 액션을 반영하면 아이템이 드롭됩니다.
+                      </article>
+                    ) : (
+                      inventory.map((item) => (
+                        <article key={item.code} className="powerRankingInventoryCard">
+                          <div className="powerRankingInventoryVisual">
+                            <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
+                            <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                          </div>
+                          <div className="powerRankingInventoryBody">
+                            <div className="powerRankingInventoryHeading">
+                              <strong>{item.name}</strong>
+                              <span>소비 아이템</span>
+                            </div>
+                            <p>{item.description}</p>
+                            <div className="powerRankingInventoryTags">
+                              <span className="powerRankingInventoryPill">보유 수량 {item.quantity}</span>
+                            </div>
+                          </div>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="powerRankingInventoryGroup">
+                  <div className="powerRankingInventoryGroupHead">
+                    <strong>장비 보관함</strong>
+                    <span>기본 장비 드롭 확률 1%</span>
+                  </div>
+
+                  <div className="powerRankingInventoryGrid">
+                    {equipmentInventory.length === 0 ? (
+                      <article className="powerRankingInventoryEmpty">
+                        아직 획득한 장비가 없습니다. 추천을 반영해 장비를 모아보세요.
+                      </article>
+                    ) : (
+                      equipmentInventory.map((item) => (
+                        <PowerRankingEquipmentCard
+                          key={item.code}
+                          item={item}
+                          onEquipEquipment={handleEquipEquipment}
+                          equipSubmittingCode={
+                            submittingForId?.startsWith("equip-") ? submittingForId.replace("equip-", "") : null
+                          }
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
 

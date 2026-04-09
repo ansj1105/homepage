@@ -1077,93 +1077,120 @@ export const getHuntingProfile = async (userId: string): Promise<HuntingProfile>
     setMultiplier = 1.15;
   }
 
+  const weaponAttack = Math.max(90, 90 + Math.floor(recommendationCoefficient * 0.42));
+  let apparelPercentBonus = 0;
   let effectMultiplier = 1;
   let flatBonus = 0;
+  let dropRateMultiplier = 1;
+  let bossBonusRollRate = 0;
+  let autoGrowthMultiplier = 1;
+  let cardGrowthMultiplier = 1;
   const effectBreakdown: string[] = [];
 
   for (const item of equippedItems) {
     switch (item.code) {
       case "crown-of-cheers":
-        effectMultiplier *= 2;
-        effectBreakdown.push("환호의 왕관 x2.00");
+        cardGrowthMultiplier += 0.08;
+        effectBreakdown.push("환호의 왕관 카드 성장 x1.08");
         break;
       case "star-visor":
-        effectMultiplier *= 1.12;
-        effectBreakdown.push("별빛 바이저 x1.12");
+        cardGrowthMultiplier += 0.06;
+        effectBreakdown.push("별빛 바이저 카드 성장 x1.06");
         break;
       case "mint-beret":
-        effectMultiplier *= 1.08;
-        effectBreakdown.push("민트 베레모 x1.08");
+        dropRateMultiplier += 0.05;
+        effectBreakdown.push("민트 베레모 드랍 x1.05");
         break;
       case "commander-jacket":
-        effectMultiplier *= 1.18;
-        effectBreakdown.push("사령관 재킷 x1.18");
+        apparelPercentBonus += 0.18;
+        effectBreakdown.push("사령관 재킷 의상 피해 +18%");
         break;
       case "ribbon-cardigan":
-        effectMultiplier *= 1.1;
-        effectBreakdown.push("리본 가디건 x1.10");
+        apparelPercentBonus += 0.08;
+        dropRateMultiplier += 0.03;
+        effectBreakdown.push("리본 가디건 의상 피해 +8%");
         break;
       case "golden-harness":
         flatBonus += 20;
         effectBreakdown.push("골든 하네스 +20");
         break;
       case "midnight-slacks":
-        effectMultiplier *= 1.22;
-        effectBreakdown.push("미드나잇 슬랙스 x1.22");
+        apparelPercentBonus += 0.22;
+        effectBreakdown.push("미드나잇 슬랙스 의상 피해 +22%");
         break;
       case "wave-denim":
         flatBonus += 12;
         effectBreakdown.push("웨이브 데님 +12");
         break;
       case "aurora-skirt":
-        effectMultiplier *= 1.1;
-        effectBreakdown.push("오로라 스커트 x1.10");
+        apparelPercentBonus += 0.09;
+        effectBreakdown.push("오로라 스커트 의상 피해 +9%");
         break;
       case "thunder-boots":
-        flatBonus += 8;
-        effectBreakdown.push("썬더 부츠 +8");
+        autoGrowthMultiplier += 0.08;
+        flatBonus += 2;
+        effectBreakdown.push("썬더 부츠 자동 성장 x1.08");
         break;
       case "crystal-sneakers":
-        effectMultiplier *= 1.06;
-        effectBreakdown.push("크리스털 스니커즈 x1.06");
+        autoGrowthMultiplier += 0.06;
+        effectBreakdown.push("크리스털 스니커즈 자동 성장 x1.06");
         break;
       case "ember-heels":
-        effectMultiplier *= 1.07;
-        effectBreakdown.push("엠버 힐 x1.07");
+        autoGrowthMultiplier += 0.05;
+        flatBonus += 2;
+        effectBreakdown.push("엠버 힐 자동 성장 x1.05");
         break;
       case "titan-gauntlet":
-        effectMultiplier *= 1.18;
-        effectBreakdown.push("타이탄 건틀릿 x1.18");
+        flatBonus += 16;
+        effectBreakdown.push("타이탄 건틀릿 +16");
         break;
       case "silk-gloves":
-        flatBonus += 10;
-        effectBreakdown.push("실크 글러브 +10");
+        dropRateMultiplier += 0.04;
+        effectBreakdown.push("실크 글러브 드랍 x1.04");
         break;
       case "pulse-gloves":
-        effectMultiplier *= 1.05;
-        effectBreakdown.push("펄스 글러브 x1.05");
+        dropRateMultiplier += 0.06;
+        bossBonusRollRate += 0.08;
+        effectBreakdown.push("펄스 글러브 보스 추가 롤 +8%");
         break;
       default:
         break;
     }
   }
 
+  const apparelMultiplier = 1 + apparelPercentBonus;
+  dropRateMultiplier = Math.min(dropRateMultiplier, 1.18);
+  bossBonusRollRate = Math.min(bossBonusRollRate, 0.18);
+  autoGrowthMultiplier = Math.min(autoGrowthMultiplier, 1.16);
+  cardGrowthMultiplier = Math.min(cardGrowthMultiplier, 1.18);
+
   if (equippedCount >= 2) {
     effectBreakdown.unshift(`장비 세트 x${setMultiplier.toFixed(2)}`);
   }
+  if (apparelPercentBonus > 0) {
+    effectBreakdown.unshift(`상의/하의 합산 x${apparelMultiplier.toFixed(2)}`);
+  }
+  effectBreakdown.unshift(`자동 성장 배수 x${autoGrowthMultiplier.toFixed(2)}`);
+  effectBreakdown.unshift(`카드 성장 배수 x${cardGrowthMultiplier.toFixed(2)}`);
+  effectBreakdown.unshift(`무기 고정 공격력 ${weaponAttack}`);
 
-  const basePower = Math.max(10, recommendationCoefficient);
   const battlePower = Math.max(
     1,
-    Math.floor(basePower * setMultiplier * effectMultiplier + flatBonus)
+    Math.floor(weaponAttack * apparelMultiplier * setMultiplier * effectMultiplier + flatBonus)
   );
 
   return {
     recommendationCoefficient,
+    weaponAttack,
     battlePower,
+    apparelMultiplier,
     setMultiplier,
     effectMultiplier,
     flatBonus,
+    dropRateMultiplier,
+    bossBonusRollRate,
+    autoGrowthMultiplier,
+    cardGrowthMultiplier,
     effectBreakdown,
     equipmentInventory: equipmentState.inventory,
     equippedItems: equipmentState.equipped

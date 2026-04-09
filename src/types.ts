@@ -265,10 +265,16 @@ export interface PowerRankingEquipmentState {
 
 export interface HuntingProfile {
   recommendationCoefficient: number;
+  weaponAttack: number;
   battlePower: number;
+  apparelMultiplier: number;
   setMultiplier: number;
   effectMultiplier: number;
   flatBonus: number;
+  dropRateMultiplier: number;
+  bossBonusRollRate: number;
+  autoGrowthMultiplier: number;
+  cardGrowthMultiplier: number;
   effectBreakdown: string[];
   equipmentInventory: PowerRankingEquipmentInventoryItem[];
   equippedItems: Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>;

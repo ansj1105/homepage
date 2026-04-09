@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
+import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import type {
   PowerRankingEquipmentCode,
   PowerRankingEquipmentInventoryItem,
@@ -83,22 +84,12 @@ const EquipmentPage = () => {
               </article>
             ) : (
               equipmentInventory.map((item) => (
-                <article key={item.code} className="powerRankingInventoryCard">
-                  <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
-                  <div className="powerRankingInventoryBody">
-                    <strong>{item.name}</strong>
-                    <p>{item.description}</p>
-                    <span>{item.slot} · 보유 수량 {item.quantity}</span>
-                    <button
-                      type="button"
-                      className="powerRankingItemButton isPositive"
-                      disabled={submittingCode === item.code}
-                      onClick={() => void handleEquipEquipment(item.code)}
-                    >
-                      {submittingCode === item.code ? "착용 중..." : "착용"}
-                    </button>
-                  </div>
-                </article>
+                <PowerRankingEquipmentCard
+                  key={item.code}
+                  item={item}
+                  onEquipEquipment={handleEquipEquipment}
+                  equipSubmittingCode={submittingCode}
+                />
               ))
             )}
           </div>
