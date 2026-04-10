@@ -18,6 +18,7 @@ type CombatSession = {
   totalClicks: number;
   bossEntryUsageDate: string;
   bossEntryUsage: Record<string, number>;
+  activeBossEntryKey: string | null;
   attackBuffCharges: number;
   dropBuffKills: number;
   protectionCharges: number;
@@ -102,6 +103,7 @@ const createDefaultSession = (): CombatSession => {
     totalClicks: 0,
     bossEntryUsageDate: getTodayKey(),
     bossEntryUsage: {},
+    activeBossEntryKey: null,
     attackBuffCharges: 0,
     dropBuffKills: 0,
     protectionCharges: 0,
@@ -116,6 +118,7 @@ const getSession = (userId: string): CombatSession => {
     if (existing.bossEntryUsageDate !== getTodayKey()) {
       existing.bossEntryUsageDate = getTodayKey();
       existing.bossEntryUsage = {};
+      existing.activeBossEntryKey = null;
     }
     return existing;
   }
@@ -144,6 +147,7 @@ const syncSessionTarget = (session: CombatSession, zoneId?: string, monsterId?: 
     session.zoneId = targetZone.id;
     session.monsterId = targetMonster.id;
     session.currentHp = targetMonster.maxHp;
+    session.activeBossEntryKey = null;
     appendLog(session, `${targetZone.name} · ${targetMonster.name} 전투 준비 완료`);
   }
 };
@@ -295,8 +299,14 @@ export const clickCombat = (
   }
   if (zone.zoneType === "boss" && zone.dailyEntryLimit) {
     const used = session.bossEntryUsage[zone.id] ?? 0;
-    if (used >= zone.dailyEntryLimit) {
+    const currentBossEntryKey = `${zone.id}:${session.monsterId}`;
+    const needsBossEntry = session.activeBossEntryKey !== currentBossEntryKey;
+    if (needsBossEntry && used >= zone.dailyEntryLimit) {
       throw new Error("오늘 보스 사냥터 입장 제한을 모두 사용했습니다.");
+    }
+    if (needsBossEntry) {
+      session.bossEntryUsage[zone.id] = used + 1;
+      session.activeBossEntryKey = currentBossEntryKey;
     }
   }
 
@@ -310,9 +320,6 @@ export const clickCombat = (
   );
 
   session.totalClicks += zone.clickCost;
-  if (zone.zoneType === "boss" && zone.dailyEntryLimit) {
-    session.bossEntryUsage[zone.id] = (session.bossEntryUsage[zone.id] ?? 0) + 1;
-  }
   session.attackBuffCharges = Math.max(0, session.attackBuffCharges - 1);
   session.currentHp -= damage;
 
@@ -325,6 +332,7 @@ export const clickCombat = (
     rewards = rollRewards(profile, monster, session);
     expGained = monster.expReward;
     session.currentHp = monster.maxHp;
+    session.activeBossEntryKey = null;
     session.recentDrops = rewards;
     appendLog(
       session,
