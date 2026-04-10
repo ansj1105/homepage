@@ -4,6 +4,7 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { powerRankingEquipmentRarityLabels } from "../data/powerRankingEquipment";
+import { getBrowserAlertDisabled } from "../features/alertPreference";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { HuntingConsumableCode, HuntingMaterialCode, HuntingMiscCode } from "../features/huntingProgress";
 import type { MonsterCollectionEntry, PowerRankingEquipmentRarity, SetCollectionEntry } from "../types";
@@ -70,6 +71,7 @@ const CollectionPage = () => {
   const [monsters, setMonsters] = useState<MonsterCollectionEntry[]>([]);
   const [sets, setSets] = useState<SetCollectionEntry[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [exchangeResultModal, setExchangeResultModal] = useState<{ title: string; message: string } | null>(null);
   const [equippedCount, setEquippedCount] = useState(0);
   const { progress, setProgress } = useSyncedHuntingProgress(user?.id);
 
@@ -196,6 +198,12 @@ const CollectionPage = () => {
       };
     });
     setErrorMessage(`${recipe.name} 교환 완료`);
+    if (!getBrowserAlertDisabled()) {
+      setExchangeResultModal({
+        title: "교환에 성공했습니다.",
+        message: `${recipe.name} 교환이 완료되었습니다. 보상은 인벤토리에서 바로 확인할 수 있습니다.`
+      });
+    }
   };
 
   const monsterCards = monsters.map((monster, index) => {
@@ -442,6 +450,29 @@ const CollectionPage = () => {
             </button>
           </div>
         </section>
+        {exchangeResultModal ? (
+          <div className="powerRankingResultModalBackdrop" role="presentation" onClick={() => setExchangeResultModal(null)}>
+            <section
+              className="powerRankingResultModal isSuccess"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="collection-exchange-modal-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="powerRankingResultModalVisual">
+                <img src="/assets/shops/campus-shopkeeper.svg" alt="교환소 NPC" className="powerRankingResultModalNpcImage" />
+              </div>
+              <div className="powerRankingResultModalBody">
+                <h2 id="collection-exchange-modal-title">{exchangeResultModal.title}</h2>
+                <p>동연 상점지기 민트</p>
+                <p>{exchangeResultModal.message}</p>
+                <button type="button" className="powerRankingItemButton isPositive" onClick={() => setExchangeResultModal(null)}>
+                  확인
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </div>
     </div>
   );
