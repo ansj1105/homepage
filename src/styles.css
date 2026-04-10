@@ -7601,11 +7601,19 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingScoreChart {
   width: 100%;
-  height: 160px;
+  height: 176px;
   overflow: visible;
   display: block;
   padding: 8px 0;
-  background: linear-gradient(180deg, #fcfdff, #eef4fb);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 247, 255, 0.98)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(209, 224, 242, 0.32) 0,
+      rgba(209, 224, 242, 0.32) 1px,
+      transparent 1px,
+      transparent 10%
+    );
   border: 1px solid #d3e1f0;
 }
 
@@ -7620,18 +7628,54 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingScoreChartLine {
-  stroke: #1f4fa9;
-  stroke-width: 3;
+  stroke-width: 1.35;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 2px 6px rgba(31, 79, 169, 0.16));
+  opacity: 0.88;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLine.isPositive {
+  stroke: #d7263d;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLine.isNegative {
+  stroke: #1f4fa9;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartWick {
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.92;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartWick.isPositive {
+  stroke: #d7263d;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartWick.isNegative {
+  stroke: #1f4fa9;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartCandle {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 0.8;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartCandle.isPositive {
+  fill: #ef3340;
+  stroke: #d7263d;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartCandle.isNegative {
+  fill: #255fe5;
+  stroke: #1f4fa9;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartDot {
-  fill: #ffffff;
-  stroke: #1f4fa9;
-  stroke-width: 1.8;
+  fill: #1f4fa9;
+  stroke: #ffffff;
+  stroke-width: 0.8;
   vector-effect: non-scaling-stroke;
 }
 
@@ -8830,7 +8874,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   }
 
   .powerRankingPageMaple .powerRankingScoreChart {
-    height: 132px;
+    height: 148px;
   }
 
   .powerRankingPageMaple .powerRankingScoreChartLabels {

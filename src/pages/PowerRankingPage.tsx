@@ -91,6 +91,7 @@ type ScoreChartPoint = {
   y: number;
   score: number;
   label: string;
+  delta: number;
 };
 
 type ScoreChartRange = "1d" | "7d" | "30d";
@@ -124,7 +125,8 @@ const buildScoreChartPoints = (
         x: 50,
         y: 50,
         score: person.score,
-        label: `${getScoreChartRangeLabel(range)} 변화 없음`
+        label: `${getScoreChartRangeLabel(range)} 변화 없음`,
+        delta: 0
       }
     ];
   }
@@ -154,7 +156,8 @@ const buildScoreChartPoints = (
     label:
       index === 0
         ? `${getScoreChartRangeLabel(range)} 시작`
-        : formatDateTime(recentEvents[index - 1]?.createdAt ?? "") || `변화 ${index}`
+        : formatDateTime(recentEvents[index - 1]?.createdAt ?? "") || `변화 ${index}`,
+    delta: index === 0 ? 0 : recentEvents[index - 1]?.delta ?? 0
   }));
 };
 
@@ -1181,7 +1184,6 @@ const PowerRankingPage = () => {
                     const officialRank = person.rank;
                     const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
                     const scoreChartPoints = buildScoreChartPoints(person, eventLogs, scoreChartRange);
-                    const chartPolylinePoints = scoreChartPoints.map((point) => `${point.x},${point.y}`).join(" ");
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
@@ -1361,22 +1363,62 @@ const PowerRankingPage = () => {
                             </div>
                             <div className="powerRankingScoreChartWrap">
                               <svg viewBox="0 0 100 100" className="powerRankingScoreChart" preserveAspectRatio="none" aria-label="점수 변화 차트">
-                                <line x1="8" y1="92" x2="92" y2="92" className="powerRankingScoreChartGridLine" />
-                                <line x1="8" y1="50" x2="92" y2="50" className="powerRankingScoreChartGridLine isMid" />
+                                <line x1="8" y1="88" x2="92" y2="88" className="powerRankingScoreChartGridLine" />
+                                <line x1="8" y1="61.33" x2="92" y2="61.33" className="powerRankingScoreChartGridLine isMid" />
+                                <line x1="8" y1="34.66" x2="92" y2="34.66" className="powerRankingScoreChartGridLine isMid" />
                                 <line x1="8" y1="8" x2="92" y2="8" className="powerRankingScoreChartGridLine" />
-                                <polyline
-                                  fill="none"
-                                  points={chartPolylinePoints}
-                                  className="powerRankingScoreChartLine"
-                                />
+                                {scoreChartPoints.map((point, index) => {
+                                  if (index === 0) {
+                                    return null;
+                                  }
+                                  const previousPoint = scoreChartPoints[index - 1];
+                                  const isPositive = point.delta >= 0;
+                                  const top = Math.min(previousPoint.y, point.y);
+                                  const bottom = Math.max(previousPoint.y, point.y);
+                                  const centerY = (previousPoint.y + point.y) / 2;
+                                  const bodyHeight = Math.max(3.6, bottom - top);
+                                  const bodyY = centerY - bodyHeight / 2;
+                                  const wickTop = Math.max(8, top - 5);
+                                  const wickBottom = Math.min(92, bottom + 5);
+                                  const toneClass = isPositive ? "isPositive" : "isNegative";
+
+                                  return (
+                                    <g key={`${person.id}-chart-segment-${index}`}>
+                                      <line
+                                        x1={previousPoint.x}
+                                        y1={previousPoint.y}
+                                        x2={point.x}
+                                        y2={point.y}
+                                        className={`powerRankingScoreChartLine ${toneClass}`.trim()}
+                                      />
+                                      <line
+                                        x1={point.x}
+                                        y1={wickTop}
+                                        x2={point.x}
+                                        y2={wickBottom}
+                                        className={`powerRankingScoreChartWick ${toneClass}`.trim()}
+                                      />
+                                      <rect
+                                        x={point.x - 1.15}
+                                        y={bodyY}
+                                        width={2.3}
+                                        height={bodyHeight}
+                                        rx={0.45}
+                                        className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
+                                      />
+                                    </g>
+                                  );
+                                })}
                                 {scoreChartPoints.map((point, index) => (
                                   <g key={`${person.id}-chart-${index}`}>
-                                    <circle
-                                      cx={point.x}
-                                      cy={point.y}
-                                      r="1.9"
-                                      className="powerRankingScoreChartDot"
-                                    />
+                                    {index === 0 ? (
+                                      <circle
+                                        cx={point.x}
+                                        cy={point.y}
+                                        r="0.95"
+                                        className="powerRankingScoreChartDot"
+                                      />
+                                    ) : null}
                                   </g>
                                 ))}
                               </svg>
