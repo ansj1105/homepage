@@ -21,6 +21,18 @@ export const VisitorProvider = ({ children }: PropsWithChildren) => {
   const location = useLocation();
   const [todayVisitors, setTodayVisitors] = useState(0);
 
+  const trackVisitor = async () => {
+    try {
+      const result = await apiClient.trackTodayVisitor({
+        deviceId: getOrCreateDeviceId(),
+        path: `${location.pathname}${location.search}`
+      });
+      setTodayVisitors(result.todayVisitors);
+    } catch {
+      void refreshVisitors();
+    }
+  };
+
   const refreshVisitors = async () => {
     try {
       const result = await apiClient.getTodayVisitors();
@@ -31,29 +43,28 @@ export const VisitorProvider = ({ children }: PropsWithChildren) => {
   };
 
   useEffect(() => {
-    void apiClient
-      .trackTodayVisitor({
-        deviceId: getOrCreateDeviceId(),
-        path: `${location.pathname}${location.search}`
-      })
-      .then((result) => setTodayVisitors(result.todayVisitors))
-      .catch(() => {
-        void refreshVisitors();
-      });
+    void trackVisitor();
   }, [location.pathname, location.search]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      void apiClient
-        .trackTodayVisitor({
-          deviceId: getOrCreateDeviceId(),
-          path: `${location.pathname}${location.search}`
-        })
-        .then((result) => setTodayVisitors(result.todayVisitors))
-        .catch(() => undefined);
-    }, 60_000);
+      void trackVisitor();
+    }, 30_000);
 
-    return () => window.clearInterval(intervalId);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void trackVisitor();
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [location.pathname, location.search]);
 
   const value = useMemo<VisitorContextValue>(

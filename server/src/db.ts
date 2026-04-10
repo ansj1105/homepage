@@ -2580,8 +2580,7 @@ export const getLiveVisitorSummary = async (windowMinutes = 5): Promise<LiveVisi
         ORDER BY sessions.last_used_at DESC, sessions.updated_at DESC
         LIMIT 1
       ) AS session_user ON TRUE
-      WHERE visits.visit_date = CURRENT_DATE
-        AND visits.last_visited_at >= NOW() - make_interval(mins => $1::int)
+      WHERE visits.last_visited_at >= NOW() - make_interval(mins => $1::int)
       ORDER BY visits.last_visited_at DESC
       LIMIT 8`,
     [windowMinutes]
