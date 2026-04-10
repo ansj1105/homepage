@@ -6,6 +6,8 @@ export type HuntingDropCode =
   | "refined-stone"
   | "ancient-core"
   | "healing-potion"
+  | "energy-bar"
+  | "energy-drink"
   | "berserk-tonic"
   | "lucky-scroll"
   | "protection-scroll";
@@ -99,7 +101,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "골드", rate: 1, min: 18, max: 34 },
           { kind: "material", code: "enhancement-stone", label: "낡은 모자", rate: 0.32, min: 1, max: 1 },
-          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.16, min: 1, max: 1 }
+          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.16, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.44, min: 1, max: 1 }
         ]
       },
       {
@@ -118,7 +121,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "골드", rate: 1, min: 22, max: 38 },
           { kind: "material", code: "enhancement-stone", label: "낡은 모자", rate: 0.22, min: 1, max: 1 },
-          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.2, min: 1, max: 1 }
+          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.2, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.36, min: 1, max: 1 }
         ]
       },
       {
@@ -137,7 +141,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "골드", rate: 1, min: 28, max: 45 },
           { kind: "material", code: "enhancement-stone", label: "초보 장갑", rate: 0.28, min: 1, max: 1 },
-          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.12, min: 1, max: 1 }
+          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.12, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.34, min: 1, max: 1 }
         ]
       },
       {
@@ -157,7 +162,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "골드", rate: 1, min: 40, max: 70 },
           { kind: "material", code: "enhancement-stone", label: "낡은 모자", rate: 0.4, min: 1, max: 1 },
           { kind: "material", code: "refined-stone", label: "초보 장갑", rate: 0.22, min: 1, max: 1 },
-          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.2, min: 1, max: 1 }
+          { kind: "consumable", code: "healing-potion", label: "작은 회복 물약", rate: 0.2, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.52, min: 1, max: 2 }
         ]
       }
     ]
@@ -190,7 +196,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "철광석", rate: 1, min: 60, max: 95 },
           { kind: "material", code: "enhancement-stone", label: "강화석", rate: 0.66, min: 2, max: 4 },
-          { kind: "material", code: "refined-stone", label: "중급 강화석", rate: 0.3, min: 1, max: 2 }
+          { kind: "material", code: "refined-stone", label: "중급 강화석", rate: 0.3, min: 1, max: 2 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.34, min: 1, max: 1 }
         ]
       },
       {
@@ -210,7 +217,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "철광석", rate: 1, min: 85, max: 120 },
           { kind: "material", code: "enhancement-stone", label: "강화석", rate: 0.58, min: 2, max: 5 },
           { kind: "consumable", code: "protection-scroll", label: "두꺼운 장화", rate: 0.12, min: 1, max: 1 },
-          { kind: "consumable", code: "berserk-tonic", label: "광부 장갑", rate: 0.08, min: 1, max: 1 }
+          { kind: "consumable", code: "berserk-tonic", label: "광부 장갑", rate: 0.08, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.28, min: 1, max: 2 }
         ]
       },
       {
@@ -230,7 +238,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "철광석", rate: 1, min: 100, max: 150 },
           { kind: "material", code: "enhancement-stone", label: "강화석", rate: 0.72, min: 3, max: 5 },
           { kind: "material", code: "refined-stone", label: "중급 강화석", rate: 0.34, min: 1, max: 2 },
-          { kind: "consumable", code: "protection-scroll", label: "광부 장갑", rate: 0.18, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "광부 장갑", rate: 0.18, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.22, min: 1, max: 1 }
         ]
       }
     ]
@@ -264,7 +273,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "기사단 세트 조각", rate: 1, min: 140, max: 200 },
           { kind: "material", code: "enhancement-stone", label: "중급 강화석", rate: 0.82, min: 4, max: 7 },
-          { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.14, min: 1, max: 1 }
+          { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.14, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.26, min: 1, max: 1 }
         ]
       },
       {
@@ -284,7 +294,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "기사단 세트 조각", rate: 1, min: 170, max: 240 },
           { kind: "material", code: "refined-stone", label: "중급 강화석", rate: 0.44, min: 1, max: 3 },
           { kind: "consumable", code: "lucky-scroll", label: "보스 카드 조각", rate: 0.2, min: 1, max: 1 },
-          { kind: "consumable", code: "protection-scroll", label: "기사단 문장", rate: 0.16, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "기사단 문장", rate: 0.16, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.18, min: 1, max: 1 }
         ]
       },
       {
@@ -305,7 +316,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "enhancement-stone", label: "중급 강화석", rate: 0.88, min: 5, max: 8 },
           { kind: "material", code: "refined-stone", label: "기사단 휘장", rate: 0.5, min: 2, max: 3 },
           { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.22, min: 1, max: 2 },
-          { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.24, min: 1, max: 1 }
         ]
       },
       {
@@ -326,7 +338,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "enhancement-stone", label: "중급 강화석", rate: 0.92, min: 5, max: 8 },
           { kind: "material", code: "refined-stone", label: "기사단 휘장", rate: 0.52, min: 2, max: 3 },
           { kind: "material", code: "ancient-core", label: "보스 카드 조각", rate: 0.28, min: 1, max: 2 },
-          { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "기사단 봉인서", rate: 0.2, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.28, min: 1, max: 1 }
         ]
       }
     ]
@@ -359,7 +372,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "골드 주머니", rate: 1, min: 260, max: 360 },
           { kind: "material", code: "enhancement-stone", label: "희귀 재료", rate: 0.92, min: 5, max: 9 },
-          { kind: "consumable", code: "healing-potion", label: "수확 물약", rate: 0.24, min: 1, max: 2 }
+          { kind: "consumable", code: "healing-potion", label: "수확 물약", rate: 0.24, min: 1, max: 2 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.42, min: 1, max: 2 }
         ]
       },
       {
@@ -379,7 +393,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "골드 주머니", rate: 1, min: 280, max: 390 },
           { kind: "material", code: "refined-stone", label: "수확자 세트 조각", rate: 0.52, min: 2, max: 3 },
           { kind: "consumable", code: "berserk-tonic", label: "희귀 재료", rate: 0.18, min: 1, max: 1 },
-          { kind: "consumable", code: "protection-scroll", label: "황금 밀 이삭", rate: 0.18, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "황금 밀 이삭", rate: 0.18, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.34, min: 1, max: 2 }
         ]
       },
       {
@@ -400,7 +415,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "enhancement-stone", label: "희귀 재료", rate: 0.95, min: 6, max: 10 },
           { kind: "material", code: "ancient-core", label: "수확자 세트 조각", rate: 0.28, min: 1, max: 2 },
           { kind: "consumable", code: "lucky-scroll", label: "황금 깃발", rate: 0.22, min: 1, max: 1 },
-          { kind: "consumable", code: "protection-scroll", label: "곡물 인장", rate: 0.24, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "곡물 인장", rate: 0.24, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.3, min: 1, max: 1 }
         ]
       }
     ]
@@ -435,7 +451,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
         dropTable: [
           { kind: "material", code: "club-coin", label: "팬레터", rate: 1, min: 420, max: 560 },
           { kind: "material", code: "refined-stone", label: "바이럴 티켓", rate: 0.64, min: 2, max: 4 },
-          { kind: "material", code: "ancient-core", label: "아이돌 세트 조각", rate: 0.32, min: 1, max: 2 }
+          { kind: "material", code: "ancient-core", label: "아이돌 세트 조각", rate: 0.32, min: 1, max: 2 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.38, min: 1, max: 2 }
         ]
       },
       {
@@ -455,7 +472,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "club-coin", label: "팬레터", rate: 1, min: 460, max: 620 },
           { kind: "material", code: "enhancement-stone", label: "아이돌 세트 조각", rate: 0.98, min: 7, max: 11 },
           { kind: "consumable", code: "berserk-tonic", label: "바이럴 티켓", rate: 0.24, min: 1, max: 1 },
-          { kind: "consumable", code: "lucky-scroll", label: "응원봉 배지", rate: 0.24, min: 1, max: 1 }
+          { kind: "consumable", code: "lucky-scroll", label: "응원봉 배지", rate: 0.24, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.26, min: 1, max: 1 }
         ]
       },
       {
@@ -476,7 +494,8 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "enhancement-stone", label: "아이돌 세트 조각", rate: 1, min: 8, max: 12 },
           { kind: "material", code: "refined-stone", label: "바이럴 티켓", rate: 0.72, min: 3, max: 5 },
           { kind: "material", code: "ancient-core", label: "한정 포토카드", rate: 0.38, min: 1, max: 3 },
-          { kind: "consumable", code: "protection-scroll", label: "무대 출입 패스", rate: 0.28, min: 1, max: 1 }
+          { kind: "consumable", code: "protection-scroll", label: "무대 출입 패스", rate: 0.28, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.34, min: 1, max: 1 }
         ]
       }
     ]
