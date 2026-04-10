@@ -8158,6 +8158,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-weight: 800;
 }
 
+.powerRankingPageMaple .powerRankingScoreChartAxisText.isXAxis {
+  font-size: 4.2px;
+}
+
 .powerRankingPageMaple .powerRankingScoreChartGridLine {
   stroke: #d7e4f1;
   stroke-width: 1;
@@ -8211,28 +8215,6 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingScoreChartCandle.isNegative {
   fill: #255fe5;
   stroke: #1f4fa9;
-}
-
-.powerRankingPageMaple .powerRankingScoreChartLabels {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(88px, max-content);
-  gap: 10px;
-  padding-bottom: 2px;
-}
-
-.powerRankingPageMaple .powerRankingScoreChartLabel {
-  display: grid;
-  gap: 3px;
-  padding-top: 8px;
-  border-top: 1px solid #d3e1f0;
-}
-
-.powerRankingPageMaple .powerRankingScoreChartLabel span {
-  color: #4f6580;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.4;
 }
 
 @media (max-width: 720px) {
@@ -9839,10 +9821,6 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingScoreChart {
     height: 148px;
-  }
-
-  .powerRankingPageMaple .powerRankingScoreChartLabels {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .powerRankingPageMaple .powerRankingEquipmentEnhancementList li {

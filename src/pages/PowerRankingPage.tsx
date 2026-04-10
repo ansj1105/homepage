@@ -138,6 +138,7 @@ const CHART_PADDING_LEFT = 42;
 const CHART_PADDING_RIGHT = 12;
 const CHART_PADDING_TOP = 8;
 const CHART_PADDING_BOTTOM = 18;
+const CHART_LABEL_ROW_Y = 96;
 const SCORE_CHART_RANGE_DAYS: Record<ScoreChartRange, number> = {
   minute: 1,
   day: 30,
@@ -402,6 +403,17 @@ const PowerRankingScoreChartPanel = ({
   );
   const scoreChartCandles = scoreChartData.candles;
   const scoreChartWidth = getScoreChartCanvasWidth(scoreChartCandles.length);
+  const xAxisLabels = scoreChartCandles.filter((_, index) => {
+    const step =
+      scoreChartCandles.length > 240
+        ? Math.ceil(scoreChartCandles.length / 10)
+        : scoreChartCandles.length > 96
+          ? Math.ceil(scoreChartCandles.length / 8)
+          : scoreChartCandles.length > 36
+            ? Math.ceil(scoreChartCandles.length / 6)
+            : 1;
+    return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
+  });
 
   return (
     <article className="powerRankingLogCard powerRankingScoreChartCard">
@@ -511,26 +523,18 @@ const PowerRankingScoreChartPanel = ({
                 </g>
               );
             })}
+            {xAxisLabels.map((candle, index) => (
+              <text
+                key={`${person.id}-x-label-${index}`}
+                x={candle.x}
+                y={CHART_LABEL_ROW_Y}
+                textAnchor={index === 0 ? "start" : index === xAxisLabels.length - 1 ? "end" : "middle"}
+                className="powerRankingScoreChartAxisText isXAxis"
+              >
+                {formatScoreTimeLabel(candle.timestamp, scoreChartRange)}
+              </text>
+            ))}
           </svg>
-          <div className="powerRankingScoreChartLabels">
-            {scoreChartCandles
-              .filter((_, index) => {
-                const step =
-                  scoreChartCandles.length > 240
-                    ? Math.ceil(scoreChartCandles.length / 10)
-                    : scoreChartCandles.length > 96
-                      ? Math.ceil(scoreChartCandles.length / 8)
-                      : scoreChartCandles.length > 36
-                        ? Math.ceil(scoreChartCandles.length / 6)
-                        : 1;
-                return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
-              })
-              .map((candle, index) => (
-                <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
-                  <span>{formatScoreTimeLabel(candle.timestamp, scoreChartRange)}</span>
-                </div>
-              ))}
-          </div>
         </div>
       </div>
     </article>
@@ -685,6 +689,7 @@ const PowerRankingPage = () => {
   const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
   const [scoreChartRanges, setScoreChartRanges] = useState<Record<string, ScoreChartRange>>({});
   const [visibleCharts, setVisibleCharts] = useState<Record<string, boolean>>({});
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [selectedFaction, setSelectedFaction] = useState<PowerRankingFaction>(() => {
     if (typeof window === "undefined") {
       return "blue";
@@ -1647,8 +1652,18 @@ const PowerRankingPage = () => {
                       <details
                         key={person.id}
                         className={`powerRankingRow ${officialRank <= 3 ? `powerRankingRowTop${officialRank}` : ""}`.trim()}
+                        open={openRows[person.id] ?? false}
                       >
-                        <summary className="powerRankingRowSummary">
+                        <summary
+                          className="powerRankingRowSummary"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            setOpenRows((current) => ({
+                              ...current,
+                              [person.id]: !current[person.id]
+                            }));
+                          }}
+                        >
                           <div className="powerRankingRowRank">
                             <span className="powerRankingRowLabel">순위</span>
                             <strong>#{officialRank}</strong>
