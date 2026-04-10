@@ -114,6 +114,13 @@ const SCORE_CHART_RANGE_DAYS: Record<ScoreChartRange, number> = {
   "30d": 30
 };
 
+const getScoreChartCanvasWidth = (count: number): number => {
+  if (count <= 24) {
+    return 100;
+  }
+  return Math.max(100, 24 + count * 2.4);
+};
+
 const getScoreChartRangeLabel = (range: ScoreChartRange): string => {
   if (range === "1d") return "1일";
   if (range === "7d") return "7일";
@@ -202,16 +209,18 @@ const buildScoreChartCandles = (
   const minScore = Math.min(...rawCandles.flatMap((candle) => [candle.low, candle.high]));
   const maxScore = Math.max(...rawCandles.flatMap((candle) => [candle.low, candle.high]));
   const scoreRange = Math.max(1, maxScore - minScore);
-  const usableSize = 100 - CHART_PADDING * 2;
+  const usableHeight = 100 - CHART_PADDING * 2;
+  const canvasWidth = getScoreChartCanvasWidth(rawCandles.length);
+  const usableWidth = canvasWidth - CHART_PADDING * 2;
 
   return rawCandles.map((candle, index) => {
     const x =
       rawCandles.length === 1
         ? 50
-        : CHART_PADDING + (index / (rawCandles.length - 1)) * usableSize;
+        : CHART_PADDING + (index / (rawCandles.length - 1)) * usableWidth;
 
     const toY = (value: number) =>
-      CHART_PADDING + (1 - (value - minScore) / scoreRange) * usableSize;
+      CHART_PADDING + (1 - (value - minScore) / scoreRange) * usableHeight;
 
     return {
       x,
@@ -1335,6 +1344,7 @@ const PowerRankingPage = () => {
                     const officialRank = person.rank;
                     const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
                     const scoreChartCandles = buildScoreChartCandles(person, eventLogs, scoreChartRange);
+                    const scoreChartWidth = getScoreChartCanvasWidth(scoreChartCandles.length);
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
@@ -1571,74 +1581,86 @@ const PowerRankingPage = () => {
                               </div>
                             </div>
                             <div className="powerRankingScoreChartWrap">
-                              <svg viewBox="0 0 100 100" className="powerRankingScoreChart" preserveAspectRatio="none" aria-label="점수 변화 차트">
-                                <line x1="8" y1="88" x2="92" y2="88" className="powerRankingScoreChartGridLine" />
-                                <line x1="8" y1="61.33" x2="92" y2="61.33" className="powerRankingScoreChartGridLine isMid" />
-                                <line x1="8" y1="34.66" x2="92" y2="34.66" className="powerRankingScoreChartGridLine isMid" />
-                                <line x1="8" y1="8" x2="92" y2="8" className="powerRankingScoreChartGridLine" />
-                                {scoreChartCandles.map((candle, index) => {
-                                  const previousCandle = scoreChartCandles[index - 1];
-                                  const isPositive = candle.close >= candle.open;
-                                  const top = Math.min(candle.openY, candle.closeY);
-                                  const bottom = Math.max(candle.openY, candle.closeY);
-                                  const bodyHeight = Math.max(2.2, bottom - top);
-                                  const toneClass = isPositive ? "isPositive" : "isNegative";
-                                  const bodyWidth = scoreChartCandles.length > 180 ? 0.48 : scoreChartCandles.length > 60 ? 0.72 : scoreChartCandles.length > 24 ? 1.05 : 1.45;
+                              <div className="powerRankingScoreChartCanvas" style={{ width: `${scoreChartWidth}px` }}>
+                                <svg
+                                  viewBox={`0 0 ${scoreChartWidth} 100`}
+                                  className="powerRankingScoreChart"
+                                  aria-label="점수 변화 차트"
+                                >
+                                  <line x1="8" y1="88" x2={scoreChartWidth - 8} y2="88" className="powerRankingScoreChartGridLine" />
+                                  <line x1="8" y1="61.33" x2={scoreChartWidth - 8} y2="61.33" className="powerRankingScoreChartGridLine isMid" />
+                                  <line x1="8" y1="34.66" x2={scoreChartWidth - 8} y2="34.66" className="powerRankingScoreChartGridLine isMid" />
+                                  <line x1="8" y1="8" x2={scoreChartWidth - 8} y2="8" className="powerRankingScoreChartGridLine" />
+                                  {scoreChartCandles.map((candle, index) => {
+                                    const previousCandle = scoreChartCandles[index - 1];
+                                    const nextCandle = scoreChartCandles[index + 1];
+                                    const isPositive = candle.close >= candle.open;
+                                    const top = Math.min(candle.openY, candle.closeY);
+                                    const bottom = Math.max(candle.openY, candle.closeY);
+                                    const bodyHeight = Math.max(2.2, bottom - top);
+                                    const toneClass = isPositive ? "isPositive" : "isNegative";
+                                    const localStep = nextCandle
+                                      ? nextCandle.x - candle.x
+                                      : previousCandle
+                                        ? candle.x - previousCandle.x
+                                        : 2.4;
+                                    const bodyWidth = Math.max(1.3, Math.min(3.6, localStep * 0.82));
 
-                                  return (
-                                    <g key={`${person.id}-chart-segment-${index}`}>
-                                      {previousCandle ? (
+                                    return (
+                                      <g key={`${person.id}-chart-segment-${index}`}>
+                                        {previousCandle ? (
+                                          <line
+                                            x1={previousCandle.x}
+                                            y1={previousCandle.closeY}
+                                            x2={candle.x}
+                                            y2={candle.closeY}
+                                            className={`powerRankingScoreChartLine ${toneClass}`.trim()}
+                                          />
+                                        ) : null}
                                         <line
-                                          x1={previousCandle.x}
-                                          y1={previousCandle.closeY}
+                                          x1={candle.x}
+                                          y1={candle.highY}
                                           x2={candle.x}
-                                          y2={candle.closeY}
-                                          className={`powerRankingScoreChartLine ${toneClass}`.trim()}
+                                          y2={candle.lowY}
+                                          className={`powerRankingScoreChartWick ${toneClass}`.trim()}
+                                        />
+                                        <rect
+                                          x={candle.x - bodyWidth / 2}
+                                          y={top}
+                                          width={bodyWidth}
+                                          height={bodyHeight}
+                                          rx={0.2}
+                                          className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
+                                        />
+                                      </g>
+                                    );
+                                  })}
+                                  {scoreChartCandles.map((candle, index) => (
+                                    <g key={`${person.id}-chart-${index}`}>
+                                      {index === 0 ? (
+                                        <circle
+                                          cx={candle.x}
+                                          cy={candle.openY}
+                                          r="0.45"
+                                          className="powerRankingScoreChartDot"
                                         />
                                       ) : null}
-                                      <line
-                                        x1={candle.x}
-                                        y1={candle.highY}
-                                        x2={candle.x}
-                                        y2={candle.lowY}
-                                        className={`powerRankingScoreChartWick ${toneClass}`.trim()}
-                                      />
-                                      <rect
-                                        x={candle.x - bodyWidth / 2}
-                                        y={top}
-                                        width={bodyWidth}
-                                        height={bodyHeight}
-                                        rx={0.2}
-                                        className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
-                                      />
                                     </g>
-                                  );
-                                })}
-                                {scoreChartCandles.map((candle, index) => (
-                                  <g key={`${person.id}-chart-${index}`}>
-                                    {index === 0 ? (
-                                      <circle
-                                        cx={candle.x}
-                                        cy={candle.openY}
-                                        r="0.55"
-                                        className="powerRankingScoreChartDot"
-                                      />
-                                    ) : null}
-                                  </g>
-                                ))}
-                              </svg>
-                              <div className="powerRankingScoreChartLabels">
-                                {scoreChartCandles
-                                  .filter((_, index) => {
-                                    const step = scoreChartCandles.length > 24 ? Math.ceil(scoreChartCandles.length / 6) : 1;
-                                    return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
-                                  })
-                                  .map((candle, index) => (
-                                    <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
-                                      <strong>{candle.close}</strong>
-                                      <span>{candle.label}</span>
-                                    </div>
                                   ))}
+                                </svg>
+                                <div className="powerRankingScoreChartLabels">
+                                  {scoreChartCandles
+                                    .filter((_, index) => {
+                                      const step = scoreChartCandles.length > 72 ? Math.ceil(scoreChartCandles.length / 8) : scoreChartCandles.length > 24 ? Math.ceil(scoreChartCandles.length / 6) : 1;
+                                      return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
+                                    })
+                                    .map((candle, index) => (
+                                      <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
+                                        <strong>{candle.close}</strong>
+                                        <span>{candle.label}</span>
+                                      </div>
+                                    ))}
+                                </div>
                               </div>
                             </div>
                           </article>

@@ -7715,8 +7715,15 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingScoreChartWrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartCanvas {
   display: grid;
   gap: 12px;
+  min-width: 100%;
 }
 
 .powerRankingPageMaple .powerRankingScoreChart {
@@ -7724,7 +7731,6 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   height: 176px;
   overflow: visible;
   display: block;
-  padding: 8px 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 247, 255, 0.98)),
     repeating-linear-gradient(
@@ -7802,9 +7808,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingScoreChartLabels {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(88px, 1fr);
+  grid-auto-columns: minmax(88px, max-content);
   gap: 10px;
-  overflow-x: auto;
   padding-bottom: 2px;
 }
 
