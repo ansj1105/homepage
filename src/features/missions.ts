@@ -22,9 +22,9 @@ export const getDailyMissions = (progress: HuntingProgress): MissionEntry[] => [
     label: "클릭 100회 달성",
     current: progress.todayClickCount,
     target: 100,
-    rewardSummary: "골드 +120 / 에너지 바 +1",
+    rewardSummary: "동연 코인 +120 / 에너지 바 +1",
     rewards: [
-      { kind: "material", code: "club-coin", amount: 120, label: "골드 +120" },
+      { kind: "material", code: "club-coin", amount: 120, label: "동연 코인 +120" },
       { kind: "consumable", code: "energy-bar", amount: 1, label: "에너지 바 +1" }
     ],
     claimed: progress.claimedDailyMissionIds.includes("daily-click-100")
@@ -93,9 +93,9 @@ export const getWeeklyMissions = (
     label: "희귀 장비 3개 획득",
     current: ownedEquipmentCount,
     target: 3,
-    rewardSummary: "골드 +250 / 카드 조각 +5",
+    rewardSummary: "동연 코인 +250 / 카드 조각 +5",
     rewards: [
-      { kind: "material", code: "club-coin", amount: 250, label: "골드 +250" },
+      { kind: "material", code: "club-coin", amount: 250, label: "동연 코인 +250" },
       { kind: "material", code: "card-shard", amount: 5, label: "카드 조각 +5" }
     ],
     claimed: progress.claimedWeeklyMissionIds.includes("weekly-rare-equip-3")

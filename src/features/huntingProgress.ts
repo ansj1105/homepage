@@ -79,7 +79,7 @@ const getWeekDateKey = (): string => {
 };
 
 export const materialMeta: Record<HuntingMaterialCode, { name: string; description: string }> = {
-  "club-coin": { name: "골드", description: "사냥터 경제의 기본 화폐입니다." },
+  "club-coin": { name: "동연 코인", description: "사냥터 경제와 상점에 쓰이는 기본 화폐입니다." },
   gem: { name: "젬", description: "상점과 이벤트 교환에 쓰이는 상위 재화입니다." },
   "enhancement-stone": { name: "강화석", description: "장비 강화의 기본 재료입니다." },
   "refined-stone": { name: "고급 강화석", description: "+8 이상 강화 보조 재료로 사용됩니다." },

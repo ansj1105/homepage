@@ -80,7 +80,7 @@ const ShopPage = () => {
           {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
           <div className="powerRankingDashboardGrid">
             <article className="powerRankingDashboardCard">
-              <span>보유 코인</span>
+              <span>보유 동연 코인</span>
               <strong>{progress?.materials["club-coin"] ?? 0}</strong>
               <p>상점과 강화의 공용 화폐입니다.</p>
             </article>
