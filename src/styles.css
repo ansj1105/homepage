@@ -6406,6 +6406,21 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   box-shadow: 0 10px 24px rgba(16, 36, 63, 0.18);
 }
 
+.powerRankingPageMaple .powerRankingEquippedBadge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #18457e;
+  background: #18457e;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .powerRankingPageMaple .powerRankingInventoryBody {
   display: grid;
   gap: 8px;
@@ -6464,8 +6479,57 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-weight: 800;
 }
 
+.powerRankingPageMaple .powerRankingInventoryPill.isEquipped {
+  border-color: #18457e;
+  background: #e8f1ff;
+  color: #18457e;
+}
+
 .powerRankingPageMaple .powerRankingInventoryPill.isMuted {
   color: var(--muted);
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedStrip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedChip {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #d3dfef;
+  background: #f9fbff;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedChip strong {
+  color: #163a70;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedChip span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedChip.isFilled {
+  border-color: #b8d0ec;
+  background: #edf5ff;
+}
+
+.powerRankingPageMaple .powerRankingInventoryEquippedChip.isFilled span {
+  color: #17314f;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .powerRankingEquipmentCard.isEquipped {
+  border-color: #b9d3ef;
+  background: #eef5ff;
 }
 
 .powerRankingPageMaple .powerRankingEquipmentCard {
@@ -7957,6 +8021,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .gameHomeQuickGrid,
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .equipmentPageEffectGrid,
+  .powerRankingPageMaple .powerRankingInventoryEquippedStrip,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingDetailActions,
   .powerRankingPageMaple .powerRankingInventoryGrid,

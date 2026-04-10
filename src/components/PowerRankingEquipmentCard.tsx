@@ -8,20 +8,23 @@ type PowerRankingEquipmentCardProps = {
   item: PowerRankingEquipmentInventoryItem;
   onEquipEquipment?: (equipmentCode: PowerRankingEquipmentCode) => Promise<void> | void;
   equipSubmittingCode?: string | null;
+  isEquipped?: boolean;
 };
 
 const PowerRankingEquipmentCard = ({
   item,
   onEquipEquipment,
-  equipSubmittingCode = null
+  equipSubmittingCode = null,
+  isEquipped = false
 }: PowerRankingEquipmentCardProps) => {
   const enhancementPlan = getPowerRankingEquipmentEnhancementPlan(item.code);
 
   return (
-    <article className="powerRankingInventoryCard powerRankingEquipmentCard">
+    <article className={`powerRankingInventoryCard powerRankingEquipmentCard ${isEquipped ? "isEquipped" : ""}`.trim()}>
       <div className="powerRankingInventoryVisual">
         <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
         <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+        {isEquipped ? <span className="powerRankingEquippedBadge">착용 중</span> : null}
       </div>
 
       <div className="powerRankingInventoryBody">
@@ -33,6 +36,7 @@ const PowerRankingEquipmentCard = ({
         <p>{item.description}</p>
 
         <div className="powerRankingInventoryTags">
+          {isEquipped ? <span className="powerRankingInventoryPill isEquipped">현재 착용 장비</span> : null}
           <span className="powerRankingInventoryPill">{item.effectSummary}</span>
           <span className="powerRankingInventoryPill isMuted">보유 {item.quantity}</span>
         </div>
@@ -68,10 +72,10 @@ const PowerRankingEquipmentCard = ({
           <button
             type="button"
             className="powerRankingItemButton isPositive"
-            disabled={equipSubmittingCode === item.code}
+            disabled={equipSubmittingCode === item.code || isEquipped}
             onClick={() => void onEquipEquipment(item.code)}
           >
-            {equipSubmittingCode === item.code ? "착용 중..." : "착용"}
+            {isEquipped ? "착용 완료" : equipSubmittingCode === item.code ? "착용 중..." : "착용"}
           </button>
         ) : null}
       </div>
