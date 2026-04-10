@@ -143,7 +143,7 @@ export const shopCatalog: ShopCatalogItem[] = [
   {
     id: "shop-night-snack-ticket",
     name: "야식 교환권",
-    description: "교내 이벤트와 야식 보상 교환에 쓰이는 기타 아이템입니다.",
+    description: "야식 교환권이 1000개 모이면 개발자에게 말해보세요. 좋은 일이 있을지도 모릅니다.",
     priceCurrency: "club-coin",
     priceAmount: 150,
     itemType: "misc",

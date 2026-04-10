@@ -91,7 +91,7 @@ export const materialMeta: Record<HuntingMaterialCode, { name: string; descripti
 export const miscMeta: Record<HuntingMiscCode, { name: string; description: string }> = {
   "night-snack-ticket": {
     name: "야식 교환권",
-    description: "교내 이벤트나 상점 교환에서 사용하는 기타 아이템입니다."
+    description: "야식 교환권이 1000개 모이면 개발자에게 말해보세요. 좋은 일이 있을지도 모릅니다."
   },
   "festival-exchange-coupon": {
     name: "축제 교환권",
