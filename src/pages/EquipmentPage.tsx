@@ -17,7 +17,9 @@ import type {
   PowerRankingEquipmentInventoryItem,
   PowerRankingEquipmentSlot,
   PowerRankingEquippedItem,
-  PowerRankingInventoryItem
+  PowerRankingInventoryItem,
+  PowerRankingPeriod,
+  PowerRankingPerson
 } from "../types";
 
 const slotOrder: PowerRankingEquipmentSlot[] = ["head", "weapon", "top", "gloves", "bottom", "shoes"];
@@ -75,12 +77,16 @@ const EquipmentPage = () => {
   const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [equipmentInventory, setEquipmentInventory] = useState<PowerRankingEquipmentInventoryItem[]>([]);
   const [itemInventory, setItemInventory] = useState<PowerRankingInventoryItem[]>([]);
+  const [rankingPeople, setRankingPeople] = useState<PowerRankingPerson[]>([]);
+  const [selectedItemTargetId, setSelectedItemTargetId] = useState("");
+  const [itemUsePeriod, setItemUsePeriod] = useState<PowerRankingPeriod>("all");
   const [equippedItems, setEquippedItems] = useState<
     Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>
   >({});
   const [errorMessage, setErrorMessage] = useState("");
   const [submittingCode, setSubmittingCode] = useState<string | null>(null);
   const [submittingSlot, setSubmittingSlot] = useState<PowerRankingEquipmentSlot | null>(null);
+  const [usingItemCode, setUsingItemCode] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = "내 장비";
@@ -103,6 +109,16 @@ const EquipmentPage = () => {
       })
       .catch((error: unknown) => {
         setErrorMessage(error instanceof Error ? error.message : "장비 정보를 불러오지 못했습니다.");
+      });
+
+    apiClient
+      .getPowerRanking("all")
+      .then((people) => {
+        setRankingPeople(people);
+        setSelectedItemTargetId((current) => current || people[0]?.id || "");
+      })
+      .catch(() => {
+        // Ignore ranking target fetch failure here; page remains usable.
       });
   }, [navigate, user]);
 
@@ -131,6 +147,31 @@ const EquipmentPage = () => {
       setErrorMessage(error instanceof Error ? error.message : "장비를 해제하지 못했습니다.");
     } finally {
       setSubmittingSlot(null);
+    }
+  };
+
+  const handleUseItem = async (itemCode: string) => {
+    if (!selectedItemTargetId) {
+      setErrorMessage("소비 아이템을 사용할 대상을 먼저 선택해주세요.");
+      return;
+    }
+
+    setUsingItemCode(itemCode);
+    try {
+      const result = await apiClient.usePowerRankingItem({
+        personId: selectedItemTargetId,
+        itemCode: itemCode as PowerRankingInventoryItem["code"],
+        period: itemUsePeriod
+      });
+      setItemInventory(result.inventory);
+      setRankingPeople((current) =>
+        current.map((person) => (person.id === result.person.id ? result.person : person))
+      );
+      setErrorMessage(`${result.usedItem.name} 사용 완료 · ${result.person.name} ${result.appliedDelta > 0 ? `+${result.appliedDelta}` : result.appliedDelta}`);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "소비 아이템을 사용하지 못했습니다.");
+    } finally {
+      setUsingItemCode(null);
     }
   };
 
@@ -251,6 +292,11 @@ const EquipmentPage = () => {
           .map((equipped) => equipped?.code)
           .filter((code): code is PowerRankingEquipmentCode => Boolean(code))
       ),
+    [equippedItems]
+  );
+
+  const equippedCardItems = useMemo(
+    () => slotOrder.map((slot) => equippedItems[slot]).filter((item): item is PowerRankingEquippedItem => Boolean(item)),
     [equippedItems]
   );
 
@@ -426,6 +472,28 @@ const EquipmentPage = () => {
                 })}
               </div>
 
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Now Equipped</p>
+                  <h2>장착 중 장비</h2>
+                </div>
+                <p className="powerRankingSectionHint">현재 장착된 장비를 카드 형태로 다시 보여줍니다.</p>
+              </div>
+
+              <div className="powerRankingInventoryGrid">
+                {equippedCardItems.length === 0 ? (
+                  <article className="powerRankingInventoryEmpty">현재 장착 중인 장비가 없습니다.</article>
+                ) : (
+                  equippedCardItems.map((item) => (
+                    <PowerRankingEquipmentCard
+                      key={`equipped-${item.code}`}
+                      item={{ ...item, quantity: 1 }}
+                      isEquipped
+                    />
+                  ))
+                )}
+              </div>
+
               <div className="powerRankingInventoryGrid">
                 {equipmentInventory.length === 0 ? (
                   <article className="powerRankingInventoryEmpty">보유 장비가 없습니다.</article>
@@ -445,27 +513,72 @@ const EquipmentPage = () => {
           ) : null}
 
           {activeTab === "consumables" ? (
-            <div className="powerRankingInventoryGrid">
-              {itemInventory.length === 0 ? (
-                <article className="powerRankingInventoryEmpty">보유 중인 소비 아이템이 없습니다.</article>
-              ) : (
-                itemInventory.map((item) => (
-                  <article key={item.code} className="powerRankingInventoryCard">
-                    <div className="powerRankingInventoryVisual">
-                      <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
-                      <span className="powerRankingInventoryBadge">x{item.quantity}</span>
-                    </div>
-                    <div className="powerRankingInventoryBody">
-                      <div className="powerRankingInventoryHeading">
-                        <strong>{item.name}</strong>
-                        <span>보유 중</span>
-                      </div>
-                      <p>{item.description}</p>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
+            <>
+              <div className="equipmentPageUsePanel">
+                <div className="equipmentPageUseField">
+                  <span>대상</span>
+                  <select value={selectedItemTargetId} onChange={(event) => setSelectedItemTargetId(event.target.value)}>
+                    {rankingPeople.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="equipmentPageUseField">
+                  <span>기간</span>
+                  <select value={itemUsePeriod} onChange={(event) => setItemUsePeriod(event.target.value as PowerRankingPeriod)}>
+                    <option value="all">전체</option>
+                    <option value="weekly">주간</option>
+                    <option value="daily">일간</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="powerRankingInventoryGrid">
+                {itemInventory.length === 0 ? (
+                  <article className="powerRankingInventoryEmpty">보유 중인 소비 아이템이 없습니다.</article>
+                ) : (
+                  itemInventory.map((item) => {
+                    const canUseDirectly =
+                      item.code === "byeokbangjun-blanket" || item.code === "seoeuntaek-love";
+
+                    return (
+                      <article key={item.code} className="powerRankingInventoryCard">
+                        <div className="powerRankingInventoryVisual">
+                          <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
+                          <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                        </div>
+                        <div className="powerRankingInventoryBody">
+                          <div className="powerRankingInventoryHeading">
+                            <strong>{item.name}</strong>
+                            <span>보유 중</span>
+                          </div>
+                          <p>{item.description}</p>
+                          <div className="powerRankingInventoryTags">
+                            {canUseDirectly ? (
+                              <span className="powerRankingInventoryPill isEquipped">대상 선택 후 즉시 사용 가능</span>
+                            ) : (
+                              <span className="powerRankingInventoryPill isMuted">이 아이템은 자동 소모 또는 별도 화면에서 사용됩니다.</span>
+                            )}
+                          </div>
+                          {canUseDirectly ? (
+                            <button
+                              type="button"
+                              className="powerRankingItemButton isPositive"
+                              disabled={item.quantity < 1 || usingItemCode === item.code || !selectedItemTargetId}
+                              onClick={() => void handleUseItem(item.code)}
+                            >
+                              {usingItemCode === item.code ? "사용 중..." : "이 아이템 사용"}
+                            </button>
+                          ) : null}
+                        </div>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+            </>
           ) : null}
 
           {activeTab === "other" ? (

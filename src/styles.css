@@ -6076,6 +6076,34 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   margin-bottom: 16px;
 }
 
+.powerRankingPageMaple .equipmentPageUsePanel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.powerRankingPageMaple .equipmentPageUseField {
+  display: grid;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .equipmentPageUseField span {
+  color: #163a70;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.powerRankingPageMaple .equipmentPageUseField select {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #cfe0f4;
+  background: #ffffff;
+  color: #17314f;
+  font-size: 14px;
+}
+
 .powerRankingPageMaple .powerRankingHeroMaple {
   align-items: stretch;
   gap: 28px;
