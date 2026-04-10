@@ -11,8 +11,11 @@ import EquipmentPage from "./pages/EquipmentPage";
 import EquipmentEnhancementPage from "./pages/EquipmentEnhancementPage";
 import GameHomePage from "./pages/GameHomePage";
 import HuntingCombatPage from "./pages/HuntingCombatPage";
+import HuntingGuidePage from "./pages/HuntingGuidePage";
 import HuntingGroundPage from "./pages/HuntingGroundPage";
 import HuntingBattleRankingPage from "./pages/HuntingBattleRankingPage";
+import HuntingProfilePage from "./pages/HuntingProfilePage";
+import HuntingStatusPage from "./pages/HuntingStatusPage";
 import HuntingZoneSelectPage from "./pages/HuntingZoneSelectPage";
 import LoginPage from "./pages/LoginPage";
 import PowerRankingPage from "./pages/PowerRankingPage";
@@ -157,6 +160,12 @@ const App = () => (
         <Route path="/dongyeon-equipment-enhancement" element={<EquipmentEnhancementPage />} />
         <Route path="/hunting-ground" element={<HuntingGroundPage />} />
         <Route path="/dongyeon-hunting-ground" element={<HuntingGroundPage />} />
+        <Route path="/hunting-status" element={<HuntingStatusPage />} />
+        <Route path="/dongyeon-hunting-status" element={<HuntingStatusPage />} />
+        <Route path="/hunting-profile" element={<HuntingProfilePage />} />
+        <Route path="/dongyeon-hunting-profile" element={<HuntingProfilePage />} />
+        <Route path="/hunting-guide" element={<HuntingGuidePage />} />
+        <Route path="/dongyeon-hunting-guide" element={<HuntingGuidePage />} />
         <Route path="/hunting-zones" element={<HuntingZoneSelectPage />} />
         <Route path="/dongyeon-hunting-zones" element={<HuntingZoneSelectPage />} />
         <Route path="/hunting-combat" element={<HuntingCombatPage />} />

@@ -7416,6 +7416,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   background: linear-gradient(180deg, #ffffff, #edf5ff);
 }
 
+.powerRankingPageMaple .huntingSubNavLink.isActive {
+  border-color: #173d74;
+  background: #173d74;
+  color: #ffffff;
+}
+
 .powerRankingPageMaple .huntingMonsterCard,
 .powerRankingPageMaple .huntingBreakdownCard {
   border: 1px solid rgba(16, 36, 63, 0.08);
