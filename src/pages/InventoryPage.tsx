@@ -5,13 +5,10 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import { useUserAuth } from "../auth/UserAuthContext";
 import {
-  getHuntingStorageKey,
-  loadHuntingProgress,
   miscMeta,
-  materialMeta,
-  saveHuntingProgress,
-  type HuntingProgress
+  materialMeta
 } from "../features/huntingProgress";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import type {
   PowerRankingEquipmentCode,
@@ -55,12 +52,12 @@ const InventoryPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [activeTab, setActiveTab] = useState<InventoryTab>("equipment");
-  const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [equipmentInventory, setEquipmentInventory] = useState<any[]>([]);
   const [equippedItems, setEquippedItems] = useState<Record<string, any>>({});
   const [itemInventory, setItemInventory] = useState<PowerRankingInventoryItem[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [submittingCode, setSubmittingCode] = useState<string | null>(null);
+  const { progress, setProgress, isHydrated } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "인벤토리";
@@ -71,8 +68,6 @@ const InventoryPage = () => {
       navigate("/dongyeon-login");
       return;
     }
-
-    setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
     apiClient
       .getInventory()
       .then((payload) => {
@@ -85,13 +80,6 @@ const InventoryPage = () => {
         setErrorMessage(error instanceof Error ? error.message : "인벤토리를 불러오지 못했습니다.");
       });
   }, [navigate, user]);
-
-  useEffect(() => {
-    if (!user || !progress) {
-      return;
-    }
-    saveHuntingProgress(getHuntingStorageKey(user.id), progress);
-  }, [progress, user]);
 
   const handleEquip = async (equipmentCode: PowerRankingEquipmentCode) => {
     setSubmittingCode(equipmentCode);
@@ -124,15 +112,17 @@ const InventoryPage = () => {
       setEquipmentInventory(result.equipment.inventory);
       setEquippedItems(result.equipment.equipped);
       setItemInventory(result.consumables);
-      if (progress) {
-        setProgress({
-          ...progress,
-          materials: {
-            ...progress.materials,
-            "club-coin": progress.materials["club-coin"] + result.soldAmount
-          }
-        });
-      }
+      setProgress((current) =>
+        current
+          ? {
+              ...current,
+              materials: {
+                ...current.materials,
+                "club-coin": current.materials["club-coin"] + result.soldAmount
+              }
+            }
+          : current
+      );
       setErrorMessage(`판매 완료 · 동연 코인 +${result.soldAmount}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "판매하지 못했습니다.");
@@ -182,6 +172,7 @@ const InventoryPage = () => {
           </div>
 
           {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+          {!isHydrated ? <div className="powerRankingLoading">인벤토리 진행도를 불러오는 중입니다.</div> : null}
 
           <div className="huntingSubNav">
             <button type="button" className={`huntingSubNavLink ${activeTab === "equipment" ? "isActive" : ""}`} onClick={() => setActiveTab("equipment")}>장비</button>

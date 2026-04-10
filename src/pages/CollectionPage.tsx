@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
-import { getHuntingStorageKey, loadHuntingProgress } from "../features/huntingProgress";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { MonsterCollectionEntry, SetCollectionEntry } from "../types";
 
 const CollectionPage = () => {
@@ -13,6 +13,7 @@ const CollectionPage = () => {
   const [sets, setSets] = useState<SetCollectionEntry[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [equippedCount, setEquippedCount] = useState(0);
+  const { progress } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "도감";
@@ -29,11 +30,6 @@ const CollectionPage = () => {
     apiClient.getSetCollection().then(setSets).catch((error: unknown) => {
       setErrorMessage(error instanceof Error ? error.message : "도감 정보를 불러오지 못했습니다.");
     });
-  }, [user]);
-
-  const progress = useMemo(() => {
-    if (!user) return null;
-    return loadHuntingProgress(getHuntingStorageKey(user.id));
   }, [user]);
 
   const discoveredMonsterCount = progress?.totalDefeated ? Math.min(monsters.length, Math.max(1, Math.floor(progress.totalDefeated / 3))) : 0;

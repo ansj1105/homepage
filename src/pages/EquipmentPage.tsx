@@ -5,12 +5,10 @@ import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import {
-  getHuntingStorageKey,
-  loadHuntingProgress,
   materialMeta,
-  miscMeta,
-  type HuntingProgress
+  miscMeta
 } from "../features/huntingProgress";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import type {
   PowerRankingEquipmentCode,
@@ -74,7 +72,6 @@ const EquipmentPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [activeTab, setActiveTab] = useState<EquipmentInventoryTab>("equipment");
-  const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [equipmentInventory, setEquipmentInventory] = useState<PowerRankingEquipmentInventoryItem[]>([]);
   const [itemInventory, setItemInventory] = useState<PowerRankingInventoryItem[]>([]);
   const [rankingPeople, setRankingPeople] = useState<PowerRankingPerson[]>([]);
@@ -87,6 +84,7 @@ const EquipmentPage = () => {
   const [submittingCode, setSubmittingCode] = useState<string | null>(null);
   const [submittingSlot, setSubmittingSlot] = useState<PowerRankingEquipmentSlot | null>(null);
   const [usingItemCode, setUsingItemCode] = useState<string | null>(null);
+  const { progress, isHydrated } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "내 장비";
@@ -101,7 +99,6 @@ const EquipmentPage = () => {
     apiClient
       .getInventory()
       .then((payload) => {
-        setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
         setEquipmentInventory(payload.equipment.inventory);
         setEquippedItems(payload.equipment.equipped);
         setItemInventory(payload.consumables);
@@ -330,6 +327,7 @@ const EquipmentPage = () => {
           </div>
 
           {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+          {!isHydrated ? <div className="powerRankingLoading">장비 진행도를 불러오는 중입니다.</div> : null}
 
           <div className="equipmentPageOverviewGrid">
             <section className="equipmentPageAvatarPanel">

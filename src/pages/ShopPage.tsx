@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
-import { getHuntingStorageKey, loadHuntingProgress, saveHuntingProgress, type HuntingProgress } from "../features/huntingProgress";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { ShopItem } from "../types";
 
 const ShopPage = () => {
   const { user } = useUserAuth();
   const [items, setItems] = useState<ShopItem[]>([]);
-  const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const { progress, setProgress } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "상점";
@@ -17,16 +17,10 @@ const ShopPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    setProgress(loadHuntingProgress(getHuntingStorageKey(user.id)));
     apiClient.getShopItems().then(setItems).catch((error: unknown) => {
       setErrorMessage(error instanceof Error ? error.message : "상점 정보를 불러오지 못했습니다.");
     });
   }, [user]);
-
-  useEffect(() => {
-    if (!user || !progress) return;
-    saveHuntingProgress(getHuntingStorageKey(user.id), progress);
-  }, [progress, user]);
 
   const handleBuy = async (item: ShopItem) => {
     if (!progress || progress.materials["club-coin"] < item.priceAmount) {
@@ -35,29 +29,34 @@ const ShopPage = () => {
     }
     try {
       await apiClient.buyShopItem({ itemId: item.id });
-      setProgress({
-        ...progress,
-        materials: {
-          ...progress.materials,
-          "club-coin": progress.materials["club-coin"] - item.priceAmount,
-          ...(item.itemType === "material"
-            ? { [item.code]: progress.materials[item.code as keyof typeof progress.materials] + 1 }
-            : {})
-        },
-        miscItems:
-          item.itemType === "misc"
-            ? {
-                ...progress.miscItems,
-                [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1
-              }
-            : progress.miscItems,
-        consumables:
-          item.itemType === "consumable"
-            ? {
-                ...progress.consumables,
-                [item.code]: progress.consumables[item.code as keyof typeof progress.consumables] + 1
-              }
-            : progress.consumables
+      setProgress((current) => {
+        if (!current) {
+          return current;
+        }
+        return {
+          ...current,
+          materials: {
+            ...current.materials,
+            "club-coin": current.materials["club-coin"] - item.priceAmount,
+            ...(item.itemType === "material"
+              ? { [item.code]: current.materials[item.code as keyof typeof current.materials] + 1 }
+              : {})
+          },
+          miscItems:
+            item.itemType === "misc"
+              ? {
+                  ...current.miscItems,
+                  [item.code]: current.miscItems[item.code as keyof typeof current.miscItems] + 1
+                }
+              : current.miscItems,
+          consumables:
+            item.itemType === "consumable"
+              ? {
+                  ...current.consumables,
+                  [item.code]: current.consumables[item.code as keyof typeof current.consumables] + 1
+                }
+              : current.consumables
+        };
       });
       setErrorMessage(`${item.name} 구매 완료`);
     } catch (error) {

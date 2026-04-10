@@ -2,22 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
-import {
-  getHuntingStorageKey,
-  loadHuntingProgress,
-  saveHuntingProgress,
-  type HuntingProgress
-} from "../features/huntingProgress";
+import type { HuntingProgress } from "../features/huntingProgress";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { EquipmentEnhancePreview, PowerRankingEquippedItem, PowerRankingEquipmentSlot } from "../types";
 
 const EquipmentEnhancementPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [equippedItems, setEquippedItems] = useState<Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>>({});
-  const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [previewByCode, setPreviewByCode] = useState<Record<string, EquipmentEnhancePreview | null>>({});
   const [errorMessage, setErrorMessage] = useState("");
+  const { progress, setProgress, isHydrated } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "장비 강화";
@@ -29,19 +25,17 @@ const EquipmentEnhancementPage = () => {
       return;
     }
 
-    const nextProgress = loadHuntingProgress(getHuntingStorageKey(user.id));
-    setProgress(nextProgress);
-
     apiClient
       .getInventory()
       .then(async (payload) => {
         setEquippedItems(payload.equipment.equipped);
+        const nextProgress = progress;
         const previews = await Promise.all(
           Object.values(payload.equipment.equipped).map(async (item) => {
             if (!item) {
               return null;
             }
-            const currentLevel = nextProgress.enhancementLevels[item.code] ?? 0;
+            const currentLevel = nextProgress?.enhancementLevels[item.code] ?? 0;
             try {
               return await apiClient.getEquipmentEnhancePreview(item.code, currentLevel);
             } catch {
@@ -60,14 +54,7 @@ const EquipmentEnhancementPage = () => {
       .catch((error: unknown) => {
         setErrorMessage(error instanceof Error ? error.message : "강화 정보를 불러오지 못했습니다.");
       });
-  }, [navigate, user]);
-
-  useEffect(() => {
-    if (!user || !progress) {
-      return;
-    }
-    saveHuntingProgress(getHuntingStorageKey(user.id), progress);
-  }, [progress, user]);
+  }, [navigate, progress, user]);
 
   const handleEnhance = async (item: PowerRankingEquippedItem) => {
     if (!progress) {
@@ -96,31 +83,36 @@ const EquipmentEnhancementPage = () => {
         useProtection
       });
 
-      const nextProgress: HuntingProgress = {
-        ...progress,
-        materials: {
-          ...progress.materials,
-          "enhancement-stone": Math.max(0, progress.materials["enhancement-stone"] - result.preview.stoneCost),
-          "club-coin": Math.max(0, progress.materials["club-coin"] - result.preview.goldCost),
-          "refined-stone":
-            !result.success && result.preview.failurePenalty === "강화석 추가 소모" && !useProtection
-              ? Math.max(0, progress.materials["refined-stone"] - 1)
-              : progress.materials["refined-stone"]
-        },
-        consumables: {
-          ...progress.consumables,
-          "protection-scroll":
-            useProtection
-              ? Math.max(0, progress.consumables["protection-scroll"] - 1)
-              : progress.consumables["protection-scroll"]
-        },
-        enhancementLevels: {
-          ...progress.enhancementLevels,
-          [item.code]: result.nextLevel
-        },
-        dailyEnhanceCount: progress.dailyEnhanceCount + 1
-      };
-      setProgress(nextProgress);
+      setProgress((current) => {
+        if (!current) {
+          return current;
+        }
+        const nextProgress: HuntingProgress = {
+          ...current,
+          materials: {
+            ...current.materials,
+            "enhancement-stone": Math.max(0, current.materials["enhancement-stone"] - result.preview.stoneCost),
+            "club-coin": Math.max(0, current.materials["club-coin"] - result.preview.goldCost),
+            "refined-stone":
+              !result.success && result.preview.failurePenalty === "강화석 추가 소모" && !useProtection
+                ? Math.max(0, current.materials["refined-stone"] - 1)
+                : current.materials["refined-stone"]
+          },
+          consumables: {
+            ...current.consumables,
+            "protection-scroll":
+              useProtection
+                ? Math.max(0, current.consumables["protection-scroll"] - 1)
+                : current.consumables["protection-scroll"]
+          },
+          enhancementLevels: {
+            ...current.enhancementLevels,
+            [item.code]: result.nextLevel
+          },
+          dailyEnhanceCount: current.dailyEnhanceCount + 1
+        };
+        return nextProgress;
+      });
 
       try {
         const nextPreview = await apiClient.getEquipmentEnhancePreview(item.code, result.nextLevel);
@@ -152,6 +144,7 @@ const EquipmentEnhancementPage = () => {
           </div>
 
           {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+          {!isHydrated ? <div className="powerRankingLoading">강화 진행도를 불러오는 중입니다.</div> : null}
 
           <div className="powerRankingInventoryGrid">
             {equippedList.length === 0 ? (

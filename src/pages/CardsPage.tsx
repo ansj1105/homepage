@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
-import { getHuntingStorageKey, loadHuntingProgress, saveHuntingProgress, type HuntingProgress } from "../features/huntingProgress";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { CardEntry } from "../types";
 
 const CardsPage = () => {
   const { user } = useUserAuth();
   const [cards, setCards] = useState<CardEntry[]>([]);
-  const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const { progress, setProgress } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
     document.title = "카드";
@@ -20,17 +20,10 @@ const CardsPage = () => {
     if (!user) {
       return;
     }
-    const nextProgress = loadHuntingProgress(getHuntingStorageKey(user.id));
-    setProgress(nextProgress);
     apiClient.getCards().then(setCards).catch((error: unknown) => {
       setErrorMessage(error instanceof Error ? error.message : "카드 목록을 불러오지 못했습니다.");
     });
   }, [user]);
-
-  useEffect(() => {
-    if (!user || !progress) return;
-    saveHuntingProgress(getHuntingStorageKey(user.id), progress);
-  }, [progress, user]);
 
   const handleSelect = async (cardId: string) => {
     try {
@@ -49,14 +42,18 @@ const CardsPage = () => {
     }
     try {
       await apiClient.upgradeCard({ cardId, pointCost: 5 });
-      setProgress({
-        ...progress,
-        cardSupportPoints: Math.max(0, progress.cardSupportPoints - 5),
-        cardLevels: {
-          ...progress.cardLevels,
-          [cardId]: (progress.cardLevels[cardId] ?? 1) + 1
-        }
-      });
+      setProgress((current) =>
+        current
+          ? {
+              ...current,
+              cardSupportPoints: Math.max(0, current.cardSupportPoints - 5),
+              cardLevels: {
+                ...current.cardLevels,
+                [cardId]: (current.cardLevels[cardId] ?? 1) + 1
+              }
+            }
+          : current
+      );
       setErrorMessage("카드 레벨을 올렸습니다.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "카드를 성장시키지 못했습니다.");
