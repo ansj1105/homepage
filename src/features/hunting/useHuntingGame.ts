@@ -75,6 +75,8 @@ const updateProgressFromCombat = (
 export const useHuntingGame = () => {
   const { user } = useUserAuth();
   const autoTimerRef = useRef<number | null>(null);
+  const autoAttackEnabledRef = useRef(false);
+  const attackRef = useRef<() => Promise<void>>(async () => undefined);
   const notificationTimersRef = useRef<number[]>([]);
   const [progress, setProgress] = useState<HuntingProgress>(() => createDefaultProgress());
   const [profile, setProfile] = useState<HuntingProfile | null>(null);
@@ -214,6 +216,9 @@ export const useHuntingGame = () => {
     const requiredEndurance = combatState?.clickCost ?? currentZone?.clickCost ?? 1;
     if (progress.endurance < requiredEndurance) {
       setErrorMessage(`피로도가 부족합니다. 현재 지역은 ${requiredEndurance} 피로도를 소모합니다.`);
+      if (autoAttackEnabledRef.current) {
+        setAutoAttackEnabled(false);
+      }
       return;
     }
 
@@ -273,6 +278,8 @@ export const useHuntingGame = () => {
       setIsAttacking(false);
     }
   };
+
+  attackRef.current = attack;
 
   const useConsumable = async (code: HuntingConsumableCode) => {
     if (progress.consumables[code] <= 0) {
@@ -339,8 +346,12 @@ export const useHuntingGame = () => {
   }, []);
 
   useEffect(() => {
+    autoAttackEnabledRef.current = autoAttackEnabled;
+  }, [autoAttackEnabled]);
+
+  useEffect(() => {
     if (autoTimerRef.current) {
-      window.clearInterval(autoTimerRef.current);
+      window.clearTimeout(autoTimerRef.current);
       autoTimerRef.current = null;
     }
 
@@ -348,17 +359,27 @@ export const useHuntingGame = () => {
       return;
     }
 
-    autoTimerRef.current = window.setInterval(() => {
-      void attack();
-    }, 1600);
+    const runAutoAttack = async () => {
+      await attackRef.current();
+      if (!autoAttackEnabledRef.current) {
+        return;
+      }
+      autoTimerRef.current = window.setTimeout(() => {
+        void runAutoAttack();
+      }, 1600);
+    };
+
+    autoTimerRef.current = window.setTimeout(() => {
+      void runAutoAttack();
+    }, 0);
 
     return () => {
       if (autoTimerRef.current) {
-        window.clearInterval(autoTimerRef.current);
+        window.clearTimeout(autoTimerRef.current);
         autoTimerRef.current = null;
       }
     };
-  }, [autoAttackEnabled, selectedMonsterId, user, progress.endurance, isAttacking]);
+  }, [autoAttackEnabled, selectedMonster, selectedMonsterId, selectedZoneId, user]);
 
   const zoneDropPreview = useMemo(() => {
     if (!zoneDetail) {
