@@ -3,6 +3,7 @@ import {
   getPowerRankingEquipmentSetCounts,
   powerRankingEquipmentCatalog,
   powerRankingEquipmentCodes,
+  powerRankingEquipmentRarityDropWeights,
   powerRankingEquipmentSetCatalog
 } from "../../src/data/powerRankingEquipment";
 import { getGameCardById } from "../../src/data/gameCards";
@@ -501,8 +502,13 @@ const consumePowerRankingItem = async (
 };
 
 const drawRandomPowerRankingEquipmentCode = (): PowerRankingEquipmentCode => {
-  const index = Math.floor(Math.random() * powerRankingEquipmentCodes.length);
-  return powerRankingEquipmentCodes[index] as PowerRankingEquipmentCode;
+  const weightedPool = powerRankingEquipmentCodes.flatMap((code) => {
+    const rarity = powerRankingEquipmentCatalog[code]?.rarity ?? "common";
+    return Array.from({ length: powerRankingEquipmentRarityDropWeights[rarity] }, () => code);
+  });
+  const pool = weightedPool.length > 0 ? weightedPool : powerRankingEquipmentCodes;
+  const index = Math.floor(Math.random() * pool.length);
+  return pool[index] as PowerRankingEquipmentCode;
 };
 
 const listPowerRankingEquipmentInventoryByUserId = async (
@@ -595,8 +601,15 @@ const getPowerRankingActionModifier = async (
   if (equippedItems.some((item) => item.code === "archive-circlet")) {
     finalDelta += isPositive ? 1 : 0;
   }
+  if (equippedItems.some((item) => item.code === "campus-emblem-cap")) {
+    consumableDropRate += 0.012;
+  }
   if (equippedItems.some((item) => item.code === "route-cap")) {
     finalDelta += isPositive ? 1 : -1;
+  }
+  if (equippedItems.some((item) => item.code === "library-hood")) {
+    finalDelta += isPositive ? 1 : 0;
+    consumableDropRate += 0.01;
   }
   if (equippedItems.some((item) => item.code === "heritage-coat")) {
     finalDelta += isPositive ? 2 : 0;
@@ -610,11 +623,21 @@ const getPowerRankingActionModifier = async (
   if (equippedItems.some((item) => item.code === "stage-pleats")) {
     finalDelta += isPositive ? 10 : 0;
   }
+  if (equippedItems.some((item) => item.code === "syllabus-trousers")) {
+    finalDelta += isPositive ? 0 : -1;
+  }
   if (equippedItems.some((item) => item.code === "honor-sabatons")) {
     finalDelta += isPositive ? 1 : 0;
   }
+  if (equippedItems.some((item) => item.code === "trail-runners")) {
+    consumableDropRate += 0.008;
+  }
   if (equippedItems.some((item) => item.code === "encore-sneakers")) {
     consumableDropRate += 0.01;
+  }
+  if (equippedItems.some((item) => item.code === "briefing-gloves")) {
+    finalDelta += isPositive ? 1 : 0;
+    equipmentDropRate += 0.012;
   }
   if (equippedItems.some((item) => item.code === "oath-gauntlets")) {
     finalDelta += isPositive ? 2 : -1;
@@ -642,6 +665,16 @@ const getPowerRankingActionModifier = async (
   if (equippedItems.some((item) => item.code === "pulse-gloves")) {
     consumableDropRate += 0.008;
     equipmentDropRate += 0.008;
+  }
+  if (equippedItems.some((item) => item.code === "festival-crown")) {
+    consumableDropRate += 0.02;
+  }
+  if (equippedItems.some((item) => item.code === "harvest-sickle")) {
+    equipmentDropRate += 0.02;
+  }
+  if (equippedItems.some((item) => item.code === "heritage-halberd")) {
+    finalDelta += isPositive ? 2 : -1;
+    equipmentDropRate += 0.01;
   }
 
   const firstActionBonusCandidates = new Set(["star-visor", "thunder-boots"]);
@@ -1695,8 +1728,12 @@ export const getHuntingProfile = async (
   let weaponAttack = Math.max(90, 90 + Math.floor(recommendationCoefficient * 0.42));
   if (equippedWeapon?.code === "training-branch") {
     weaponAttack += 18;
+  } else if (equippedWeapon?.code === "harvest-sickle") {
+    weaponAttack += 52;
   } else if (equippedWeapon?.code === "iron-pickaxe") {
     weaponAttack += 38;
+  } else if (equippedWeapon?.code === "heritage-halberd") {
+    weaponAttack += 96;
   } else if (equippedWeapon?.code === "fallen-order-blade") {
     weaponAttack += 72;
   }
@@ -1724,6 +1761,10 @@ export const getHuntingProfile = async (
         dropRateMultiplier += 0.05;
         effectBreakdown.push("민트 베레모 드랍 x1.05");
         break;
+      case "campus-emblem-cap":
+        dropRateMultiplier += 0.06;
+        effectBreakdown.push("연세 상징 캡 드랍 x1.06");
+        break;
       case "archive-circlet":
         weaponAttack += 12;
         effectBreakdown.push("아카이브 서클릿 무기 공격력 +12");
@@ -1736,6 +1777,11 @@ export const getHuntingProfile = async (
       case "commander-jacket":
         apparelPercentBonus += 0.18;
         effectBreakdown.push("사령관 재킷 의상 피해 +18%");
+        break;
+      case "library-hood":
+        apparelPercentBonus += 0.1;
+        dropRateMultiplier += 0.03;
+        effectBreakdown.push("학술정보원 후드 의상 피해 +10% / 드랍 x1.03");
         break;
       case "ribbon-cardigan":
         apparelPercentBonus += 0.08;
@@ -1764,6 +1810,11 @@ export const getHuntingProfile = async (
         flatBonus += 12;
         effectBreakdown.push("웨이브 데님 +12");
         break;
+      case "syllabus-trousers":
+        apparelPercentBonus += 0.12;
+        dailyClickLimit += 15;
+        effectBreakdown.push("강의계획서 트라우저 의상 피해 +12% / 클릭 +15");
+        break;
       case "aurora-skirt":
         apparelPercentBonus += 0.09;
         effectBreakdown.push("오로라 스커트 의상 피해 +9%");
@@ -1786,6 +1837,11 @@ export const getHuntingProfile = async (
       case "crystal-sneakers":
         autoGrowthMultiplier += 0.06;
         effectBreakdown.push("크리스털 스니커즈 자동 성장 x1.06");
+        break;
+      case "trail-runners":
+        autoGrowthMultiplier += 0.04;
+        dropRateMultiplier += 0.02;
+        effectBreakdown.push("백양로 러너즈 자동 성장 x1.04 / 드랍 x1.02");
         break;
       case "ember-heels":
         autoGrowthMultiplier += 0.05;
@@ -1810,6 +1866,11 @@ export const getHuntingProfile = async (
         flatBonus += 10;
         effectBreakdown.push("실크 글러브 소비 아이템 위력 +10");
         break;
+      case "briefing-gloves":
+        flatBonus += 8;
+        dropRateMultiplier += 0.04;
+        effectBreakdown.push("집행부 브리핑 글러브 +8 / 드랍 x1.04");
+        break;
       case "pulse-gloves":
         dropRateMultiplier += 0.06;
         bossBonusRollRate += 0.08;
@@ -1828,10 +1889,24 @@ export const getHuntingProfile = async (
         weaponAttack += 58;
         effectBreakdown.push("연세 헤리티지 랜스 무기 공격력 +58");
         break;
+      case "harvest-sickle":
+        weaponAttack += 52;
+        dropRateMultiplier += 0.03;
+        effectBreakdown.push("황금 수확 낫 무기 공격력 +52 / 드랍 x1.03");
+        break;
+      case "heritage-halberd":
+        weaponAttack += 96;
+        effectMultiplier += 0.06;
+        effectBreakdown.push("연세 헤리티지 할버드 무기 공격력 +96");
+        break;
       case "spotlight-mic":
         weaponAttack += 46;
         cardGrowthMultiplier += 0.04;
         effectBreakdown.push("스포트라이트 마이크 무기 공격력 +46");
+        break;
+      case "festival-crown":
+        cardGrowthMultiplier += 0.12;
+        effectBreakdown.push("축제 총학생회 티아라 카드 성장 x1.12");
         break;
       default:
         break;

@@ -2,6 +2,7 @@ import type {
   EquipmentEnhancePreview,
   PowerRankingEquipmentCatalogEntry,
   PowerRankingEquipmentCode,
+  PowerRankingEquipmentRarity,
   PowerRankingEquipmentSetId,
   PowerRankingEquipmentSlot
 } from "../types";
@@ -20,6 +21,26 @@ export const powerRankingEquipmentSlotLabels: Record<PowerRankingEquipmentSlot, 
   bottom: "하의",
   shoes: "신발",
   gloves: "장갑"
+};
+
+export const powerRankingEquipmentRarityLabels: Record<PowerRankingEquipmentRarity, string> = {
+  common: "커먼",
+  uncommon: "언커먼",
+  rare: "레어",
+  unique: "유니크",
+  epic: "에픽",
+  legendary: "레전더리",
+  mythic: "신화"
+};
+
+export const powerRankingEquipmentRarityDropWeights: Record<PowerRankingEquipmentRarity, number> = {
+  common: 34,
+  uncommon: 25,
+  rare: 17,
+  unique: 11,
+  epic: 7,
+  legendary: 4,
+  mythic: 2
 };
 
 export const powerRankingEquipmentSetCatalog: Record<
@@ -84,6 +105,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     rarity: "common",
     effectSummary: "무기 공격력 +18"
   },
+  "harvest-sickle": {
+    code: "harvest-sickle",
+    slot: "weapon",
+    name: "황금 수확 낫",
+    description: "수확 평원에서 재료를 휩쓸어 모으는 파밍형 무기입니다.",
+    imageUrl: "/assets/equipment/harvest-sickle.svg",
+    setId: "golden-harvester",
+    setName: equipmentSetName("golden-harvester"),
+    rarity: "unique",
+    effectSummary: "무기 공격력 +52, 드랍률 +3%"
+  },
   "iron-pickaxe": {
     code: "iron-pickaxe",
     slot: "weapon",
@@ -94,6 +126,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     setName: equipmentSetName("golden-harvester"),
     rarity: "rare",
     effectSummary: "무기 공격력 +38"
+  },
+  "heritage-halberd": {
+    code: "heritage-halberd",
+    slot: "weapon",
+    name: "연세 헤리티지 할버드",
+    description: "기사단 무구를 완성한 뒤에만 손에 들어오는 신화급 전장 무기입니다.",
+    imageUrl: "/assets/equipment/heritage-halberd.svg",
+    setId: "honor-knight",
+    setName: equipmentSetName("honor-knight"),
+    rarity: "mythic",
+    effectSummary: "무기 공격력 +96, 최종 전투 배수 +6%"
   },
   "fallen-order-blade": {
     code: "fallen-order-blade",
@@ -114,7 +157,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/commander-jacket.svg",
     setId: "honor-knight",
     setName: equipmentSetName("honor-knight"),
-    rarity: "epic",
+    rarity: "unique",
     effectSummary: "무기 공격력 +58"
   },
   "spotlight-mic": {
@@ -125,7 +168,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/star-visor.svg",
     setId: "starlight-idol",
     setName: equipmentSetName("starlight-idol"),
-    rarity: "epic",
+    rarity: "unique",
     effectSummary: "무기 공격력 +46, 카드 성장 +4%"
   },
   "crown-of-cheers": {
@@ -139,6 +182,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     rarity: "legendary",
     effectSummary: "추천량 2배"
   },
+  "festival-crown": {
+    code: "festival-crown",
+    slot: "head",
+    name: "축제 총학생회 티아라",
+    description: "축제 무대의 중심에서만 보이는 신화급 응원 장식입니다.",
+    imageUrl: "/assets/equipment/festival-crown.svg",
+    setId: "starlight-idol",
+    setName: equipmentSetName("starlight-idol"),
+    rarity: "mythic",
+    effectSummary: "카드 성장 +12%, 응원 포인트 획득 +1"
+  },
   "star-visor": {
     code: "star-visor",
     slot: "head",
@@ -147,7 +201,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/star-visor.svg",
     setId: "starlight-idol",
     setName: equipmentSetName("starlight-idol"),
-    rarity: "rare",
+    rarity: "uncommon",
     effectSummary: "하루 첫 반영 +5"
   },
   "mint-beret": {
@@ -161,6 +215,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     rarity: "common",
     effectSummary: "소비 아이템 드롭률 +1.5%"
   },
+  "campus-emblem-cap": {
+    code: "campus-emblem-cap",
+    slot: "head",
+    name: "연세 상징 캡",
+    description: "교내 상징 문양을 새긴 모자로 초반 파밍 효율을 매끈하게 다듬습니다.",
+    imageUrl: "/assets/equipment/campus-emblem-cap.svg",
+    setId: "balanced-freshman",
+    setName: equipmentSetName("balanced-freshman"),
+    rarity: "uncommon",
+    effectSummary: "소비 아이템 드롭률 +2%"
+  },
   "archive-circlet": {
     code: "archive-circlet",
     slot: "head",
@@ -169,7 +234,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/mint-beret.svg",
     setId: "honor-knight",
     setName: equipmentSetName("honor-knight"),
-    rarity: "epic",
+    rarity: "unique",
     effectSummary: "무기 공격력 +12"
   },
   "route-cap": {
@@ -180,7 +245,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/mint-beret.svg",
     setId: "gale-chaser",
     setName: equipmentSetName("gale-chaser"),
-    rarity: "rare",
+    rarity: "uncommon",
     effectSummary: "자동 성장 +5%, 클릭 여유 +10"
   },
   "commander-jacket": {
@@ -193,6 +258,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     setName: equipmentSetName("honor-knight"),
     rarity: "epic",
     effectSummary: "추천량 +1"
+  },
+  "library-hood": {
+    code: "library-hood",
+    slot: "top",
+    name: "학술정보원 후드",
+    description: "도서관 심야 집중력을 담아 드랍과 투표 효율을 고르게 올려줍니다.",
+    imageUrl: "/assets/equipment/library-hood.svg",
+    setId: "balanced-freshman",
+    setName: equipmentSetName("balanced-freshman"),
+    rarity: "uncommon",
+    effectSummary: "올리기 +1, 소비 아이템 드롭률 +1%"
   },
   "ribbon-cardigan": {
     code: "ribbon-cardigan",
@@ -249,6 +325,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     rarity: "rare",
     effectSummary: "인기도 내리기 2배"
   },
+  "syllabus-trousers": {
+    code: "syllabus-trousers",
+    slot: "bottom",
+    name: "강의계획서 트라우저",
+    description: "일정을 미리 짜듯 클릭과 제어 효율을 세밀하게 다듬는 유니크 하의입니다.",
+    imageUrl: "/assets/equipment/syllabus-trousers.svg",
+    setId: "gale-chaser",
+    setName: equipmentSetName("gale-chaser"),
+    rarity: "unique",
+    effectSummary: "내리기 -1 추가, 클릭 여유 +15"
+  },
   "wave-denim": {
     code: "wave-denim",
     slot: "bottom",
@@ -290,7 +377,7 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/aurora-skirt.svg",
     setId: "starlight-idol",
     setName: equipmentSetName("starlight-idol"),
-    rarity: "epic",
+    rarity: "unique",
     effectSummary: "카드 성장 +6%, 소비 위력 +10"
   },
   "thunder-boots": {
@@ -301,8 +388,19 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     imageUrl: "/assets/equipment/thunder-boots.svg",
     setId: "gale-chaser",
     setName: equipmentSetName("gale-chaser"),
-    rarity: "rare",
+    rarity: "uncommon",
     effectSummary: "하루 첫 반영 +5"
+  },
+  "trail-runners": {
+    code: "trail-runners",
+    slot: "shoes",
+    name: "백양로 러너즈",
+    description: "백양로를 질주하며 자동 사냥 리듬과 소비 아이템 수급을 다듬는 언커먼 신발입니다.",
+    imageUrl: "/assets/equipment/trail-runners.svg",
+    setId: "gale-chaser",
+    setName: equipmentSetName("gale-chaser"),
+    rarity: "uncommon",
+    effectSummary: "자동 성장 +4%, 소비 아이템 드롭률 +0.8%"
   },
   "crystal-sneakers": {
     code: "crystal-sneakers",
@@ -358,6 +456,17 @@ export const powerRankingEquipmentCatalog: Record<string, PowerRankingEquipmentC
     setName: equipmentSetName("honor-knight"),
     rarity: "epic",
     effectSummary: "모든 반영 수치 +1"
+  },
+  "briefing-gloves": {
+    code: "briefing-gloves",
+    slot: "gloves",
+    name: "집행부 브리핑 글러브",
+    description: "회의실 브리핑처럼 손끝이 정확해져 투표 보정과 장비 드랍이 함께 오릅니다.",
+    imageUrl: "/assets/equipment/briefing-gloves.svg",
+    setId: "honor-knight",
+    setName: equipmentSetName("honor-knight"),
+    rarity: "unique",
+    effectSummary: "올리기 +1, 장비 드롭률 +1.2%"
   },
   "silk-gloves": {
     code: "silk-gloves",
@@ -430,11 +539,15 @@ const enhancementStoneBaseBySlot: Record<PowerRankingEquipmentSlot, number> = {
 
 const enhancementStoneBonusByCode: Partial<Record<PowerRankingEquipmentCode, number>> = {
   "crown-of-cheers": 1,
+  "festival-crown": 2,
   "golden-harness": 1,
   "midnight-slacks": 1,
   "aurora-skirt": 1,
   "titan-gauntlet": 1,
+  "briefing-gloves": 1,
   "fallen-order-blade": 2,
+  "heritage-halberd": 3,
+  "harvest-sickle": 1,
   "heritage-spear": 1,
   "spotlight-mic": 1,
   "heritage-coat": 1,

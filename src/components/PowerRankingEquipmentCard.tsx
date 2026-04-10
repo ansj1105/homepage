@@ -1,6 +1,7 @@
 import type { PowerRankingEquipmentCode, PowerRankingEquipmentInventoryItem } from "../types";
 import {
   getPowerRankingEquipmentEnhancementPlan,
+  powerRankingEquipmentRarityLabels,
   powerRankingEquipmentSlotLabels
 } from "../data/powerRankingEquipment";
 
@@ -39,6 +40,9 @@ const PowerRankingEquipmentCard = ({
 
         <div className="powerRankingInventoryTags">
           <span className="powerRankingInventoryPill">강화 +{enhancementLevel}</span>
+          <span className={`powerRankingInventoryPill equipmentRarityPill is-${item.rarity}`.trim()}>
+            {powerRankingEquipmentRarityLabels[item.rarity]}
+          </span>
           {isEquipped ? <span className="powerRankingInventoryPill isEquipped">현재 착용 장비</span> : null}
           <span className="powerRankingInventoryPill">{item.effectSummary}</span>
           <span className="powerRankingInventoryPill isMuted">보유 {item.quantity}</span>

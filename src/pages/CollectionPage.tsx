@@ -3,9 +3,10 @@ import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { powerRankingEquipmentRarityLabels } from "../data/powerRankingEquipment";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { HuntingConsumableCode, HuntingMaterialCode, HuntingMiscCode } from "../features/huntingProgress";
-import type { MonsterCollectionEntry, SetCollectionEntry } from "../types";
+import type { MonsterCollectionEntry, PowerRankingEquipmentRarity, SetCollectionEntry } from "../types";
 
 type CollectionTab = "monsters" | "equipment" | "sets" | "exchange";
 type SetExchangeRecipe = {
@@ -214,7 +215,7 @@ const CollectionPage = () => {
     id: item.code,
     imageUrl: item.imageUrl,
     title: item.name,
-    subtitle: `${item.slot} · ${item.rarity ?? "common"}`,
+    subtitle: `${item.slot} · ${powerRankingEquipmentRarityLabels[(item.rarity ?? "common") as PowerRankingEquipmentRarity]}`,
     description: item.effectSummary,
     tag: item.setName ?? "장비 효과"
   }));

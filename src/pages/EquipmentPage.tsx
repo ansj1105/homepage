@@ -229,6 +229,10 @@ const EquipmentPage = () => {
           upDelta += 1;
           summaries.push("올리기 +1");
           break;
+        case "campus-emblem-cap":
+          consumableDropBonus += 2;
+          summaries.push("소비 아이템 드롭률 +2%");
+          break;
         case "route-cap":
           upDelta += 1;
           downDelta -= 1;
@@ -242,6 +246,11 @@ const EquipmentPage = () => {
           consumableDropBonus += 1;
           equipmentDropBonus += 1;
           summaries.push("소비/장비 드롭률 +1%");
+          break;
+        case "library-hood":
+          upDelta += 1;
+          consumableDropBonus += 1;
+          summaries.push("올리기 +1 / 소비 드롭률 +1%");
           break;
         case "aurora-skirt":
           equipmentDropBonus += 1.5;
@@ -264,9 +273,17 @@ const EquipmentPage = () => {
           loveDelta += 10;
           summaries.push("긍정 소비 아이템 위력 +10");
           break;
+        case "syllabus-trousers":
+          downDelta -= 1;
+          summaries.push("내리기 -1 추가 / 클릭 여유 +15");
+          break;
         case "crystal-sneakers":
           consumableDropBonus += 1;
           summaries.push("소비 아이템 드롭률 +1%");
+          break;
+        case "trail-runners":
+          consumableDropBonus += 0.8;
+          summaries.push("자동 성장 +4% / 소비 드롭률 +0.8%");
           break;
         case "ember-heels":
           equipmentDropBonus += 1;
@@ -278,6 +295,11 @@ const EquipmentPage = () => {
           break;
         case "encore-sneakers":
           summaries.push("클릭 여유 +12");
+          break;
+        case "briefing-gloves":
+          upDelta += 1;
+          equipmentDropBonus += 1.2;
+          summaries.push("올리기 +1 / 장비 드롭률 +1.2%");
           break;
         case "pulse-gloves":
           consumableDropBonus += 0.8;
@@ -298,6 +320,19 @@ const EquipmentPage = () => {
         case "star-visor":
         case "thunder-boots":
           summaries.push("하루 첫 반영 +5");
+          break;
+        case "festival-crown":
+          loveDelta += 20;
+          summaries.push("카드 성장 특화 / 긍정 소비 아이템 위력 +20");
+          break;
+        case "harvest-sickle":
+          equipmentDropBonus += 3;
+          summaries.push("장비 드롭률 +3%");
+          break;
+        case "heritage-halberd":
+          upDelta += 2;
+          downDelta -= 1;
+          summaries.push("신화 무기 보정 +2 / -1");
           break;
         default:
           break;

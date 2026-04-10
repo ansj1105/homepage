@@ -223,37 +223,52 @@ export type PowerRankingEquipmentSetId =
   | "gale-chaser";
 export type PowerRankingEquipmentCode =
   | "training-branch"
+  | "harvest-sickle"
+  | "heritage-halberd"
   | "iron-pickaxe"
   | "fallen-order-blade"
   | "heritage-spear"
   | "spotlight-mic"
   | "crown-of-cheers"
+  | "festival-crown"
   | "star-visor"
   | "mint-beret"
+  | "campus-emblem-cap"
   | "archive-circlet"
   | "route-cap"
   | "commander-jacket"
+  | "library-hood"
   | "ribbon-cardigan"
   | "golden-harness"
   | "heritage-coat"
   | "spotlight-blazer"
   | "midnight-slacks"
+  | "syllabus-trousers"
   | "wave-denim"
   | "aurora-skirt"
   | "bastion-greaves"
   | "stage-pleats"
   | "thunder-boots"
+  | "trail-runners"
   | "crystal-sneakers"
   | "ember-heels"
   | "honor-sabatons"
   | "encore-sneakers"
   | "titan-gauntlet"
+  | "briefing-gloves"
   | "silk-gloves"
   | "pulse-gloves"
   | "oath-gauntlets"
   | "rhythm-gloves";
 
-export type PowerRankingEquipmentRarity = "common" | "rare" | "epic" | "legendary" | "mythic";
+export type PowerRankingEquipmentRarity =
+  | "common"
+  | "uncommon"
+  | "rare"
+  | "unique"
+  | "epic"
+  | "legendary"
+  | "mythic";
 
 export interface PowerRankingVoteRequest {
   deviceId: string;

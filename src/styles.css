@@ -7020,6 +7020,45 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: var(--muted);
 }
 
+.powerRankingPageMaple .equipmentRarityPill {
+  border-color: currentColor;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-common {
+  background: #f5f8fc;
+  color: #49627f;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-uncommon {
+  background: #eef7ff;
+  color: #2263a7;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-rare {
+  background: #eaf3ff;
+  color: #114c9a;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-unique {
+  background: #f2edff;
+  color: #5e42a6;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-epic {
+  background: #fff2e8;
+  color: #a45012;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-legendary {
+  background: #fff6d8;
+  color: #9b6a00;
+}
+
+.powerRankingPageMaple .equipmentRarityPill.is-mythic {
+  background: #ffecef;
+  color: #b42345;
+}
+
 .powerRankingPageMaple .powerRankingInventoryEquippedStrip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
