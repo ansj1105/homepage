@@ -7994,7 +7994,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isUp {
   --vote-heat: 0;
-  border-color: rgba(22, 58, 112, 0.22);
+  border-color: rgba(22, 58, 112, 0.42);
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.42), transparent 55%),
     linear-gradient(180deg, #eff5fc, #cfe0f4);
@@ -8004,12 +8004,21 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isDown {
   --vote-heat: 0;
-  border-color: rgba(17, 28, 44, 0.22);
+  border-color: rgba(17, 28, 44, 0.42);
   background:
     radial-gradient(circle at top, rgba(255, 255, 255, 0.38), transparent 55%),
     linear-gradient(180deg, #e2e7ef, #b8c4d6);
   color: #111c2c;
   box-shadow: 0 10px 24px rgba(17, 28, 44, 0.16);
+}
+
+.powerRankingPageMaple .powerRankingVoteActions .powerRankingVoteActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  visibility: visible;
+  opacity: 1;
 }
 
 .powerRankingPageMaple .powerRankingVoteActionButton.isHeat1 {
