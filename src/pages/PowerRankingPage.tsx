@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
@@ -472,6 +472,7 @@ const InteractiveHonorCard = ({
 };
 
 const PowerRankingPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const { setProgress } = useSyncedHuntingProgress(user?.id);
@@ -578,6 +579,10 @@ const PowerRankingPage = () => {
   useEffect(() => {
     const loadLiveVisitors = async () => {
       try {
+        await apiClient.trackTodayVisitor({
+          deviceId: getOrCreateDeviceId(),
+          path: `${location.pathname}${location.search}`
+        });
         const result = await apiClient.getLiveVisitors();
         setLiveVisitorCount(result.liveVisitors);
         setLiveVisitors(result.viewers);
@@ -592,7 +597,7 @@ const PowerRankingPage = () => {
     }, LIVE_VISITOR_REFRESH_MS);
 
     return () => window.clearInterval(poller);
-  }, []);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     setMemoVisibleCounts((current) => {
