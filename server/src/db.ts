@@ -1,7 +1,7 @@
-import { Pool } from "pg";
+import { Pool, type PoolClient } from "pg";
 import { powerRankingEquipmentCatalog, powerRankingEquipmentCodes } from "../../src/data/powerRankingEquipment";
 import { getGameCardById } from "../../src/data/gameCards";
-import { powerRankingItemCatalog, powerRankingItemCodes } from "../../src/data/powerRankingItems";
+import { powerRankingItemCatalog } from "../../src/data/powerRankingItems";
 import { defaultCmsPages } from "../../src/data/cmsPageDefaults";
 import { defaultMainPageContent } from "../../src/data/mainPageDefaults";
 import { defaultPublicSiteSettings } from "../../src/data/siteSettingsDefaults";
@@ -326,8 +326,39 @@ const grantPowerRankingItem = async (
 };
 
 const drawRandomPowerRankingItemCode = (): PowerRankingItemCode => {
-  const index = Math.floor(Math.random() * powerRankingItemCodes.length);
-  return powerRankingItemCodes[index] as PowerRankingItemCode;
+  const rewardPool: PowerRankingItemCode[] = ["byeokbangjun-blanket", "seoeuntaek-love"];
+  const index = Math.floor(Math.random() * rewardPool.length);
+  return rewardPool[index];
+};
+
+const getBonusVoteTicketCode = (delta: 1 | -1): PowerRankingItemCode =>
+  delta > 0 ? "ranking-up-ticket" : "ranking-down-ticket";
+
+const consumePowerRankingItem = async (
+  client: PoolClient,
+  userId: string,
+  itemCode: PowerRankingItemCode
+): Promise<boolean> => {
+  const inventoryResult = await client.query<PowerRankingUserItemRow>(
+    `SELECT id, user_id, item_code, quantity, created_at, updated_at
+     FROM power_ranking_user_items
+     WHERE user_id = $1
+       AND item_code = $2
+     LIMIT 1`,
+    [userId, itemCode]
+  );
+  const row = inventoryResult.rows[0];
+  if (!row || row.quantity <= 0) {
+    return false;
+  }
+  await client.query(
+    `UPDATE power_ranking_user_items
+     SET quantity = quantity - 1,
+         updated_at = NOW()
+     WHERE id = $1`,
+    [row.id]
+  );
+  return true;
 };
 
 const drawRandomPowerRankingEquipmentCode = (): PowerRankingEquipmentCode => {
@@ -379,6 +410,11 @@ const grantPowerRankingEquipment = async (
   );
   return result.rows.map(mapPowerRankingEquipmentInventoryRow)[0];
 };
+
+export const grantPowerRankingInventoryItem = async (
+  userId: string,
+  itemCode: PowerRankingItemCode
+): Promise<PowerRankingInventoryItem> => grantPowerRankingItem(userId, itemCode);
 
 const getPowerRankingActionModifier = async (
   userId: string | null | undefined,
@@ -809,44 +845,86 @@ export const changePowerRankingScore = async (
     return null;
   }
 
-  const dailyCountResult = await pool.query<{ count: string }>(
-    `SELECT COUNT(*)::text AS count
-     FROM power_ranking_votes
-     WHERE device_id = $1
-       AND created_at >= NOW() - INTERVAL '1 day'`,
-    [deviceId]
-  );
-  const dailyCount = Number(dailyCountResult.rows[0]?.count ?? "0");
-  if (dailyCount >= powerRankingDailyActionLimit) {
-    throw new Error("하루 최대 1000회까지만 반영할 수 있습니다.");
-  }
-
   const modifier = await getPowerRankingActionModifier(userId ?? null, delta);
-
-  await pool.query<PowerRankingVoteRow>(
-    `INSERT INTO power_ranking_votes (person_id, user_id, device_id, delta)
-     VALUES ($1, $2, $3, $4)`,
-    [personId, userId ?? null, deviceId, modifier.finalDelta]
-  );
-
-  await logPowerRankingEvent(
-    userId ?? null,
-    deviceId,
-    personId,
-    delta > 0 ? "vote_up" : "vote_down",
-    modifier.finalDelta
-  );
-
+  let consumedBonusItemCode: PowerRankingItemCode | null = null;
   let droppedItem: PowerRankingInventoryItem | null = null;
   let droppedEquipment: PowerRankingEquipmentInventoryItem | null = null;
-  if (userId && Math.random() < modifier.consumableDropRate) {
-    const itemCode = drawRandomPowerRankingItemCode();
-    droppedItem = await grantPowerRankingItem(userId, itemCode);
-    await logPowerRankingEvent(userId, deviceId, personId, "item_drop", 0, itemCode);
-  }
-  if (userId && Math.random() < modifier.equipmentDropRate) {
-    const equipmentCode = drawRandomPowerRankingEquipmentCode();
-    droppedEquipment = await grantPowerRankingEquipment(userId, equipmentCode);
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    if (userId) {
+      const ticketCode = getBonusVoteTicketCode(delta);
+      const consumed = await consumePowerRankingItem(client, userId, ticketCode);
+      if (consumed) {
+        consumedBonusItemCode = ticketCode;
+      }
+    }
+
+    if (!consumedBonusItemCode) {
+      const dailyCountResult = await client.query<{ count: string }>(
+        `SELECT COUNT(*)::text AS count
+         FROM power_ranking_votes
+         WHERE device_id = $1
+           AND created_at >= NOW() - INTERVAL '1 day'`,
+        [deviceId]
+      );
+      const dailyCount = Number(dailyCountResult.rows[0]?.count ?? "0");
+      if (dailyCount >= powerRankingDailyActionLimit) {
+        throw new Error("하루 최대 1000회까지만 반영할 수 있습니다.");
+      }
+    }
+
+    await client.query<PowerRankingVoteRow>(
+      `INSERT INTO power_ranking_votes (person_id, user_id, device_id, delta)
+       VALUES ($1, $2, $3, $4)`,
+      [personId, userId ?? null, deviceId, modifier.finalDelta]
+    );
+
+    await client.query(
+      `INSERT INTO power_ranking_event_logs (actor_user_id, actor_device_id, person_id, event_type, delta, item_code)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [userId ?? null, deviceId, personId, delta > 0 ? "vote_up" : "vote_down", modifier.finalDelta, consumedBonusItemCode]
+    );
+
+    if (userId && Math.random() < modifier.consumableDropRate) {
+      const itemCode = drawRandomPowerRankingItemCode();
+      const itemResult = await client.query<PowerRankingUserItemRow>(
+        `INSERT INTO power_ranking_user_items (user_id, item_code, quantity)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, item_code)
+         DO UPDATE SET quantity = power_ranking_user_items.quantity + 1, updated_at = NOW()
+         RETURNING id, user_id, item_code, quantity, created_at, updated_at`,
+        [userId, itemCode]
+      );
+      droppedItem = mapPowerRankingInventoryRow(itemResult.rows[0]);
+      await client.query(
+        `INSERT INTO power_ranking_event_logs (actor_user_id, actor_device_id, person_id, event_type, delta, item_code)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, deviceId, personId, "item_drop", 0, itemCode]
+      );
+    }
+
+    if (userId && Math.random() < modifier.equipmentDropRate) {
+      const equipmentCode = drawRandomPowerRankingEquipmentCode();
+      const equipmentResult = await client.query<PowerRankingEquipmentInventoryRow>(
+        `INSERT INTO power_ranking_user_equipment_inventory (user_id, equipment_code, quantity)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, equipment_code)
+         DO UPDATE SET quantity = power_ranking_user_equipment_inventory.quantity + 1, updated_at = NOW()
+         RETURNING id, user_id, equipment_code, quantity, created_at, updated_at`,
+        [userId, equipmentCode]
+      );
+      droppedEquipment = equipmentResult.rows.map(mapPowerRankingEquipmentInventoryRow)[0];
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
   }
 
   const person = (await loadPowerRankingPersonByPeriod(personId, period)) ?? (await loadPowerRankingPersonByPeriod(personId, "all"));
@@ -857,7 +935,9 @@ export const changePowerRankingScore = async (
   return {
     person,
     droppedItem,
-    droppedEquipment
+    droppedEquipment,
+    inventory: userId ? await listPowerRankingInventoryByUserId(userId) : undefined,
+    consumedBonusItemCode
   };
 };
 

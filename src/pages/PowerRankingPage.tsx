@@ -189,6 +189,9 @@ const getItemUseConfirmMessage = (
   return null;
 };
 
+const isPowerRankingUsableItem = (itemCode: PowerRankingItemCode): boolean =>
+  itemCode === "byeokbangjun-blanket" || itemCode === "seoeuntaek-love";
+
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
@@ -531,6 +534,10 @@ const PowerRankingPage = () => {
     () => eventLogs.filter((event) => event.eventType === "item_use" || event.eventType === "item_drop").slice(0, 10),
     [eventLogs]
   );
+  const rankingConsumableInventory = useMemo(
+    () => inventory.filter((item) => isPowerRankingUsableItem(item.code)),
+    [inventory]
+  );
 
   const updatePerson = (updated: PowerRankingPerson) => {
     setPeople((current) => current.map((person) => (person.id === updated.id ? updated : person)));
@@ -627,7 +634,20 @@ const PowerRankingPage = () => {
             period
           });
           updatePerson(result.person);
+          if (result.inventory) {
+            setInventory(result.inventory);
+          }
           await refreshPeople();
+          if (result.consumedBonusItemCode) {
+            pushNotification({
+              tone: "info",
+              title: "사냥 보너스 사용",
+              body:
+                result.consumedBonusItemCode === "ranking-up-ticket"
+                  ? "올리기권 1개를 사용했습니다."
+                  : "내리기권 1개를 사용했습니다."
+            });
+          }
           if (result.droppedItem) {
             const message = `${result.droppedItem.name} 획득! 1% 드롭에 당첨되었습니다.`;
             setRewardMessage(message);
@@ -1043,16 +1063,16 @@ const PowerRankingPage = () => {
                 <div className="powerRankingInventoryGroup">
                   <div className="powerRankingInventoryGroupHead">
                     <strong>소비 아이템</strong>
-                    <span>기본 드롭 확률 1%</span>
+                    <span>사냥 보너스 올리기권/내리기권은 버튼에서 바로 확인됩니다.</span>
                   </div>
 
                   <div className="powerRankingInventoryGrid">
-                    {inventory.length === 0 ? (
+                    {rankingConsumableInventory.length === 0 ? (
                       <article className="powerRankingInventoryEmpty">
                         로그인 후 랭킹 액션을 반영하면 아이템이 드롭됩니다.
                       </article>
                     ) : (
-                      inventory.map((item) => (
+                      rankingConsumableInventory.map((item) => (
                         <article key={item.code} className="powerRankingInventoryCard">
                           <div className="powerRankingInventoryVisual">
                             <img src={item.imageUrl} alt={item.name} className="powerRankingInventoryImage" />
@@ -1169,6 +1189,8 @@ const PowerRankingPage = () => {
                     const downHeatClass = getVoteQueueHeatClass(downQueueCount);
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
+                    const upTicketItem = inventoryByCode["ranking-up-ticket"];
+                    const downTicketItem = inventoryByCode["ranking-down-ticket"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
                     const isUpBursting = actionBurstKey?.startsWith(`${person.id}:1:`) ?? false;
@@ -1269,14 +1291,18 @@ const PowerRankingPage = () => {
                                 className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${upHeatClass} ${isUpBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
-                                {upQueueCount > 0 ? `▲ 올리기 (${upQueueCount})` : "▲ 올리기"}
+                                {upQueueCount > 0
+                                  ? `▲ 올리기 (${upQueueCount}) · 권 ${upTicketItem?.quantity ?? 0}`
+                                  : `▲ 올리기 · 권 ${upTicketItem?.quantity ?? 0}`}
                               </button>
                               <button
                                 type="button"
                                 className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${downHeatClass} ${isDownBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
-                                {downQueueCount > 0 ? `▼ 내리기 (${downQueueCount})` : "▼ 내리기"}
+                                {downQueueCount > 0
+                                  ? `▼ 내리기 (${downQueueCount}) · 권 ${downTicketItem?.quantity ?? 0}`
+                                  : `▼ 내리기 · 권 ${downTicketItem?.quantity ?? 0}`}
                               </button>
                             </div>
                           </div>

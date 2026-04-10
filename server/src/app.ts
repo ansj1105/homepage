@@ -40,6 +40,7 @@ import {
   getPublicSiteSettings,
   getContent,
   changePowerRankingScore,
+  grantPowerRankingInventoryItem,
   equipPowerRankingEquipment,
   getHuntingProfile,
   getLiveVisitorSummary,
@@ -851,7 +852,19 @@ export const createApp = () => {
       }
       const payload = parseHuntingCombatClick(req.body);
       const profile = await getHuntingProfile(user.id, payload.selectedCardId, payload.selectedCardLevel ?? 1);
-      res.json(clickCombat(user.id, profile, payload.zoneId, payload.monsterId));
+      const result = clickCombat(user.id, profile, payload.zoneId, payload.monsterId);
+      const shouldGrantBonusVoteItem =
+        result.defeated && Math.random() < (result.state.monster.isBoss ? 0.52 : 0.34);
+      const bonusVoteItem = shouldGrantBonusVoteItem
+        ? await grantPowerRankingInventoryItem(
+            user.id,
+            Math.random() < 0.5 ? "ranking-up-ticket" : "ranking-down-ticket"
+          )
+        : null;
+      res.json({
+        ...result,
+        bonusVoteItem
+      });
     } catch (error) {
       next(error);
     }

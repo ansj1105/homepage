@@ -204,7 +204,11 @@ export interface PowerRankingNote {
 
 export type PowerRankingPeriod = "all" | "weekly" | "daily";
 export type PowerRankingVoteDelta = 1 | -1;
-export type PowerRankingItemCode = "byeokbangjun-blanket" | "seoeuntaek-love";
+export type PowerRankingItemCode =
+  | "byeokbangjun-blanket"
+  | "seoeuntaek-love"
+  | "ranking-up-ticket"
+  | "ranking-down-ticket";
 export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
 export type PowerRankingEquipmentSlot = "weapon" | "head" | "top" | "bottom" | "shoes" | "gloves";
 export type PowerRankingEquipmentCode =
@@ -510,6 +514,7 @@ export interface HuntingCombatClickResponse {
   defeated: boolean;
   expGained: number;
   rewards: HuntingCombatReward[];
+  bonusVoteItem?: PowerRankingInventoryItem | null;
 }
 
 export interface GameHomeResponse {
@@ -545,6 +550,8 @@ export interface PowerRankingVoteResponse {
   person: PowerRankingPerson;
   droppedItem: PowerRankingInventoryItem | null;
   droppedEquipment: PowerRankingEquipmentInventoryItem | null;
+  inventory?: PowerRankingInventoryItem[];
+  consumedBonusItemCode?: PowerRankingItemCode | null;
 }
 
 export interface PowerRankingItemUseRequest {

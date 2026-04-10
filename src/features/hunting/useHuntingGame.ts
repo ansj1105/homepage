@@ -282,6 +282,13 @@ export const useHuntingGame = () => {
           body: result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", ")
         });
       }
+      if (result.bonusVoteItem) {
+        pushNotification({
+          tone: "reward",
+          title: "파워랭킹 보너스",
+          body: `${result.bonusVoteItem.name} x1 획득`
+        });
+      }
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "전투를 진행하지 못했습니다.");
