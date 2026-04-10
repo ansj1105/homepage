@@ -7569,7 +7569,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingBoardHeader,
 .powerRankingPageMaple .powerRankingRowSummary {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1.8fr) 120px 110px 120px;
+  grid-template-columns: 110px minmax(0, 1.7fr) 120px 100px minmax(220px, 1fr);
   align-items: center;
   gap: 16px;
 }
@@ -7700,26 +7700,32 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingRowAction {
   justify-self: end;
+  width: 100%;
 }
 
-.powerRankingPageMaple .powerRankingRowAction span {
-  display: inline-flex;
+.powerRankingPageMaple .powerRankingRowVoteQuick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
-  border: 1px solid rgba(16, 36, 63, 0.08);
-  border-radius: 6px;
-  background: #ffffff;
-  color: #17314f;
-  font-size: 13px;
-  font-weight: 700;
+  width: 100%;
 }
 
-.powerRankingPageMaple .powerRankingRow[open] .powerRankingRowAction span {
-  background: #13233c;
-  border-color: #13233c;
-  color: #ffffff;
+.powerRankingPageMaple .powerRankingRowVoteQuick .powerRankingVoteActionButton {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.powerRankingPageMaple .powerRankingRowDetailHint {
+  grid-column: 1 / -1;
+  justify-self: end;
+  color: #61738a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .powerRankingPageMaple .powerRankingVoteActions {
@@ -7737,6 +7743,27 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingScoreChartCard {
   gap: 14px;
+}
+
+.powerRankingPageMaple .powerRankingChartSection {
+  display: grid;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .powerRankingChartToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .powerRankingChartPlaceholder {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  color: #5a708b;
+  font-size: 14px;
+  text-align: center;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartHead {
@@ -9231,7 +9258,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingBoardHeader,
   .powerRankingPageMaple .powerRankingRowSummary {
-    grid-template-columns: 96px minmax(0, 1.6fr) 100px 96px 110px;
+    grid-template-columns: 96px minmax(0, 1.4fr) 100px 90px minmax(200px, 1fr);
   }
 }
 
@@ -9435,8 +9462,13 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
     justify-self: stretch;
   }
 
-  .powerRankingPageMaple .powerRankingRowAction span {
-    width: 100%;
+  .powerRankingPageMaple .powerRankingRowVoteQuick {
+    grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .powerRankingRowDetailHint {
+    justify-self: stretch;
+    text-align: center;
   }
 
   .powerRankingPageMaple .powerRankingRowDetail {

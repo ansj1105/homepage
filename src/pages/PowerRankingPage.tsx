@@ -120,6 +120,13 @@ type ScoreChartData = {
 
 type ScoreChartRange = "1d" | "7d" | "30d";
 
+type PowerRankingScoreChartPanelProps = {
+  person: PowerRankingPerson;
+  eventLogs: PowerRankingEventLog[];
+  scoreChartRange: ScoreChartRange;
+  onChangeRange: (range: ScoreChartRange) => void;
+};
+
 const CHART_PADDING_LEFT = 42;
 const CHART_PADDING_RIGHT = 12;
 const CHART_PADDING_TOP = 8;
@@ -350,6 +357,150 @@ const getPowerRankingItemEffectLabel = (itemCode: PowerRankingItemCode): string 
   return effectDelta > 0 ? `+${effectDelta}` : `${effectDelta}`;
 };
 
+const PowerRankingScoreChartPanel = ({
+  person,
+  eventLogs,
+  scoreChartRange,
+  onChangeRange
+}: PowerRankingScoreChartPanelProps) => {
+  const scoreChartData = useMemo(
+    () => buildScoreChartCandles(person, eventLogs, scoreChartRange),
+    [person, eventLogs, scoreChartRange]
+  );
+  const scoreChartCandles = scoreChartData.candles;
+  const scoreChartWidth = getScoreChartCanvasWidth(scoreChartCandles.length);
+
+  return (
+    <article className="powerRankingLogCard powerRankingScoreChartCard">
+      <div className="powerRankingScoreChartHead">
+        <strong>점수 변화 차트</strong>
+        <div className="powerRankingScoreChartHeadMeta">
+          <div className="powerRankingScoreChartRange" role="tablist" aria-label="점수 변화 기간 선택">
+            {(["1d", "7d", "30d"] as ScoreChartRange[]).map((range) => (
+              <button
+                key={`${person.id}-${range}`}
+                type="button"
+                className={scoreChartRange === range ? "isActive" : undefined}
+                onClick={() => onChangeRange(range)}
+              >
+                {getScoreChartRangeLabel(range)}
+              </button>
+            ))}
+          </div>
+          <span>{`${getScoreChartRangeLabel(scoreChartRange)} 기준 ${scoreChartCandles.length}개 ${scoreChartData.bucketLabel}`}</span>
+        </div>
+      </div>
+      <div className="powerRankingScoreChartWrap">
+        <div className="powerRankingScoreChartCanvas" style={{ width: `${scoreChartWidth}px` }}>
+          <svg
+            viewBox={`0 0 ${scoreChartWidth} 100`}
+            className="powerRankingScoreChart"
+            aria-label="점수 변화 차트"
+          >
+            {scoreChartData.yTicks.map((tick, index) => (
+              <g key={`${person.id}-y-tick-${index}`}>
+                <line
+                  x1={CHART_PADDING_LEFT}
+                  y1={tick.y}
+                  x2={scoreChartWidth - CHART_PADDING_RIGHT}
+                  y2={tick.y}
+                  className={`powerRankingScoreChartGridLine ${index === 0 || index === scoreChartData.yTicks.length - 1 ? "" : "isMid"}`.trim()}
+                />
+                <text
+                  x={CHART_PADDING_LEFT - 6}
+                  y={tick.y + 3}
+                  textAnchor="end"
+                  className="powerRankingScoreChartAxisText"
+                >
+                  {formatScoreAxisLabel(tick.value)}
+                </text>
+              </g>
+            ))}
+            <line
+              x1={CHART_PADDING_LEFT}
+              y1={CHART_PADDING_TOP}
+              x2={CHART_PADDING_LEFT}
+              y2={100 - CHART_PADDING_BOTTOM}
+              className="powerRankingScoreChartAxisLine"
+            />
+            <line
+              x1={CHART_PADDING_LEFT}
+              y1={100 - CHART_PADDING_BOTTOM}
+              x2={scoreChartWidth - CHART_PADDING_RIGHT}
+              y2={100 - CHART_PADDING_BOTTOM}
+              className="powerRankingScoreChartAxisLine"
+            />
+            {scoreChartCandles.map((candle, index) => {
+              const previousCandle = scoreChartCandles[index - 1];
+              const nextCandle = scoreChartCandles[index + 1];
+              const isPositive = candle.close >= candle.open;
+              const top = Math.min(candle.openY, candle.closeY);
+              const bottom = Math.max(candle.openY, candle.closeY);
+              const bodyHeight = Math.max(1.8, bottom - top);
+              const toneClass = isPositive ? "isPositive" : "isNegative";
+              const localStep = nextCandle
+                ? nextCandle.x - candle.x
+                : previousCandle
+                  ? candle.x - previousCandle.x
+                  : 4;
+              const bodyWidth = Math.max(1.2, Math.min(4.6, localStep * 0.92));
+
+              return (
+                <g key={`${person.id}-chart-segment-${index}`}>
+                  {previousCandle ? (
+                    <line
+                      x1={previousCandle.x}
+                      y1={previousCandle.closeY}
+                      x2={candle.x}
+                      y2={candle.closeY}
+                      className={`powerRankingScoreChartLine ${toneClass}`.trim()}
+                    />
+                  ) : null}
+                  <line
+                    x1={candle.x}
+                    y1={candle.highY}
+                    x2={candle.x}
+                    y2={candle.lowY}
+                    className={`powerRankingScoreChartWick ${toneClass}`.trim()}
+                  />
+                  <rect
+                    x={candle.x - bodyWidth / 2}
+                    y={top}
+                    width={bodyWidth}
+                    height={bodyHeight}
+                    rx={0.2}
+                    className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+          <div className="powerRankingScoreChartLabels">
+            {scoreChartCandles
+              .filter((_, index) => {
+                const step =
+                  scoreChartCandles.length > 240
+                    ? Math.ceil(scoreChartCandles.length / 10)
+                    : scoreChartCandles.length > 96
+                      ? Math.ceil(scoreChartCandles.length / 8)
+                      : scoreChartCandles.length > 36
+                        ? Math.ceil(scoreChartCandles.length / 6)
+                        : 1;
+                return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
+              })
+              .map((candle, index) => (
+                <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
+                  <strong>{formatScoreAxisLabel(candle.close)}</strong>
+                  <span>{candle.label}</span>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
+
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
@@ -497,6 +648,7 @@ const PowerRankingPage = () => {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
   const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
   const [scoreChartRange, setScoreChartRange] = useState<ScoreChartRange>("1d");
+  const [visibleCharts, setVisibleCharts] = useState<Record<string, boolean>>({});
   const [selectedFaction, setSelectedFaction] = useState<PowerRankingFaction>(() => {
     if (typeof window === "undefined") {
       return "blue";
@@ -1405,21 +1557,19 @@ const PowerRankingPage = () => {
                   <span>캐릭터 정보</span>
                   <span>점수</span>
                   <span>메모</span>
-                  <span>관리</span>
+                  <span>투표 / 상세</span>
                 </div>
 
                 <div className="powerRankingBoardList">
                   {orderedPeople.map((person) => {
                     const officialRank = person.rank;
                     const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
-                    const scoreChartData = buildScoreChartCandles(person, eventLogs, scoreChartRange);
-                    const scoreChartCandles = scoreChartData.candles;
-                    const scoreChartWidth = getScoreChartCanvasWidth(scoreChartCandles.length);
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
                     const upHeatClass = getVoteQueueHeatClass(upQueueCount);
                     const downHeatClass = getVoteQueueHeatClass(downQueueCount);
+                    const isChartVisible = visibleCharts[person.id] ?? false;
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
                     const blessingItem = inventoryByCode["kimdaseul-blessing"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
@@ -1499,7 +1649,35 @@ const PowerRankingPage = () => {
                           </div>
 
                           <div className="powerRankingRowAction">
-                            <span>상세 보기</span>
+                            <div className="powerRankingRowVoteQuick">
+                              <button
+                                type="button"
+                                className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${upHeatClass} ${isUpBursting ? "isBursting" : ""}`.trim()}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  void handleVoteAction(person.id, 1);
+                                }}
+                              >
+                                {upQueueCount > 0
+                                  ? `▲ 올리기 (${upQueueCount}) · 권 ${upTicketItem?.quantity ?? 0}`
+                                  : `▲ 올리기 · 권 ${upTicketItem?.quantity ?? 0}`}
+                              </button>
+                              <button
+                                type="button"
+                                className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${downHeatClass} ${isDownBursting ? "isBursting" : ""}`.trim()}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  void handleVoteAction(person.id, -1);
+                                }}
+                              >
+                                {downQueueCount > 0
+                                  ? `▼ 내리기 (${downQueueCount}) · 권 ${downTicketItem?.quantity ?? 0}`
+                                  : `▼ 내리기 · 권 ${downTicketItem?.quantity ?? 0}`}
+                              </button>
+                              <span className="powerRankingRowDetailHint">상세 보기</span>
+                            </div>
                           </div>
                         </summary>
 
@@ -1631,126 +1809,35 @@ const PowerRankingPage = () => {
                             </div>
                           </div>
 
-                          <article className="powerRankingLogCard powerRankingScoreChartCard">
-                            <div className="powerRankingScoreChartHead">
+                          <div className="powerRankingChartSection">
+                            <div className="powerRankingChartToggleRow">
                               <strong>점수 변화 차트</strong>
-                              <div className="powerRankingScoreChartHeadMeta">
-                                <div className="powerRankingScoreChartRange" role="tablist" aria-label="점수 변화 기간 선택">
-                                  {(["1d", "7d", "30d"] as ScoreChartRange[]).map((range) => (
-                                    <button
-                                      key={`${person.id}-${range}`}
-                                      type="button"
-                                      className={scoreChartRange === range ? "isActive" : undefined}
-                                      onClick={() => setScoreChartRange(range)}
-                                    >
-                                      {getScoreChartRangeLabel(range)}
-                                    </button>
-                                  ))}
-                                </div>
-                                <span>{`${getScoreChartRangeLabel(scoreChartRange)} 기준 ${scoreChartCandles.length}개 ${scoreChartData.bucketLabel}`}</span>
-                              </div>
+                              <button
+                                type="button"
+                                className="powerRankingBackLink"
+                                onClick={() =>
+                                  setVisibleCharts((current) => ({
+                                    ...current,
+                                    [person.id]: !current[person.id]
+                                  }))
+                                }
+                              >
+                                {isChartVisible ? "차트 숨기기" : "차트 보기"}
+                              </button>
                             </div>
-                            <div className="powerRankingScoreChartWrap">
-                              <div className="powerRankingScoreChartCanvas" style={{ width: `${scoreChartWidth}px` }}>
-                                <svg
-                                  viewBox={`0 0 ${scoreChartWidth} 100`}
-                                  className="powerRankingScoreChart"
-                                  aria-label="점수 변화 차트"
-                                >
-                                  {scoreChartData.yTicks.map((tick, index) => (
-                                    <g key={`${person.id}-y-tick-${index}`}>
-                                      <line
-                                        x1={CHART_PADDING_LEFT}
-                                        y1={tick.y}
-                                        x2={scoreChartWidth - CHART_PADDING_RIGHT}
-                                        y2={tick.y}
-                                        className={`powerRankingScoreChartGridLine ${index === 0 || index === scoreChartData.yTicks.length - 1 ? "" : "isMid"}`.trim()}
-                                      />
-                                      <text
-                                        x={CHART_PADDING_LEFT - 6}
-                                        y={tick.y + 3}
-                                        textAnchor="end"
-                                        className="powerRankingScoreChartAxisText"
-                                      >
-                                        {formatScoreAxisLabel(tick.value)}
-                                      </text>
-                                    </g>
-                                  ))}
-                                  <line
-                                    x1={CHART_PADDING_LEFT}
-                                    y1={CHART_PADDING_TOP}
-                                    x2={CHART_PADDING_LEFT}
-                                    y2={100 - CHART_PADDING_BOTTOM}
-                                    className="powerRankingScoreChartAxisLine"
-                                  />
-                                  <line
-                                    x1={CHART_PADDING_LEFT}
-                                    y1={100 - CHART_PADDING_BOTTOM}
-                                    x2={scoreChartWidth - CHART_PADDING_RIGHT}
-                                    y2={100 - CHART_PADDING_BOTTOM}
-                                    className="powerRankingScoreChartAxisLine"
-                                  />
-                                  {scoreChartCandles.map((candle, index) => {
-                                    const previousCandle = scoreChartCandles[index - 1];
-                                    const nextCandle = scoreChartCandles[index + 1];
-                                    const isPositive = candle.close >= candle.open;
-                                    const top = Math.min(candle.openY, candle.closeY);
-                                    const bottom = Math.max(candle.openY, candle.closeY);
-                                    const bodyHeight = Math.max(1.8, bottom - top);
-                                    const toneClass = isPositive ? "isPositive" : "isNegative";
-                                    const localStep = nextCandle
-                                      ? nextCandle.x - candle.x
-                                      : previousCandle
-                                        ? candle.x - previousCandle.x
-                                        : 4;
-                                    const bodyWidth = Math.max(1.2, Math.min(4.6, localStep * 0.92));
-
-                                    return (
-                                      <g key={`${person.id}-chart-segment-${index}`}>
-                                        {previousCandle ? (
-                                          <line
-                                            x1={previousCandle.x}
-                                            y1={previousCandle.closeY}
-                                          x2={candle.x}
-                                          y2={candle.closeY}
-                                          className={`powerRankingScoreChartLine ${toneClass}`.trim()}
-                                        />
-                                      ) : null}
-                                        <line
-                                          x1={candle.x}
-                                          y1={candle.highY}
-                                          x2={candle.x}
-                                          y2={candle.lowY}
-                                          className={`powerRankingScoreChartWick ${toneClass}`.trim()}
-                                        />
-                                        <rect
-                                          x={candle.x - bodyWidth / 2}
-                                          y={top}
-                                          width={bodyWidth}
-                                          height={bodyHeight}
-                                          rx={0.2}
-                                          className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
-                                        />
-                                      </g>
-                                    );
-                                  })}
-                                </svg>
-                                <div className="powerRankingScoreChartLabels">
-                                  {scoreChartCandles
-                                    .filter((_, index) => {
-                                      const step = scoreChartCandles.length > 240 ? Math.ceil(scoreChartCandles.length / 10) : scoreChartCandles.length > 96 ? Math.ceil(scoreChartCandles.length / 8) : scoreChartCandles.length > 36 ? Math.ceil(scoreChartCandles.length / 6) : 1;
-                                      return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
-                                    })
-                                    .map((candle, index) => (
-                                      <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
-                                        <strong>{formatScoreAxisLabel(candle.close)}</strong>
-                                        <span>{candle.label}</span>
-                                      </div>
-                                    ))}
-                                </div>
-                              </div>
-                            </div>
-                          </article>
+                            {isChartVisible ? (
+                              <PowerRankingScoreChartPanel
+                                person={person}
+                                eventLogs={eventLogs}
+                                scoreChartRange={scoreChartRange}
+                                onChangeRange={setScoreChartRange}
+                              />
+                            ) : (
+                              <article className="powerRankingLogCard powerRankingChartPlaceholder">
+                                <p>차트 보기를 눌러 최근 점수 흐름을 불러오세요.</p>
+                              </article>
+                            )}
+                          </div>
 
                           <div className="powerRankingLogGrid powerRankingRowLogGrid">
                             <article className="powerRankingLogCard">
