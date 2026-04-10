@@ -1246,6 +1246,13 @@ const PowerRankingPage = () => {
             <p className="powerRankingLead">
               동연 파워랭킹 1등을 뽑습니다. 절대적인 권력을 가질수잇습니다.
             </p>
+            <figure className="powerRankingHeroInlinePhoto">
+              <img
+                src="/assets/sub/power-ranking-hero-photo.jpeg"
+                alt="동연 파워랭킹 히어로 이미지"
+                className="powerRankingHeroInlinePhotoImage"
+              />
+            </figure>
           </div>
 
           <div className="powerRankingHeroSideColumn">

@@ -6310,6 +6310,22 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   box-shadow: none;
 }
 
+.powerRankingPageMaple .powerRankingHeroInlinePhoto {
+  margin: 12px 0 0;
+  border: 1px solid rgba(16, 36, 63, 0.14);
+  background: #f7fbff;
+  overflow: hidden;
+}
+
+.powerRankingPageMaple .powerRankingHeroInlinePhotoImage {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
 .powerRankingPageMaple .powerRankingEyebrow {
   color: #163a70;
   text-shadow: none;
