@@ -21,6 +21,13 @@ import type {
   HuntingZoneSummary
 } from "../../types";
 
+type HuntingNotification = {
+  id: string;
+  tone: "reward" | "info";
+  title: string;
+  body: string;
+};
+
 const updateProgressFromCombat = (
   current: HuntingProgress,
   result: HuntingCombatClickResponse
@@ -68,11 +75,13 @@ const updateProgressFromCombat = (
 export const useHuntingGame = () => {
   const { user } = useUserAuth();
   const autoTimerRef = useRef<number | null>(null);
+  const notificationTimersRef = useRef<number[]>([]);
   const [progress, setProgress] = useState<HuntingProgress>(() => createDefaultProgress());
   const [profile, setProfile] = useState<HuntingProfile | null>(null);
   const [zones, setZones] = useState<HuntingZoneSummary[]>([]);
   const [zoneDetail, setZoneDetail] = useState<HuntingZoneDetail | null>(null);
   const [combatState, setCombatState] = useState<HuntingCombatState | null>(null);
+  const [notifications, setNotifications] = useState<HuntingNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAttacking, setIsAttacking] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -100,6 +109,16 @@ export const useHuntingGame = () => {
   const selectedCardLevel = progress.selectedCardTargetId
     ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1)
     : 1;
+
+  const pushNotification = (notification: Omit<HuntingNotification, "id">) => {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setNotifications((current) => [...current, { ...notification, id }].slice(-4));
+    const timer = window.setTimeout(() => {
+      setNotifications((current) => current.filter((entry) => entry.id !== id));
+      notificationTimersRef.current = notificationTimersRef.current.filter((value) => value !== timer);
+    }, 2800);
+    notificationTimersRef.current.push(timer);
+  };
 
   const loadZoneBundle = async (zoneId: string, monsterId?: string, selectedCardId?: string, cardLevel = 1) => {
     const [detail, state] = await Promise.all([
@@ -192,8 +211,9 @@ export const useHuntingGame = () => {
     if (!selectedZoneId || !selectedMonsterId || isAttacking) {
       return;
     }
-    if (progress.endurance < 1) {
-      setErrorMessage("지구력이 부족합니다. 포션을 사용하거나 잠시 회복을 기다리세요.");
+    const requiredEndurance = combatState?.clickCost ?? currentZone?.clickCost ?? 1;
+    if (progress.endurance < requiredEndurance) {
+      setErrorMessage(`피로도가 부족합니다. 현재 지역은 ${requiredEndurance} 피로도를 소모합니다.`);
       return;
     }
 
@@ -214,7 +234,7 @@ export const useHuntingGame = () => {
         nextLevel = combatUpdate.progress.level;
         return {
           ...combatUpdate.progress,
-          endurance: Math.max(0, current.endurance - 1),
+          endurance: Math.max(0, current.endurance - result.state.clickCost),
           cardPopularity: current.selectedCardTargetId
             ? {
                 ...current.cardPopularity,
@@ -230,10 +250,18 @@ export const useHuntingGame = () => {
         };
       });
       if (nextLevelUpCount > 0) {
-        window.alert(`레벨 업! 현재 레벨 ${nextLevel}`);
+        pushNotification({
+          tone: "reward",
+          title: "레벨 업",
+          body: `현재 레벨 ${nextLevel}`
+        });
       }
       if (result.rewards.length > 0) {
-        window.alert(result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", "));
+        pushNotification({
+          tone: "reward",
+          title: "드랍 획득",
+          body: result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", ")
+        });
       }
       setErrorMessage("");
     } catch (error) {
@@ -296,12 +324,19 @@ export const useHuntingGame = () => {
     const recoveryTimer = window.setInterval(() => {
       setProgress((current) => ({
         ...current,
-        endurance: Math.min(MAX_ENDURANCE, current.endurance + 2)
+        endurance: Math.min(MAX_ENDURANCE, current.endurance + 1)
       }));
-    }, 3000);
+    }, 20000);
 
     return () => window.clearInterval(recoveryTimer);
   }, [user]);
+
+  useEffect(() => {
+    return () => {
+      notificationTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      notificationTimersRef.current = [];
+    };
+  }, []);
 
   useEffect(() => {
     if (autoTimerRef.current) {
@@ -341,6 +376,7 @@ export const useHuntingGame = () => {
     zones,
     zoneDetail,
     combatState,
+    notifications,
     isLoading,
     isAttacking,
     errorMessage,

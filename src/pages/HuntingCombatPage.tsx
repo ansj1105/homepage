@@ -10,6 +10,7 @@ const HuntingCombatPage = () => {
     progress,
     profile,
     combatState,
+    notifications,
     currentZone,
     isLoading,
     isAttacking,
@@ -49,7 +50,7 @@ const HuntingCombatPage = () => {
                 <strong>{remainingClicks}</strong>
               </div>
               <div className="powerRankingStatCard">
-                <span>지구력</span>
+                <span>피로도</span>
                 <strong>{progress.endurance} / {MAX_ENDURANCE}</strong>
               </div>
               <div className="powerRankingStatCard">
@@ -59,6 +60,20 @@ const HuntingCombatPage = () => {
             </div>
           </div>
         </header>
+
+        {notifications.length > 0 ? (
+          <div className="powerRankingNotificationStack">
+            {notifications.map((notification) => (
+              <article
+                key={notification.id}
+                className={`powerRankingNotificationCard ${notification.tone === "reward" ? "isReward" : "isInfo"}`}
+              >
+                <strong>{notification.title}</strong>
+                <p>{notification.body}</p>
+              </article>
+            ))}
+          </div>
+        ) : null}
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
 
@@ -97,6 +112,7 @@ const HuntingCombatPage = () => {
                         <span>예상 데미지 {combatState.estimatedDamage}</span>
                         <span>치명타 {Math.round(combatState.critRate * 100)}%</span>
                         <span>클릭 소모 {combatState.clickCost}</span>
+                        <span>피로도 소모 {combatState.clickCost}</span>
                         {combatState.remainingBossEntries !== undefined ? (
                           <span>보스 입장 잔여 {combatState.remainingBossEntries}</span>
                         ) : null}
