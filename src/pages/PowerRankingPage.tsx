@@ -93,24 +93,38 @@ type ScoreChartPoint = {
   label: string;
 };
 
+type ScoreChartRange = "1d" | "7d" | "30d";
+
 const CHART_PADDING = 8;
+const SCORE_CHART_RANGE_DAYS: Record<ScoreChartRange, number> = {
+  "1d": 1,
+  "7d": 7,
+  "30d": 30
+};
+
+const getScoreChartRangeLabel = (range: ScoreChartRange): string => {
+  if (range === "1d") return "1일";
+  if (range === "7d") return "7일";
+  return "30일";
+};
 
 const buildScoreChartPoints = (
   person: PowerRankingPerson,
-  events: PowerRankingEventLog[]
+  events: PowerRankingEventLog[],
+  range: ScoreChartRange
 ): ScoreChartPoint[] => {
+  const cutoff = Date.now() - SCORE_CHART_RANGE_DAYS[range] * 24 * 60 * 60 * 1000;
   const recentEvents = events
-    .filter((event) => event.personId === person.id)
+    .filter((event) => event.personId === person.id && new Date(event.createdAt).getTime() >= cutoff)
     .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    .slice(-10);
 
   if (recentEvents.length === 0) {
     return [
       {
-        x: 0,
-        y: 0,
+        x: 50,
+        y: 50,
         score: person.score,
-        label: "현재"
+        label: `${getScoreChartRangeLabel(range)} 변화 없음`
       }
     ];
   }
@@ -139,7 +153,7 @@ const buildScoreChartPoints = (
     score,
     label:
       index === 0
-        ? "시작"
+        ? `${getScoreChartRangeLabel(range)} 시작`
         : formatDateTime(recentEvents[index - 1]?.createdAt ?? "") || `변화 ${index}`
   }));
 };
@@ -319,6 +333,7 @@ const PowerRankingPage = () => {
   const [countdownSeconds, setCountdownSeconds] = useState(getSecondsUntilNextHour());
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
   const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
+  const [scoreChartRange, setScoreChartRange] = useState<ScoreChartRange>("1d");
   const previousRanksRef = useRef<Map<string, number>>(new Map());
   const voteQueueRef = useRef<VoteQueueItem[]>([]);
   const isProcessingVoteQueueRef = useRef(false);
@@ -1145,7 +1160,7 @@ const PowerRankingPage = () => {
                   {orderedPeople.map((person) => {
                     const officialRank = person.rank;
                     const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
-                    const scoreChartPoints = buildScoreChartPoints(person, eventLogs);
+                    const scoreChartPoints = buildScoreChartPoints(person, eventLogs, scoreChartRange);
                     const chartPolylinePoints = scoreChartPoints.map((point) => `${point.x},${point.y}`).join(" ");
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
@@ -1302,7 +1317,21 @@ const PowerRankingPage = () => {
                           <article className="powerRankingLogCard powerRankingScoreChartCard">
                             <div className="powerRankingScoreChartHead">
                               <strong>점수 변화 차트</strong>
-                              <span>{`최근 ${scoreChartPoints.length > 1 ? scoreChartPoints.length - 1 : 0}회 반영`}</span>
+                              <div className="powerRankingScoreChartHeadMeta">
+                                <div className="powerRankingScoreChartRange" role="tablist" aria-label="점수 변화 기간 선택">
+                                  {(["1d", "7d", "30d"] as ScoreChartRange[]).map((range) => (
+                                    <button
+                                      key={`${person.id}-${range}`}
+                                      type="button"
+                                      className={scoreChartRange === range ? "isActive" : undefined}
+                                      onClick={() => setScoreChartRange(range)}
+                                    >
+                                      {getScoreChartRangeLabel(range)}
+                                    </button>
+                                  ))}
+                                </div>
+                                <span>{`${getScoreChartRangeLabel(scoreChartRange)} 기준 ${scoreChartPoints.length > 1 ? scoreChartPoints.length - 1 : 0}회 반영`}</span>
+                              </div>
                             </div>
                             <div className="powerRankingScoreChartWrap">
                               <svg viewBox="0 0 100 100" className="powerRankingScoreChart" preserveAspectRatio="none" aria-label="점수 변화 차트">
@@ -1319,7 +1348,7 @@ const PowerRankingPage = () => {
                                     <circle
                                       cx={point.x}
                                       cy={point.y}
-                                      r="2.8"
+                                      r="1.9"
                                       className="powerRankingScoreChartDot"
                                     />
                                   </g>
