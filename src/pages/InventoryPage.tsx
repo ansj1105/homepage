@@ -5,9 +5,9 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import { useUserAuth } from "../auth/UserAuthContext";
 import {
-  consumableMeta,
   getHuntingStorageKey,
   loadHuntingProgress,
+  miscMeta,
   materialMeta,
   saveHuntingProgress,
   type HuntingProgress
@@ -46,7 +46,9 @@ const huntingResourceVisualMap: Record<
   "fan-letter": { icon: "팬", toneClass: "isCard" },
   "cheering-stick": { icon: "응", toneClass: "isCard" },
   "viral-ticket": { icon: "바", toneClass: "isCard" },
-  "protection-scroll": { icon: "보", toneClass: "isScroll" }
+  "protection-scroll": { icon: "보", toneClass: "isScroll" },
+  "night-snack-ticket": { icon: "야", toneClass: "isToken" },
+  "festival-exchange-coupon": { icon: "축", toneClass: "isToken" }
 };
 
 const InventoryPage = () => {
@@ -147,11 +149,11 @@ const InventoryPage = () => {
               description: materialMeta[code].description,
               quantity: progress.materials[code]
             })),
-            ...(Object.keys(consumableMeta) as Array<keyof typeof consumableMeta>).map((code) => ({
+            ...(Object.keys(miscMeta) as Array<keyof typeof miscMeta>).map((code) => ({
               code,
-              name: consumableMeta[code].name,
-              description: consumableMeta[code].description,
-              quantity: progress.consumables[code]
+              name: miscMeta[code].name,
+              description: miscMeta[code].description,
+              quantity: progress.miscItems[code]
             }))
           ]
         : [],

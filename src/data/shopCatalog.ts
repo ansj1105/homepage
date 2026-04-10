@@ -4,7 +4,7 @@ export interface ShopCatalogItem {
   description: string;
   priceCurrency: "club-coin";
   priceAmount: number;
-  itemType: "consumable" | "material";
+  itemType: "consumable" | "material" | "misc";
   code: string;
   category?: string;
 }
@@ -139,5 +139,15 @@ export const shopCatalog: ShopCatalogItem[] = [
     itemType: "material",
     code: "refined-stone",
     category: "강화 재료"
+  },
+  {
+    id: "shop-night-snack-ticket",
+    name: "야식 교환권",
+    description: "교내 이벤트와 야식 보상 교환에 쓰이는 기타 아이템입니다.",
+    priceCurrency: "club-coin",
+    priceAmount: 150,
+    itemType: "misc",
+    code: "night-snack-ticket",
+    category: "기타"
   }
 ];

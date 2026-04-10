@@ -8,6 +8,9 @@ export type HuntingMaterialCode =
   | "ancient-core"
   | "card-shard"
   | "event-token";
+export type HuntingMiscCode =
+  | "night-snack-ticket"
+  | "festival-exchange-coupon";
 export type HuntingConsumableCode =
   | "healing-potion"
   | "medium-healing-potion"
@@ -30,6 +33,7 @@ export type HuntingProgress = {
   selectedMonsterId: string;
   autoAttackEnabled: boolean;
   materials: Record<HuntingMaterialCode, number>;
+  miscItems: Record<HuntingMiscCode, number>;
   consumables: Record<HuntingConsumableCode, number>;
   enhancementLevels: Partial<Record<PowerRankingEquipmentCode, number>>;
   cardLevels: Record<string, number>;
@@ -84,6 +88,17 @@ export const materialMeta: Record<HuntingMaterialCode, { name: string; descripti
   "event-token": { name: "이벤트 토큰", description: "기간 한정 교환 상점에 쓰이는 토큰입니다." }
 };
 
+export const miscMeta: Record<HuntingMiscCode, { name: string; description: string }> = {
+  "night-snack-ticket": {
+    name: "야식 교환권",
+    description: "교내 이벤트나 상점 교환에서 사용하는 기타 아이템입니다."
+  },
+  "festival-exchange-coupon": {
+    name: "축제 교환권",
+    description: "시즌 이벤트 상점에서 한정 보상과 교환하는 기타 아이템입니다."
+  }
+};
+
 export const consumableMeta: Record<
   HuntingConsumableCode,
   { name: string; description: string; category: "회복형" | "공격 버프형" | "드랍 버프형" | "클릭 회복형" | "카드 성장형" | "보호형" }
@@ -117,6 +132,10 @@ export const createDefaultProgress = (): HuntingProgress => ({
     "ancient-core": 0,
     "card-shard": 0,
     "event-token": 0
+  },
+  miscItems: {
+    "night-snack-ticket": 0,
+    "festival-exchange-coupon": 0
   },
   consumables: {
     "healing-potion": 0,
@@ -173,6 +192,10 @@ export const loadHuntingProgress = (storageKey: string): HuntingProgress => {
       materials: {
         ...createDefaultProgress().materials,
         ...(parsed.materials ?? {})
+      },
+      miscItems: {
+        ...createDefaultProgress().miscItems,
+        ...(parsed.miscItems ?? {})
       },
       consumables: {
         ...createDefaultProgress().consumables,

@@ -337,7 +337,7 @@ export interface ShopItem {
   description: string;
   priceCurrency: "club-coin";
   priceAmount: number;
-  itemType: "consumable" | "material";
+  itemType: "consumable" | "material" | "misc";
   code: string;
   category?: string;
 }

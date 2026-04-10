@@ -44,6 +44,13 @@ const ShopPage = () => {
             ? { [item.code]: progress.materials[item.code as keyof typeof progress.materials] + 1 }
             : {})
         },
+        miscItems:
+          item.itemType === "misc"
+            ? {
+                ...progress.miscItems,
+                [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1
+              }
+            : progress.miscItems,
         consumables:
           item.itemType === "consumable"
             ? {
@@ -89,7 +96,9 @@ const ShopPage = () => {
                   <p>{item.description}</p>
                   <div className="powerRankingInventoryTags">
                     <span className="powerRankingInventoryPill">가격 {item.priceAmount}</span>
-                    <span className="powerRankingInventoryPill isMuted">{item.priceCurrency}</span>
+                    <span className="powerRankingInventoryPill isMuted">
+                      {item.category ?? (item.itemType === "consumable" ? "소비" : item.itemType === "material" ? "재료" : "기타")}
+                    </span>
                   </div>
                   <button type="button" className="powerRankingItemButton isPositive" onClick={() => void handleBuy(item)}>
                     구매
