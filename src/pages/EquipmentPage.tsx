@@ -5,11 +5,16 @@ import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import {
+  consumableMeta,
   materialMeta,
   miscMeta
 } from "../features/huntingProgress";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
-import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
+import {
+  getPowerRankingEquipmentSetCounts,
+  powerRankingEquipmentSetCatalog,
+  powerRankingEquipmentSlotLabels
+} from "../data/powerRankingEquipment";
 import type {
   PowerRankingEquipmentCode,
   PowerRankingEquipmentInventoryItem,
@@ -184,6 +189,9 @@ const EquipmentPage = () => {
     const summaries: string[] = [];
 
     const equippedList = Object.values(equippedItems);
+    const setCounts = getPowerRankingEquipmentSetCounts(
+      equippedList.map((item) => item.code as PowerRankingEquipmentCode)
+    );
     for (const item of equippedList) {
       switch (item.code) {
         case "crown-of-cheers":
@@ -217,6 +225,15 @@ const EquipmentPage = () => {
           loveDelta += 10;
           summaries.push("소비 아이템 위력 +10");
           break;
+        case "archive-circlet":
+          upDelta += 1;
+          summaries.push("올리기 +1");
+          break;
+        case "route-cap":
+          upDelta += 1;
+          downDelta -= 1;
+          summaries.push("올리기/내리기 보정 +1");
+          break;
         case "mint-beret":
           consumableDropBonus += 1.5;
           summaries.push("소비 아이템 드롭률 +1.5%");
@@ -230,6 +247,23 @@ const EquipmentPage = () => {
           equipmentDropBonus += 1.5;
           summaries.push("장비 드롭률 +1.5%");
           break;
+        case "heritage-coat":
+          upDelta += 2;
+          summaries.push("올리기 +2");
+          break;
+        case "spotlight-blazer":
+          consumableDropBonus += 2;
+          summaries.push("소비 아이템 드롭률 +2%");
+          break;
+        case "bastion-greaves":
+          upDelta += 1;
+          downDelta -= 1;
+          summaries.push("올리기 +1 / 내리기 -1");
+          break;
+        case "stage-pleats":
+          loveDelta += 10;
+          summaries.push("긍정 소비 아이템 위력 +10");
+          break;
         case "crystal-sneakers":
           consumableDropBonus += 1;
           summaries.push("소비 아이템 드롭률 +1%");
@@ -238,10 +272,28 @@ const EquipmentPage = () => {
           equipmentDropBonus += 1;
           summaries.push("장비 드롭률 +1%");
           break;
+        case "honor-sabatons":
+          upDelta += 1;
+          summaries.push("올리기 +1");
+          break;
+        case "encore-sneakers":
+          summaries.push("클릭 여유 +12");
+          break;
         case "pulse-gloves":
           consumableDropBonus += 0.8;
           equipmentDropBonus += 0.8;
           summaries.push("소비/장비 드롭률 +0.8%");
+          break;
+        case "oath-gauntlets":
+          upDelta += 2;
+          downDelta -= 1;
+          blanketDelta -= 8;
+          loveDelta += 8;
+          summaries.push("전투형 장갑 보정 +2 / 소비 위력 +8");
+          break;
+        case "rhythm-gloves":
+          consumableDropBonus += 2;
+          summaries.push("카드형 장갑 드롭률 +2%");
           break;
         case "star-visor":
         case "thunder-boots":
@@ -250,6 +302,33 @@ const EquipmentPage = () => {
         default:
           break;
       }
+    }
+
+    if ((setCounts["balanced-freshman"] ?? 0) >= 2) {
+      upDelta += 1;
+      downDelta -= 1;
+      consumableDropBonus += 1;
+      equipmentDropBonus += 1;
+      summaries.push("초심자 탐험가 2세트 활성");
+    }
+    if ((setCounts["honor-knight"] ?? 0) >= 2) {
+      upDelta += 2;
+      downDelta -= 1;
+      summaries.push("명예 기사 2세트 활성");
+    }
+    if ((setCounts["golden-harvester"] ?? 0) >= 2) {
+      consumableDropBonus += 3;
+      equipmentDropBonus += 3;
+      summaries.push("황금 수확자 2세트 활성");
+    }
+    if ((setCounts["starlight-idol"] ?? 0) >= 2) {
+      loveDelta += 15;
+      summaries.push("별빛 아이돌 2세트 활성");
+    }
+    if ((setCounts["gale-chaser"] ?? 0) >= 2) {
+      upDelta += 1;
+      downDelta -= 1;
+      summaries.push("질풍 추적자 2세트 활성");
     }
 
     return {
@@ -262,6 +341,41 @@ const EquipmentPage = () => {
       summaries
     };
   }, [equippedItems]);
+
+  const huntingConsumableInventory = useMemo(
+    () =>
+      progress
+        ? (Object.keys(consumableMeta) as Array<keyof typeof consumableMeta>)
+            .map((code) => ({
+              code,
+              name: consumableMeta[code].name,
+              description: consumableMeta[code].description,
+              quantity: progress.consumables[code],
+              category: consumableMeta[code].category
+            }))
+            .filter((item) => item.quantity > 0)
+        : [],
+    [progress]
+  );
+
+  const activeSetSummary = useMemo(
+    () => {
+      const setCounts = getPowerRankingEquipmentSetCounts(
+        Object.values(equippedItems)
+          .map((item) => item?.code)
+          .filter((code): code is PowerRankingEquipmentCode => Boolean(code))
+      );
+      return Object.entries(setCounts)
+        .filter(([, count]) => (count ?? 0) > 0)
+        .map(([setId, count]) => ({
+          setId,
+          count: count ?? 0,
+          label: powerRankingEquipmentSetCatalog[setId as keyof typeof powerRankingEquipmentSetCatalog].name,
+          summary: powerRankingEquipmentSetCatalog[setId as keyof typeof powerRankingEquipmentSetCatalog].bonusSummary
+        }));
+    },
+    [equippedItems]
+  );
 
   const otherItems = useMemo(
     () =>
@@ -456,6 +570,23 @@ const EquipmentPage = () => {
                 )}
               </div>
 
+              <div className="equipmentPageEffectList">
+                <strong>활성 세트 효과</strong>
+                {activeSetSummary.length === 0 ? (
+                  <p>아직 세트가 완성되지 않았습니다.</p>
+                ) : (
+                  <ul className="powerRankingEquipmentEnhancementList">
+                    {activeSetSummary.map((setItem, index) => (
+                      <li key={`${setItem.setId}-${index}`}>
+                        <span>{setItem.count}</span>
+                        <strong>{setItem.label}</strong>
+                        <small>{setItem.summary}</small>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
               <div className="gameHomeQuickGrid">
                 <Link to="/dongyeon-inventory" className="powerRankingItemButton gameHomeQuickLink">
                   인벤토리 이동
@@ -583,7 +714,29 @@ const EquipmentPage = () => {
               </div>
 
               <div className="powerRankingInventoryGrid">
-                {itemInventory.length === 0 ? (
+                {huntingConsumableInventory.map((item) => (
+                  <article key={`hunting-${item.code}`} className="powerRankingInventoryCard">
+                    <div className="powerRankingInventoryVisual">
+                      <div
+                        className={`powerRankingResourceIcon ${huntingResourceVisualMap[item.code]?.toneClass ?? ""}`.trim()}
+                      >
+                        {huntingResourceVisualMap[item.code]?.icon ?? "IT"}
+                      </div>
+                      <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                    </div>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{item.name}</strong>
+                        <span>{item.category}</span>
+                      </div>
+                      <p>{item.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="powerRankingInventoryGrid">
+                {itemInventory.length === 0 && huntingConsumableInventory.length === 0 ? (
                   <article className="powerRankingInventoryEmpty">보유 중인 소비 아이템이 없습니다.</article>
                 ) : (
                   itemInventory.map((item) => {

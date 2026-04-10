@@ -4,7 +4,7 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
-import type { HuntingConsumableCode, HuntingMaterialCode } from "../features/huntingProgress";
+import type { HuntingConsumableCode, HuntingMaterialCode, HuntingMiscCode } from "../features/huntingProgress";
 import type { MonsterCollectionEntry, SetCollectionEntry } from "../types";
 
 type CollectionTab = "monsters" | "equipment" | "sets" | "exchange";
@@ -14,7 +14,10 @@ type SetExchangeRecipe = {
   subtitle: string;
   description: string;
   costs: Array<{ code: HuntingMaterialCode; amount: number; label: string }>;
-  rewards: Array<{ code: HuntingConsumableCode; amount: number; label: string }>;
+  rewards: Array<
+    | { inventoryType: "consumable"; code: HuntingConsumableCode; amount: number; label: string }
+    | { inventoryType: "misc"; code: HuntingMiscCode; amount: number; label: string }
+  >;
 };
 
 const COLLECTION_PAGE_SIZE = 6;
@@ -104,8 +107,8 @@ const CollectionPage = () => {
           { code: "club-coin", amount: 260, label: "동연 코인" }
         ],
         rewards: [
-          { code: "protection-scroll", amount: 1, label: "보호 주문서" },
-          { code: "power-potion", amount: 1, label: "힘의 물약" }
+          { inventoryType: "consumable", code: "protection-scroll", amount: 1, label: "보호 주문서" },
+          { inventoryType: "consumable", code: "power-potion", amount: 1, label: "힘의 물약" }
         ]
       },
       {
@@ -119,8 +122,8 @@ const CollectionPage = () => {
           { code: "club-coin", amount: 220, label: "동연 코인" }
         ],
         rewards: [
-          { code: "harvest-booster", amount: 2, label: "채집 증폭제" },
-          { code: "energy-bar", amount: 2, label: "에너지 바" }
+          { inventoryType: "consumable", code: "harvest-booster", amount: 2, label: "채집 증폭제" },
+          { inventoryType: "consumable", code: "energy-bar", amount: 2, label: "에너지 바" }
         ]
       },
       {
@@ -134,9 +137,24 @@ const CollectionPage = () => {
           { code: "club-coin", amount: 300, label: "동연 코인" }
         ],
         rewards: [
-          { code: "fan-letter", amount: 2, label: "팬레터" },
-          { code: "cheering-stick", amount: 1, label: "응원봉" },
-          { code: "viral-ticket", amount: 1, label: "바이럴 티켓" }
+          { inventoryType: "consumable", code: "fan-letter", amount: 2, label: "팬레터" },
+          { inventoryType: "consumable", code: "cheering-stick", amount: 1, label: "응원봉" },
+          { inventoryType: "consumable", code: "viral-ticket", amount: 1, label: "바이럴 티켓" }
+        ]
+      },
+      {
+        id: "festival-promo-cache",
+        name: "대동제 홍보 꾸러미",
+        subtitle: "이벤트형 세트 조각 교환",
+        description: "응원용 세트 조각을 축제용 교환권과 클릭 회복 아이템으로 돌려받습니다.",
+        costs: [
+          { code: "card-shard", amount: 4, label: "무대 조각" },
+          { code: "event-token", amount: 2, label: "이벤트 토큰" },
+          { code: "club-coin", amount: 180, label: "동연 코인" }
+        ],
+        rewards: [
+          { inventoryType: "misc", code: "festival-exchange-coupon", amount: 1, label: "축제 교환권" },
+          { inventoryType: "consumable", code: "energy-bar", amount: 1, label: "에너지 바" }
         ]
       }
     ],
@@ -158,16 +176,22 @@ const CollectionPage = () => {
       }
       const nextMaterials = { ...current.materials };
       const nextConsumables = { ...current.consumables };
+      const nextMiscItems = { ...current.miscItems };
       recipe.costs.forEach((cost) => {
         nextMaterials[cost.code] = Math.max(0, nextMaterials[cost.code] - cost.amount);
       });
       recipe.rewards.forEach((reward) => {
-        nextConsumables[reward.code] += reward.amount;
+        if (reward.inventoryType === "consumable") {
+          nextConsumables[reward.code] += reward.amount;
+          return;
+        }
+        nextMiscItems[reward.code] += reward.amount;
       });
       return {
         ...current,
         materials: nextMaterials,
-        consumables: nextConsumables
+        consumables: nextConsumables,
+        miscItems: nextMiscItems
       };
     });
     setErrorMessage(`${recipe.name} 교환 완료`);
@@ -190,9 +214,9 @@ const CollectionPage = () => {
     id: item.code,
     imageUrl: item.imageUrl,
     title: item.name,
-    subtitle: item.slot,
+    subtitle: `${item.slot} · ${item.rarity ?? "common"}`,
     description: item.effectSummary,
-    tag: "장비 효과"
+    tag: item.setName ?? "장비 효과"
   }));
 
   const setCards = sets.map((setItem) => ({

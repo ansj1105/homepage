@@ -5,6 +5,7 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import { useUserAuth } from "../auth/UserAuthContext";
 import {
+  consumableMeta,
   miscMeta,
   materialMeta
 } from "../features/huntingProgress";
@@ -150,6 +151,22 @@ const InventoryPage = () => {
     [progress]
   );
 
+  const huntingConsumableItems = useMemo(
+    () =>
+      progress
+        ? (Object.keys(consumableMeta) as Array<keyof typeof consumableMeta>)
+            .map((code) => ({
+              code,
+              name: consumableMeta[code].name,
+              description: consumableMeta[code].description,
+              quantity: progress.consumables[code],
+              category: consumableMeta[code].category
+            }))
+            .filter((item) => item.quantity > 0)
+        : [],
+    [progress]
+  );
+
   const equippedList = Object.entries(equippedItems) as Array<[PowerRankingEquipmentSlot, any]>;
   const equippedCodes = new Set(
     equippedList
@@ -247,7 +264,26 @@ const InventoryPage = () => {
 
           {activeTab === "consumables" ? (
             <div className="powerRankingInventoryGrid">
-              {itemInventory.length === 0 ? (
+              {huntingConsumableItems.map((item) => (
+                <article key={`hunting-${item.code}`} className="powerRankingInventoryCard">
+                  <div className="powerRankingInventoryVisual">
+                    <div
+                      className={`powerRankingResourceIcon ${huntingResourceVisualMap[item.code]?.toneClass ?? ""}`.trim()}
+                    >
+                      {huntingResourceVisualMap[item.code]?.icon ?? "IT"}
+                    </div>
+                    <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                  </div>
+                  <div className="powerRankingInventoryBody">
+                    <div className="powerRankingInventoryHeading">
+                      <strong>{item.name}</strong>
+                      <span>{item.category}</span>
+                    </div>
+                    <p>{item.description}</p>
+                  </div>
+                </article>
+              ))}
+              {itemInventory.length === 0 && huntingConsumableItems.length === 0 ? (
                 <article className="powerRankingInventoryEmpty">보유 중인 소비 아이템이 없습니다.</article>
               ) : (
                 itemInventory.map((item) => (

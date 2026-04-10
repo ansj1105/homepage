@@ -1,5 +1,10 @@
 import { Pool, type PoolClient } from "pg";
-import { powerRankingEquipmentCatalog, powerRankingEquipmentCodes } from "../../src/data/powerRankingEquipment";
+import {
+  getPowerRankingEquipmentSetCounts,
+  powerRankingEquipmentCatalog,
+  powerRankingEquipmentCodes,
+  powerRankingEquipmentSetCatalog
+} from "../../src/data/powerRankingEquipment";
 import { getGameCardById } from "../../src/data/gameCards";
 import { powerRankingItemCatalog } from "../../src/data/powerRankingItems";
 import { defaultCmsPages } from "../../src/data/cmsPageDefaults";
@@ -17,6 +22,7 @@ import type {
   MainPageSettings,
   NoticeItem,
   PowerRankingEquipmentCode,
+  PowerRankingEquipmentSetId,
   PowerRankingEquipmentInventoryItem,
   PowerRankingEquipmentSlot,
   PowerRankingEquipmentState,
@@ -568,6 +574,9 @@ const getPowerRankingActionModifier = async (
   }
 
   const isPositive = delta > 0;
+  const setCounts = getPowerRankingEquipmentSetCounts(
+    equippedItems.map((item) => item.code as PowerRankingEquipmentCode)
+  );
   const hasCheerCrown = equippedItems.some((item) => item.code === "crown-of-cheers");
   const hasMidnightSlacks = equippedItems.some((item) => item.code === "midnight-slacks");
   if ((isPositive && hasCheerCrown) || (!isPositive && hasMidnightSlacks)) {
@@ -582,6 +591,36 @@ const getPowerRankingActionModifier = async (
   }
   if (equippedItems.some((item) => item.code === "titan-gauntlet")) {
     finalDelta += isPositive ? 1 : -1;
+  }
+  if (equippedItems.some((item) => item.code === "archive-circlet")) {
+    finalDelta += isPositive ? 1 : 0;
+  }
+  if (equippedItems.some((item) => item.code === "route-cap")) {
+    finalDelta += isPositive ? 1 : -1;
+  }
+  if (equippedItems.some((item) => item.code === "heritage-coat")) {
+    finalDelta += isPositive ? 2 : 0;
+  }
+  if (equippedItems.some((item) => item.code === "spotlight-blazer")) {
+    consumableDropRate += 0.02;
+  }
+  if (equippedItems.some((item) => item.code === "bastion-greaves")) {
+    finalDelta += isPositive ? 1 : -1;
+  }
+  if (equippedItems.some((item) => item.code === "stage-pleats")) {
+    finalDelta += isPositive ? 10 : 0;
+  }
+  if (equippedItems.some((item) => item.code === "honor-sabatons")) {
+    finalDelta += isPositive ? 1 : 0;
+  }
+  if (equippedItems.some((item) => item.code === "encore-sneakers")) {
+    consumableDropRate += 0.01;
+  }
+  if (equippedItems.some((item) => item.code === "oath-gauntlets")) {
+    finalDelta += isPositive ? 2 : -1;
+  }
+  if (equippedItems.some((item) => item.code === "rhythm-gloves")) {
+    consumableDropRate += 0.02;
   }
 
   if (equippedItems.some((item) => item.code === "mint-beret")) {
@@ -618,6 +657,25 @@ const getPowerRankingActionModifier = async (
     if (dailyCount === 0) {
       finalDelta += isPositive ? 5 : -5;
     }
+  }
+
+  if ((setCounts["balanced-freshman"] ?? 0) >= 2) {
+    finalDelta += isPositive ? 1 : -1;
+    consumableDropRate += 0.01;
+    equipmentDropRate += 0.01;
+  }
+  if ((setCounts["honor-knight"] ?? 0) >= 2) {
+    finalDelta += isPositive ? 2 : -1;
+  }
+  if ((setCounts["golden-harvester"] ?? 0) >= 2) {
+    consumableDropRate += 0.03;
+    equipmentDropRate += 0.03;
+  }
+  if ((setCounts["starlight-idol"] ?? 0) >= 2) {
+    finalDelta += isPositive ? 15 : 0;
+  }
+  if ((setCounts["gale-chaser"] ?? 0) >= 2) {
+    finalDelta += isPositive ? 1 : -1;
   }
 
   return { finalDelta, consumableDropRate, equipmentDropRate };
@@ -1616,6 +1674,9 @@ export const getHuntingProfile = async (
   );
   const recommendationCoefficient = Number(recommendationCountResult.rows[0]?.count ?? "0");
   const equippedCount = equippedItems.length;
+  const setCounts = getPowerRankingEquipmentSetCounts(
+    equippedItems.map((item) => item.code as PowerRankingEquipmentCode)
+  );
 
   let setMultiplier = 1;
   if (equippedCount >= 6) {
@@ -1663,6 +1724,15 @@ export const getHuntingProfile = async (
         dropRateMultiplier += 0.05;
         effectBreakdown.push("민트 베레모 드랍 x1.05");
         break;
+      case "archive-circlet":
+        weaponAttack += 12;
+        effectBreakdown.push("아카이브 서클릿 무기 공격력 +12");
+        break;
+      case "route-cap":
+        autoGrowthMultiplier += 0.05;
+        dailyClickLimit += 10;
+        effectBreakdown.push("질풍 루트 캡 자동 성장 x1.05 / 클릭 +10");
+        break;
       case "commander-jacket":
         apparelPercentBonus += 0.18;
         effectBreakdown.push("사령관 재킷 의상 피해 +18%");
@@ -1676,6 +1746,16 @@ export const getHuntingProfile = async (
         flatBonus += 20;
         effectBreakdown.push("골든 하네스 +20");
         break;
+      case "heritage-coat":
+        apparelPercentBonus += 0.16;
+        weaponAttack += 8;
+        effectBreakdown.push("명예 기사 코트 의상 피해 +16%");
+        break;
+      case "spotlight-blazer":
+        cardGrowthMultiplier += 0.08;
+        dropRateMultiplier += 0.02;
+        effectBreakdown.push("스포트라이트 블레이저 카드 성장 x1.08");
+        break;
       case "midnight-slacks":
         apparelPercentBonus += 0.22;
         effectBreakdown.push("미드나잇 슬랙스 의상 피해 +22%");
@@ -1687,6 +1767,16 @@ export const getHuntingProfile = async (
       case "aurora-skirt":
         apparelPercentBonus += 0.09;
         effectBreakdown.push("오로라 스커트 의상 피해 +9%");
+        break;
+      case "bastion-greaves":
+        apparelPercentBonus += 0.14;
+        flatBonus += 10;
+        effectBreakdown.push("바스티온 그리브 의상 피해 +14%");
+        break;
+      case "stage-pleats":
+        cardGrowthMultiplier += 0.06;
+        flatBonus += 10;
+        effectBreakdown.push("별빛 플리츠 카드 성장 x1.06");
         break;
       case "thunder-boots":
         autoGrowthMultiplier += 0.08;
@@ -1702,11 +1792,22 @@ export const getHuntingProfile = async (
         flatBonus += 2;
         effectBreakdown.push("엠버 힐 자동 성장 x1.05");
         break;
+      case "honor-sabatons":
+        autoGrowthMultiplier += 0.04;
+        weaponAttack += 10;
+        effectBreakdown.push("명예 기사 사바톤 무기 공격력 +10");
+        break;
+      case "encore-sneakers":
+        dailyClickLimit += 12;
+        cardGrowthMultiplier += 0.04;
+        effectBreakdown.push("앙코르 스니커즈 클릭 +12");
+        break;
       case "titan-gauntlet":
         flatBonus += 16;
         effectBreakdown.push("타이탄 건틀릿 +16");
         break;
       case "silk-gloves":
+        flatBonus += 10;
         effectBreakdown.push("실크 글러브 소비 아이템 위력 +10");
         break;
       case "pulse-gloves":
@@ -1714,8 +1815,82 @@ export const getHuntingProfile = async (
         bossBonusRollRate += 0.08;
         effectBreakdown.push("펄스 글러브 보스 추가 롤 +8%");
         break;
+      case "oath-gauntlets":
+        flatBonus += 18;
+        effectBreakdown.push("기사단 서약 건틀릿 +18");
+        break;
+      case "rhythm-gloves":
+        cardGrowthMultiplier += 0.06;
+        dropRateMultiplier += 0.02;
+        effectBreakdown.push("리듬 메이커 글러브 카드 성장 x1.06");
+        break;
+      case "heritage-spear":
+        weaponAttack += 58;
+        effectBreakdown.push("연세 헤리티지 랜스 무기 공격력 +58");
+        break;
+      case "spotlight-mic":
+        weaponAttack += 46;
+        cardGrowthMultiplier += 0.04;
+        effectBreakdown.push("스포트라이트 마이크 무기 공격력 +46");
+        break;
       default:
         break;
+    }
+  }
+
+  for (const [setId, count] of Object.entries(setCounts) as Array<[PowerRankingEquipmentSetId, number]>) {
+    if (count >= 2) {
+      switch (setId) {
+        case "balanced-freshman":
+          flatBonus += 8;
+          dropRateMultiplier += 0.04;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 2세트 활성`);
+          break;
+        case "honor-knight":
+          weaponAttack += 24;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 2세트 활성`);
+          break;
+        case "golden-harvester":
+          dropRateMultiplier += 0.08;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 2세트 활성`);
+          break;
+        case "starlight-idol":
+          cardGrowthMultiplier += 0.14;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 2세트 활성`);
+          break;
+        case "gale-chaser":
+          autoGrowthMultiplier += 0.1;
+          dailyClickLimit += 25;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 2세트 활성`);
+          break;
+      }
+    }
+    if (count >= 4) {
+      switch (setId) {
+        case "balanced-freshman":
+          effectMultiplier += 0.08;
+          dailyClickLimit += 20;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 4세트 활성`);
+          break;
+        case "honor-knight":
+          effectMultiplier += 0.12;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 4세트 활성`);
+          break;
+        case "golden-harvester":
+          dropRateMultiplier += 0.14;
+          bossBonusRollRate += 0.06;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 4세트 활성`);
+          break;
+        case "starlight-idol":
+          cardGrowthMultiplier += 0.1;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 4세트 활성`);
+          break;
+        case "gale-chaser":
+          autoGrowthMultiplier += 0.08;
+          effectMultiplier += 0.05;
+          effectBreakdown.unshift(`${powerRankingEquipmentSetCatalog[setId].name} 4세트 활성`);
+          break;
+      }
     }
   }
 

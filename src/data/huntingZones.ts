@@ -69,7 +69,13 @@ const monsterImageUrls: Record<string, string> = {
   "night-parade-queen": "/assets/monsters/night-parade-queen.svg",
   "index-wraith": "/assets/monsters/index-wraith.svg",
   "ledger-hydra": "/assets/monsters/ledger-hydra.svg",
-  "grand-archive-core": "/assets/monsters/grand-archive-core.svg"
+  "grand-archive-core": "/assets/monsters/grand-archive-core.svg",
+  "dawn-avenue-runner": "/assets/monsters/cheer-lion.svg",
+  "archive-keeper-prime": "/assets/monsters/index-wraith.svg",
+  "belfry-stag": "/assets/monsters/council-dragon.svg",
+  "festival-merch-fox": "/assets/monsters/booth-spirit.svg",
+  "stage-marshall": "/assets/monsters/night-parade-queen.svg",
+  "neon-herald": "/assets/monsters/grand-archive-core.svg"
 };
 
 export const huntingZones: HuntingZoneDefinition[] = [
@@ -496,6 +502,162 @@ export const huntingZones: HuntingZoneDefinition[] = [
           { kind: "material", code: "ancient-core", label: "한정 포토카드", rate: 0.38, min: 1, max: 3 },
           { kind: "consumable", code: "protection-scroll", label: "무대 출입 패스", rate: 0.28, min: 1, max: 1 },
           { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.34, min: 1, max: 1 }
+        ]
+      }
+    ]
+  },
+  {
+    id: "baekyang-avenue",
+    badge: "CH 6",
+    chapterLabel: "심화 지역",
+    zoneType: "elite",
+    roleSummary: "고급 강화 재료와 클릭 회복 아이템을 집중적으로 모으는 후반 파밍 사냥터",
+    name: "백양로 새벽 회랑",
+    description: "새벽 백양로를 질주하며 고급 강화 재료, 세트 조각, 클릭 회복 아이템을 빠르게 모으는 지역입니다.",
+    unlockLevel: 13,
+    recommendedPower: 260,
+    clickCost: 3,
+    monsters: [
+      {
+        id: "dawn-avenue-runner",
+        name: "백양로 질주자",
+        imageUrl: monsterImageUrls["dawn-avenue-runner"],
+        typeLabel: "유리몸형",
+        rarityLabel: "Legendary",
+        patternLabel: "HP는 낮지만 코인과 클릭 회복 아이템을 자주 떨구는 후반 파밍형",
+        flavor: "백양로를 끝없이 뛰며 새벽 공기를 휘저어 재료와 코인을 흩뿌립니다.",
+        maxHp: 4480,
+        defense: 158,
+        expReward: 336,
+        isBoss: false,
+        rewardSummary: "동연 코인, 에너지 바, 강화석",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 560, max: 760 },
+          { kind: "material", code: "enhancement-stone", label: "고급 세트 조각", rate: 0.92, min: 7, max: 12 },
+          { kind: "material", code: "refined-stone", label: "정제 강화석", rate: 0.46, min: 2, max: 4 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.56, min: 1, max: 2 },
+          { kind: "consumable", code: "lucky-scroll", label: "행운의 가루", rate: 0.22, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "archive-keeper-prime",
+        name: "연세 기록 보관관",
+        imageUrl: monsterImageUrls["archive-keeper-prime"],
+        typeLabel: "탱커형",
+        rarityLabel: "Legendary",
+        patternLabel: "높은 HP로 버티며 고급 강화 재료와 카드 조각을 공급하는 탱커형",
+        flavor: "보관된 아카이브를 지키며 오래 버티는 대신 희귀한 재료를 많이 남깁니다.",
+        maxHp: 5260,
+        defense: 172,
+        expReward: 364,
+        isBoss: false,
+        rewardSummary: "정제 강화석, 카드 조각",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 520, max: 700 },
+          { kind: "material", code: "refined-stone", label: "정제 강화석", rate: 0.58, min: 2, max: 5 },
+          { kind: "material", code: "ancient-core", label: "카드 조각 뭉치", rate: 0.34, min: 1, max: 2 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.26, min: 1, max: 1 },
+          { kind: "consumable", code: "protection-scroll", label: "보호 주문서", rate: 0.18, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "belfry-stag",
+        name: "연세종탑 흰사슴",
+        imageUrl: monsterImageUrls["belfry-stag"],
+        typeLabel: "보스형",
+        rarityLabel: "Boss",
+        patternLabel: "정제 강화석과 희귀 코어를 함께 주는 후반 정예 보스",
+        flavor: "종탑 아래 나타나 새벽 회랑을 지배하는 신비한 사슴입니다.",
+        maxHp: 6120,
+        defense: 188,
+        expReward: 420,
+        isBoss: true,
+        rewardSummary: "고급 강화석, 고대 코어, 고농축 에너지 드링크",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 680, max: 900 },
+          { kind: "material", code: "refined-stone", label: "정제 강화석", rate: 0.78, min: 3, max: 6 },
+          { kind: "material", code: "ancient-core", label: "고대 코어", rate: 0.4, min: 1, max: 3 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.34, min: 1, max: 1 },
+          { kind: "consumable", code: "protection-scroll", label: "보호 주문서", rate: 0.24, min: 1, max: 1 }
+        ]
+      }
+    ]
+  },
+  {
+    id: "daedongje-street",
+    badge: "EVT 2",
+    chapterLabel: "시즌 지역",
+    zoneType: "event",
+    roleSummary: "시즌 토큰과 카드 성장 소비템을 노리는 한정 이벤트 사냥터",
+    name: "대동제 환호 거리",
+    description: "축제 기간에만 열리는 거리형 이벤트 사냥터로, 응원 굿즈와 카드 성장 아이템을 집중적으로 획득합니다.",
+    unlockLevel: 15,
+    recommendedPower: 340,
+    clickCost: 4,
+    seasonLabel: "대동제 시즌",
+    isSeasonOpen: true,
+    monsters: [
+      {
+        id: "festival-merch-fox",
+        name: "굿즈 여우 상인",
+        imageUrl: monsterImageUrls["festival-merch-fox"],
+        typeLabel: "보상형",
+        rarityLabel: "Event",
+        patternLabel: "이벤트 토큰과 응원 소비템을 잘 주는 시즌 보상형",
+        flavor: "부스를 오가며 굿즈와 토큰을 쉴 새 없이 뿌리는 축제 전문 상인입니다.",
+        maxHp: 5820,
+        defense: 182,
+        expReward: 408,
+        isBoss: false,
+        rewardSummary: "팬레터, 응원봉, 이벤트 토큰",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 620, max: 860 },
+          { kind: "material", code: "ancient-core", label: "이벤트 토큰", rate: 0.42, min: 1, max: 2 },
+          { kind: "consumable", code: "energy-bar", label: "에너지 바", rate: 0.24, min: 1, max: 1 },
+          { kind: "consumable", code: "berserk-tonic", label: "팬레터 꾸러미", rate: 0.28, min: 1, max: 1 },
+          { kind: "consumable", code: "lucky-scroll", label: "응원 굿즈", rate: 0.26, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "stage-marshall",
+        name: "축제 무대 집행관",
+        imageUrl: monsterImageUrls["stage-marshall"],
+        typeLabel: "탱커형",
+        rarityLabel: "Event Boss",
+        patternLabel: "무대 운영 자원을 지키며 버티는 고HP 시즌 탱커형",
+        flavor: "축제 동선을 통제하며 응원 아이템과 이벤트 자원을 보호합니다.",
+        maxHp: 6640,
+        defense: 198,
+        expReward: 452,
+        isBoss: false,
+        rewardSummary: "응원봉, 바이럴 티켓, 보호 주문서",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 720, max: 960 },
+          { kind: "material", code: "refined-stone", label: "이벤트 토큰", rate: 0.48, min: 2, max: 4 },
+          { kind: "consumable", code: "berserk-tonic", label: "응원봉", rate: 0.34, min: 1, max: 2 },
+          { kind: "consumable", code: "protection-scroll", label: "보호 주문서", rate: 0.18, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.18, min: 1, max: 1 }
+        ]
+      },
+      {
+        id: "neon-herald",
+        name: "네온 헤럴드",
+        imageUrl: monsterImageUrls["neon-herald"],
+        typeLabel: "보스형",
+        rarityLabel: "Festival Boss",
+        patternLabel: "이벤트 토큰과 카드 성장 소비템을 다량 드랍하는 시즌 보스형",
+        flavor: "축제의 중심에서 가장 많은 응원과 자원을 끌어모으는 네온 빛 지배자입니다.",
+        maxHp: 7420,
+        defense: 216,
+        expReward: 520,
+        isBoss: true,
+        rewardSummary: "바이럴 티켓, 보호 주문서, 고농축 에너지 드링크",
+        dropTable: [
+          { kind: "material", code: "club-coin", label: "동연 코인", rate: 1, min: 880, max: 1180 },
+          { kind: "material", code: "ancient-core", label: "이벤트 토큰", rate: 0.56, min: 2, max: 4 },
+          { kind: "consumable", code: "berserk-tonic", label: "바이럴 티켓", rate: 0.28, min: 1, max: 2 },
+          { kind: "consumable", code: "protection-scroll", label: "보호 주문서", rate: 0.24, min: 1, max: 1 },
+          { kind: "consumable", code: "energy-drink", label: "고농축 에너지 드링크", rate: 0.3, min: 1, max: 1 }
         ]
       }
     ]

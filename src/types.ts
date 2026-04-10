@@ -215,25 +215,45 @@ export type PowerRankingItemCode =
   | "ranking-down-ticket";
 export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
 export type PowerRankingEquipmentSlot = "weapon" | "head" | "top" | "bottom" | "shoes" | "gloves";
+export type PowerRankingEquipmentSetId =
+  | "balanced-freshman"
+  | "honor-knight"
+  | "golden-harvester"
+  | "starlight-idol"
+  | "gale-chaser";
 export type PowerRankingEquipmentCode =
   | "training-branch"
   | "iron-pickaxe"
   | "fallen-order-blade"
+  | "heritage-spear"
+  | "spotlight-mic"
   | "crown-of-cheers"
   | "star-visor"
   | "mint-beret"
+  | "archive-circlet"
+  | "route-cap"
   | "commander-jacket"
   | "ribbon-cardigan"
   | "golden-harness"
+  | "heritage-coat"
+  | "spotlight-blazer"
   | "midnight-slacks"
   | "wave-denim"
   | "aurora-skirt"
+  | "bastion-greaves"
+  | "stage-pleats"
   | "thunder-boots"
   | "crystal-sneakers"
   | "ember-heels"
+  | "honor-sabatons"
+  | "encore-sneakers"
   | "titan-gauntlet"
   | "silk-gloves"
-  | "pulse-gloves";
+  | "pulse-gloves"
+  | "oath-gauntlets"
+  | "rhythm-gloves";
+
+export type PowerRankingEquipmentRarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export interface PowerRankingVoteRequest {
   deviceId: string;
@@ -256,6 +276,9 @@ export interface PowerRankingEquipmentCatalogEntry {
   name: string;
   description: string;
   imageUrl: string;
+  setId: PowerRankingEquipmentSetId;
+  setName: string;
+  rarity: PowerRankingEquipmentRarity;
   effectSummary: string;
 }
 
