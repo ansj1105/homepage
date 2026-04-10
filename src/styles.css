@@ -7216,6 +7216,31 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 4px;
 }
 
+.powerRankingPageMaple .powerRankingScoreWithDelta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.powerRankingPageMaple .powerRankingScoreDelta {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.powerRankingPageMaple .powerRankingScoreDelta.isPositive {
+  color: #c93f3f;
+}
+
+.powerRankingPageMaple .powerRankingScoreDelta.isNegative {
+  color: #255fba;
+}
+
+.powerRankingPageMaple .powerRankingScoreDelta.isNeutral {
+  color: #6f7f95;
+}
+
 .powerRankingPageMaple .powerRankingRowAction {
   justify-self: end;
 }
@@ -7251,6 +7276,71 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 18px;
   padding: 0 24px 24px;
   background: #ffffff;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartCard {
+  gap: 14px;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartHead span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartWrap {
+  display: grid;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .powerRankingScoreChart {
+  width: 100%;
+  height: 160px;
+  overflow: visible;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLine {
+  stroke: #1f4fa9;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartDot {
+  fill: #ffffff;
+  stroke: #1f4fa9;
+  stroke-width: 1.8;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLabels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 10px;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLabel {
+  display: grid;
+  gap: 3px;
+  padding-top: 8px;
+  border-top: 1px solid #d3e1f0;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLabel strong {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartLabel span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .powerRankingPageMaple .powerRankingDetailActions {
@@ -8209,6 +8299,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
     justify-content: space-between;
   }
 
+  .powerRankingPageMaple .powerRankingScoreWithDelta {
+    justify-content: flex-end;
+  }
+
   .powerRankingPageMaple .powerRankingRowLabel {
     display: inline-block;
     color: var(--muted);
@@ -8267,6 +8361,14 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingInventoryVisual {
     width: 100px;
+  }
+
+  .powerRankingPageMaple .powerRankingScoreChart {
+    height: 132px;
+  }
+
+  .powerRankingPageMaple .powerRankingScoreChartLabels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .powerRankingPageMaple .powerRankingEquipmentEnhancementList li {
@@ -8348,6 +8450,15 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingRowIdentityText strong {
     font-size: 21px;
+  }
+
+  .powerRankingPageMaple .powerRankingScoreWithDelta {
+    align-items: center;
+    gap: 6px;
+  }
+
+  .powerRankingPageMaple .powerRankingScoreDelta {
+    font-size: 12px;
   }
 
   .powerRankingPageMaple .powerRankingMemoButtons {

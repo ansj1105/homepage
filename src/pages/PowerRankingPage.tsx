@@ -65,6 +65,75 @@ const getVoteQueueHeatClass = (count: number): string => {
   return "";
 };
 
+const getRecentScoreDelta = (events: PowerRankingEventLog[], personId: string, windowMinutes = 60): number => {
+  const cutoff = Date.now() - windowMinutes * 60 * 1000;
+  return events
+    .filter((event) => event.personId === personId && new Date(event.createdAt).getTime() >= cutoff)
+    .reduce((sum, event) => sum + event.delta, 0);
+};
+
+const getScoreDeltaLabel = (delta: number): string => {
+  if (delta > 0) return `+${delta}`;
+  if (delta < 0) return `${delta}`;
+  return "+0";
+};
+
+const getScoreDeltaClassName = (delta: number): string => {
+  if (delta > 0) return "isPositive";
+  if (delta < 0) return "isNegative";
+  return "isNeutral";
+};
+
+type ScoreChartPoint = {
+  x: number;
+  y: number;
+  score: number;
+  label: string;
+};
+
+const buildScoreChartPoints = (
+  person: PowerRankingPerson,
+  events: PowerRankingEventLog[]
+): ScoreChartPoint[] => {
+  const recentEvents = events
+    .filter((event) => event.personId === person.id)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .slice(-10);
+
+  if (recentEvents.length === 0) {
+    return [
+      {
+        x: 0,
+        y: 0,
+        score: person.score,
+        label: "현재"
+      }
+    ];
+  }
+
+  const startingScore = person.score - recentEvents.reduce((sum, event) => sum + event.delta, 0);
+  const scoreValues = [startingScore];
+  let running = startingScore;
+  recentEvents.forEach((event) => {
+    running += event.delta;
+    scoreValues.push(running);
+  });
+
+  const minScore = Math.min(...scoreValues);
+  const maxScore = Math.max(...scoreValues);
+  const scoreRange = Math.max(1, maxScore - minScore);
+
+  return scoreValues.map((score, index) => ({
+    x: scoreValues.length === 1 ? 0 : (index / (scoreValues.length - 1)) * 100,
+    y: 100 - ((score - minScore) / scoreRange) * 100,
+    score,
+    label:
+      index === 0
+        ? "시작"
+        : formatDateTime(recentEvents[index - 1]?.createdAt ?? "") || `변화 ${index}`
+  }));
+};
+
 const getEventLabel = (event: PowerRankingEventLog): string => {
   if (event.eventType === "vote_down") {
     return `${event.actorNickname}님이 ${event.personName} 인기도를 내렸습니다.`;
@@ -999,6 +1068,9 @@ const PowerRankingPage = () => {
                 <div className="powerRankingBoardList">
                   {orderedPeople.map((person) => {
                     const officialRank = person.rank;
+                    const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
+                    const scoreChartPoints = buildScoreChartPoints(person, eventLogs);
+                    const chartPolylinePoints = scoreChartPoints.map((point) => `${point.x},${point.y}`).join(" ");
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
@@ -1058,7 +1130,12 @@ const PowerRankingPage = () => {
 
                           <div className="powerRankingRowScore">
                             <span className="powerRankingRowLabel">점수</span>
-                            <strong className={person.score < 0 ? "isNegative" : undefined}>{person.score}</strong>
+                            <div className="powerRankingScoreWithDelta">
+                              <strong className={person.score < 0 ? "isNegative" : undefined}>{person.score}</strong>
+                              <em className={`powerRankingScoreDelta ${getScoreDeltaClassName(recentScoreDelta)}`.trim()}>
+                                {getScoreDeltaLabel(recentScoreDelta)}
+                              </em>
+                            </div>
                           </div>
 
                           <div className="powerRankingRowNotes">
@@ -1145,6 +1222,40 @@ const PowerRankingPage = () => {
                               </span>
                             </div>
                           </div>
+
+                          <article className="powerRankingLogCard powerRankingScoreChartCard">
+                            <div className="powerRankingScoreChartHead">
+                              <strong>점수 변화 차트</strong>
+                              <span>{`최근 ${scoreChartPoints.length > 1 ? scoreChartPoints.length - 1 : 0}회 반영`}</span>
+                            </div>
+                            <div className="powerRankingScoreChartWrap">
+                              <svg viewBox="0 0 100 100" className="powerRankingScoreChart" preserveAspectRatio="none" aria-label="점수 변화 차트">
+                                <polyline
+                                  fill="none"
+                                  points={chartPolylinePoints}
+                                  className="powerRankingScoreChartLine"
+                                />
+                                {scoreChartPoints.map((point, index) => (
+                                  <g key={`${person.id}-chart-${index}`}>
+                                    <circle
+                                      cx={point.x}
+                                      cy={point.y}
+                                      r="2.8"
+                                      className="powerRankingScoreChartDot"
+                                    />
+                                  </g>
+                                ))}
+                              </svg>
+                              <div className="powerRankingScoreChartLabels">
+                                {scoreChartPoints.map((point, index) => (
+                                  <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
+                                    <strong>{point.score}</strong>
+                                    <span>{point.label}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </article>
 
                           <div className="powerRankingLogGrid powerRankingRowLogGrid">
                             <article className="powerRankingLogCard">
