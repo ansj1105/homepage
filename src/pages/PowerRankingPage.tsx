@@ -1688,8 +1688,8 @@ const PowerRankingPage = () => {
                                 }}
                               >
                                 {upQueueCount > 0
-                                  ? `▲ 올리기 (${upQueueCount}) · 권 ${upTicketItem?.quantity ?? 0}`
-                                  : `▲ 올리기 · 권 ${upTicketItem?.quantity ?? 0}`}
+                                  ? `▲ 올리기 권 (${upQueueCount}) · ${upTicketItem?.quantity ?? 0}`
+                                  : `▲ 올리기 권 · ${upTicketItem?.quantity ?? 0}`}
                               </button>
                               <button
                                 type="button"
@@ -1701,8 +1701,8 @@ const PowerRankingPage = () => {
                                 }}
                               >
                                 {downQueueCount > 0
-                                  ? `▼ 내리기 (${downQueueCount}) · 권 ${downTicketItem?.quantity ?? 0}`
-                                  : `▼ 내리기 · 권 ${downTicketItem?.quantity ?? 0}`}
+                                  ? `▼ 내리기 권 (${downQueueCount}) · ${downTicketItem?.quantity ?? 0}`
+                                  : `▼ 내리기 권 · ${downTicketItem?.quantity ?? 0}`}
                               </button>
                               <span className="powerRankingRowDetailHint">상세 보기</span>
                             </div>
@@ -1740,8 +1740,8 @@ const PowerRankingPage = () => {
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
                                 {upQueueCount > 0
-                                  ? `▲ 올리기 (${upQueueCount}) · 권 ${upTicketItem?.quantity ?? 0}`
-                                  : `▲ 올리기 · 권 ${upTicketItem?.quantity ?? 0}`}
+                                  ? `▲ 올리기 권 (${upQueueCount}) · ${upTicketItem?.quantity ?? 0}`
+                                  : `▲ 올리기 권 · ${upTicketItem?.quantity ?? 0}`}
                               </button>
                               <button
                                 type="button"
@@ -1749,8 +1749,8 @@ const PowerRankingPage = () => {
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
                                 {downQueueCount > 0
-                                  ? `▼ 내리기 (${downQueueCount}) · 권 ${downTicketItem?.quantity ?? 0}`
-                                  : `▼ 내리기 · 권 ${downTicketItem?.quantity ?? 0}`}
+                                  ? `▼ 내리기 권 (${downQueueCount}) · ${downTicketItem?.quantity ?? 0}`
+                                  : `▼ 내리기 권 · ${downTicketItem?.quantity ?? 0}`}
                               </button>
                             </div>
                           </div>
