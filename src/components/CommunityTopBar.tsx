@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { useTodayVisitors } from "../visitor/VisitorContext";
+import { getBrowserAlertDisabled, setBrowserAlertDisabled } from "../features/alertPreference";
 import type {
   PowerRankingEquipmentCode,
   PowerRankingEquipmentInventoryItem,
@@ -40,10 +41,23 @@ const CommunityTopBar = ({
   const { todayVisitors } = useTodayVisitors();
   const [isEquipmentOpen, setIsEquipmentOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAlertDisabled, setIsAlertDisabled] = useState(false);
+
+  useEffect(() => {
+    setIsAlertDisabled(getBrowserAlertDisabled());
+  }, []);
 
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
     setIsEquipmentOpen(false);
+  };
+
+  const handleToggleAlerts = () => {
+    setIsAlertDisabled((current) => {
+      const next = !current;
+      setBrowserAlertDisabled(next);
+      return next;
+    });
   };
 
   return (
@@ -129,6 +143,14 @@ const CommunityTopBar = ({
         >
           전투력 랭킹
         </NavLink>
+        <button
+          type="button"
+          className={`communityTopBarAlertToggle ${isAlertDisabled ? "isActive" : ""}`.trim()}
+          onClick={handleToggleAlerts}
+        >
+          <span>알람 끄기</span>
+          <strong>{isAlertDisabled ? "ON" : "OFF"}</strong>
+        </button>
         {!user ? (
           <>
             <NavLink

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
+import { showBrowserAlert } from "../features/alertPreference";
 import type {
   LiveVisitorEntry,
   PowerRankingEventLog,
@@ -722,7 +723,7 @@ const PowerRankingPage = () => {
               title: "아이템 획득",
               body: message
             });
-            window.alert(message);
+            showBrowserAlert(message);
             await refreshSideData();
           } else if (result.droppedEquipment) {
             const message = `${result.droppedEquipment.name} 장비 획득! 내 장비에서 바로 착용할 수 있습니다.`;
@@ -732,7 +733,7 @@ const PowerRankingPage = () => {
               title: "장비 획득",
               body: message
             });
-            window.alert(message);
+            showBrowserAlert(message);
             await refreshSideData();
           }
           setSortMode("score");
@@ -898,7 +899,7 @@ const PowerRankingPage = () => {
 
   const handleHiddenBlessing = () => {
     for (let index = 0; index < 3; index += 1) {
-      window.alert("장현준의 축복을 받았습니다");
+      showBrowserAlert("장현준의 축복을 받았습니다");
     }
   };
 

@@ -167,6 +167,40 @@ body {
   background: transparent;
 }
 
+.communityTopBarAlertToggle {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #bfd0e1;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.communityTopBarAlertToggle strong {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #5f7390;
+}
+
+.communityTopBarAlertToggle.isActive {
+  border-color: var(--brand-deep);
+  background: var(--brand-deep);
+  color: #fff;
+}
+
+.communityTopBarAlertToggle.isActive strong {
+  color: #dfe9f7;
+}
+
 .communityTopBarUser {
   display: inline-flex;
   align-items: center;
@@ -1311,6 +1345,10 @@ body {
   }
 
   .communityTopBarLink {
+    width: 100%;
+  }
+
+  .communityTopBarAlertToggle {
     width: 100%;
   }
 
