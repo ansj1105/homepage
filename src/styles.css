@@ -8226,6 +8226,66 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 12px;
 }
 
+.powerRankingPageMaple .huntingCombatMiniStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.powerRankingPageMaple .huntingCombatMiniStat {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #d3e1f0;
+  background: #f6faff;
+}
+
+.powerRankingPageMaple .huntingCombatMiniStat span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .huntingCombatMiniStat strong {
+  color: #17314f;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.powerRankingPageMaple .huntingCombatProgress {
+  display: grid;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .huntingCombatProgressHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.powerRankingPageMaple .huntingCombatProgressHead strong {
+  font-size: 14px;
+}
+
+.powerRankingPageMaple .huntingCombatProgressHead span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .huntingCombatProgressBar {
+  height: 12px;
+  border: 1px solid #d3e1f0;
+  background: #edf4fb;
+  overflow: hidden;
+}
+
+.powerRankingPageMaple .huntingCombatProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #17458f, #2d67c4);
+}
+
 .powerRankingPageMaple .huntingCombatInfo h3 {
   margin: 0;
   font-size: 32px;
@@ -8248,9 +8308,55 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .huntingCombatActions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.powerRankingPageMaple .huntingCombatActions > * {
+  width: 100%;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton {
+  display: grid;
+  gap: 4px;
+  min-height: 84px;
+  padding: 12px 14px;
+  border: 1px solid #d3e1f0;
+  background: #ffffff;
+  text-align: left;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton strong {
+  color: #17314f;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton span,
+.powerRankingPageMaple .huntingMonsterSwitchButton small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton small {
+  font-size: 11px;
+}
+
+.powerRankingPageMaple .huntingMonsterSwitchButton.isActive {
+  border-color: #17458f;
+  background: #edf4ff;
 }
 
 .powerRankingPageMaple .huntingDropTable {
@@ -8589,6 +8695,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   }
 
   .powerRankingPageMaple .huntingMonsterActions {
+    grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .huntingCombatMiniStats,
+  .powerRankingPageMaple .huntingCombatActions,
+  .powerRankingPageMaple .huntingMonsterSwitchGrid {
     grid-template-columns: 1fr;
   }
 

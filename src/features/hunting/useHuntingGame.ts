@@ -261,6 +261,13 @@ export const useHuntingGame = () => {
               : current.dailyCardPopularityGain
         };
       });
+      if (result.expGained > 0) {
+        pushNotification({
+          tone: "info",
+          title: "사냥 경험치",
+          body: `처치 보상 경험치 +${result.expGained}`
+        });
+      }
       if (nextLevelUpCount > 0) {
         pushNotification({
           tone: "reward",

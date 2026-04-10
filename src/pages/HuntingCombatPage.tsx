@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import CommunityTopBar from "../components/CommunityTopBar";
-import { consumableMeta, materialMeta, MAX_ENDURANCE, type HuntingConsumableCode, type HuntingMaterialCode } from "../features/huntingProgress";
+import { consumableMeta, getExpToNextLevel, materialMeta, MAX_ENDURANCE, type HuntingConsumableCode, type HuntingMaterialCode } from "../features/huntingProgress";
 import { useHuntingGame } from "../features/hunting/useHuntingGame";
 
 const HuntingCombatPage = () => {
@@ -12,12 +12,15 @@ const HuntingCombatPage = () => {
     combatState,
     notifications,
     currentZone,
+    zoneDetail,
+    selectedMonsterId,
     isLoading,
     isAttacking,
     errorMessage,
     autoAttackEnabled,
     remainingClicks,
     zoneDropPreview,
+    focusMonster,
     setAutoAttackEnabled,
     attack,
     useConsumable
@@ -26,6 +29,9 @@ const HuntingCombatPage = () => {
   useEffect(() => {
     document.title = "전투 화면";
   }, []);
+
+  const expToNextLevel = getExpToNextLevel(progress.level);
+  const expProgressPercent = Math.min(100, Math.round((progress.exp / expToNextLevel) * 100));
 
   return (
     <div className="powerRankingPage powerRankingPageMaple">
@@ -41,6 +47,10 @@ const HuntingCombatPage = () => {
 
           <div className="powerRankingControlPanel">
             <div className="powerRankingStats">
+              <div className="powerRankingStatCard">
+                <span>사냥 레벨</span>
+                <strong>Lv. {progress.level}</strong>
+              </div>
               <div className="powerRankingStatCard">
                 <span>전투력</span>
                 <strong>{profile?.battlePower ?? 0}</strong>
@@ -91,7 +101,7 @@ const HuntingCombatPage = () => {
                   <p className="powerRankingSectionEyebrow">{combatState.zoneName}</p>
                   <h2>{combatState.monster.name}</h2>
                 </div>
-                <p className="powerRankingSectionHint">클릭 1회 = 행동 1회입니다.</p>
+                <p className="powerRankingSectionHint">클릭 1회 = 행동 1회입니다. 몬스터 변경도 이 화면에서 바로 할 수 있게 정리했습니다.</p>
               </div>
 
               <div className="huntingCombatLayout">
@@ -101,6 +111,29 @@ const HuntingCombatPage = () => {
                   </div>
                   <div className="huntingCombatInfo">
                     <p>{combatState.monster.patternLabel}</p>
+                    <div className="huntingCombatMiniStats">
+                      <div className="huntingCombatMiniStat">
+                        <span>현재 레벨</span>
+                        <strong>Lv. {progress.level}</strong>
+                      </div>
+                      <div className="huntingCombatMiniStat">
+                        <span>처치 경험치</span>
+                        <strong>+{combatState.monster.expReward}</strong>
+                      </div>
+                      <div className="huntingCombatMiniStat">
+                        <span>남은 클릭</span>
+                        <strong>{remainingClicks}</strong>
+                      </div>
+                    </div>
+                    <div className="huntingCombatProgress">
+                      <div className="huntingCombatProgressHead">
+                        <strong>경험치</strong>
+                        <span>{progress.exp} / {expToNextLevel}</span>
+                      </div>
+                      <div className="huntingCombatProgressBar">
+                        <div className="huntingCombatProgressFill" style={{ width: `${expProgressPercent}%` }} />
+                      </div>
+                    </div>
                     <div className="huntingMonsterHpBar">
                       <div
                         className="huntingMonsterHpFill"
@@ -128,6 +161,22 @@ const HuntingCombatPage = () => {
                         사냥터 변경
                       </Link>
                     </div>
+                    {zoneDetail ? (
+                      <div className="huntingMonsterSwitchGrid">
+                        {zoneDetail.monsters.map((monster) => (
+                          <button
+                            key={monster.id}
+                            type="button"
+                            className={`huntingMonsterSwitchButton ${monster.id === selectedMonsterId ? "isActive" : ""}`.trim()}
+                            onClick={() => void focusMonster(monster.id)}
+                          >
+                            <strong>{monster.name}</strong>
+                            <span>{monster.typeLabel}</span>
+                            <small>처치 경험치 +{monster.expReward}</small>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </article>
 
