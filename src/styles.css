@@ -6061,6 +6061,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   box-shadow: none;
 }
 
+.powerRankingPageMaple .powerRankingHeroSideColumn {
+  display: grid;
+  gap: 16px;
+  min-width: min(100%, 360px);
+}
+
 .powerRankingPageMaple .powerRankingControlGroup {
   display: grid;
   gap: 12px;
@@ -6133,6 +6139,92 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-size: 30px;
   line-height: 1;
   letter-spacing: -0.05em;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorsPanel {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid rgba(16, 36, 63, 0.12);
+  background: rgba(243, 248, 255, 0.98);
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorsHead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorsHead strong {
+  display: block;
+  margin-top: 6px;
+  color: #142033;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorsHead em {
+  color: #6a7d95;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorsList {
+  display: grid;
+  gap: 10px;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorItem,
+.powerRankingPageMaple .powerRankingLiveVisitorEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d3e1f0;
+  background: #ffffff;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorEmpty {
+  color: #6a7d95;
+  font-size: 13px;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorItem > span {
+  color: #6a7d95;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorIdentity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorIdentity strong {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorIdentity small {
+  color: #6a7d95;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .powerRankingLiveVisitorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #1f4fa9;
+  box-shadow: 0 0 0 4px rgba(31, 79, 169, 0.12);
+  flex: 0 0 auto;
 }
 
 .powerRankingPageMaple .powerRankingAlert,
@@ -8186,6 +8278,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
     min-width: 100%;
   }
 
+  .powerRankingPageMaple .powerRankingHeroSideColumn {
+    min-width: 100%;
+  }
+
   .powerRankingPageMaple .powerRankingHeroActions,
   .powerRankingPageMaple .huntingOverviewGrid,
   .powerRankingPageMaple .gameHomeQuickGrid,
@@ -8210,6 +8306,13 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingSectionHead {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .powerRankingPageMaple .powerRankingLiveVisitorsHead,
+  .powerRankingPageMaple .powerRankingLiveVisitorItem,
+  .powerRankingPageMaple .powerRankingLiveVisitorEmpty {
+    align-items: start;
+    flex-direction: column;
   }
 
   .powerRankingPageMaple .huntingSubNav {

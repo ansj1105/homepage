@@ -573,6 +573,18 @@ export interface TodayVisitorResponse {
   todayVisitors: number;
 }
 
+export interface LiveVisitorEntry {
+  label: string;
+  isMember: boolean;
+  lastSeenAt: string;
+}
+
+export interface LiveVisitorResponse {
+  liveVisitors: number;
+  windowMinutes: number;
+  viewers: LiveVisitorEntry[];
+}
+
 export interface UserProfile {
   id: string;
   username: string;

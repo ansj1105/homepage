@@ -32,6 +32,7 @@ import type {
   ResourceItem,
   SiteContent,
   TodayVisitorResponse,
+  LiveVisitorResponse,
   UserProfile
 } from "../../src/types";
 import type {
@@ -2150,6 +2151,44 @@ export const getTodayVisitorCount = async (): Promise<TodayVisitorResponse> => {
   );
   return {
     todayVisitors: Number(result.rows[0]?.count ?? "0")
+  };
+};
+
+export const getLiveVisitorSummary = async (windowMinutes = 5): Promise<LiveVisitorResponse> => {
+  const result = await pool.query<{
+    label: string | null;
+    is_member: boolean;
+    last_seen_at: string;
+  }>(
+    `SELECT
+        COALESCE(session_user.nickname, '익명 유저') AS label,
+        (session_user.nickname IS NOT NULL) AS is_member,
+        visits.last_visited_at AS last_seen_at
+      FROM visitor_daily_visits visits
+      LEFT JOIN LATERAL (
+        SELECT users.nickname
+        FROM app_user_sessions sessions
+        JOIN app_users users ON users.id = sessions.user_id
+        WHERE sessions.device_id = visits.device_id
+          AND sessions.expires_at > NOW()
+        ORDER BY sessions.last_used_at DESC, sessions.updated_at DESC
+        LIMIT 1
+      ) AS session_user ON TRUE
+      WHERE visits.visit_date = CURRENT_DATE
+        AND visits.last_visited_at >= NOW() - make_interval(mins => $1::int)
+      ORDER BY visits.last_visited_at DESC
+      LIMIT 8`,
+    [windowMinutes]
+  );
+
+  return {
+    liveVisitors: result.rowCount ?? 0,
+    windowMinutes,
+    viewers: result.rows.map((row) => ({
+      label: row.label?.trim() || "익명 유저",
+      isMember: row.is_member,
+      lastSeenAt: row.last_seen_at
+    }))
   };
 };
 

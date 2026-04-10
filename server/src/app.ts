@@ -42,6 +42,7 @@ import {
   changePowerRankingScore,
   equipPowerRankingEquipment,
   getHuntingProfile,
+  getLiveVisitorSummary,
   listHuntingBattleRanking,
   listPowerRankingEquipmentState,
   listPowerRankingEventLogs,
@@ -299,6 +300,15 @@ export const createApp = () => {
   app.get("/api/visitors/today", async (_req, res, next) => {
     try {
       const result = await getTodayVisitorCount();
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/visitors/live", async (_req, res, next) => {
+    try {
+      const result = await getLiveVisitorSummary();
       res.json(result);
     } catch (error) {
       next(error);

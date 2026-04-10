@@ -42,6 +42,20 @@ export const VisitorProvider = ({ children }: PropsWithChildren) => {
       });
   }, [location.pathname, location.search]);
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void apiClient
+        .trackTodayVisitor({
+          deviceId: getOrCreateDeviceId(),
+          path: `${location.pathname}${location.search}`
+        })
+        .then((result) => setTodayVisitors(result.todayVisitors))
+        .catch(() => undefined);
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [location.pathname, location.search]);
+
   const value = useMemo<VisitorContextValue>(
     () => ({
       todayVisitors,

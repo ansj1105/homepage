@@ -4,6 +4,7 @@ import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import type {
+  LiveVisitorEntry,
   PowerRankingEventLog,
   PowerRankingInventoryItem,
   PowerRankingItemCode,
@@ -29,6 +30,7 @@ type PowerRankingUserNotification = {
 const collator = new Intl.Collator("ko");
 const PROFILE_MAX_BYTES = 5 * 1024 * 1024;
 const MEMO_PAGE_SIZE = 10;
+const LIVE_VISITOR_REFRESH_MS = 30_000;
 
 const formatDateTime = (value: string): string => {
   const date = new Date(value);
@@ -172,6 +174,23 @@ const formatCountdown = (totalSeconds: number): string => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
+const formatRelativeVisitorTime = (value: string): string => {
+  const diffMs = Date.now() - new Date(value).getTime();
+  if (Number.isNaN(diffMs) || diffMs < 0) {
+    return "방금 전";
+  }
+  const diffSeconds = Math.floor(diffMs / 1000);
+  if (diffSeconds < 60) {
+    return "방금 전";
+  }
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) {
+    return `${diffMinutes}분 전`;
+  }
+  const diffHours = Math.floor(diffMinutes / 60);
+  return `${diffHours}시간 전`;
+};
+
 const getSecondsUntilNextHour = (): number => {
   const now = new Date();
   return (59 - now.getMinutes()) * 60 + (60 - now.getSeconds());
@@ -286,6 +305,8 @@ const PowerRankingPage = () => {
   const [eventLogs, setEventLogs] = useState<PowerRankingEventLog[]>([]);
   const [rewardMessage, setRewardMessage] = useState("");
   const [notifications, setNotifications] = useState<PowerRankingUserNotification[]>([]);
+  const [liveVisitors, setLiveVisitors] = useState<LiveVisitorEntry[]>([]);
+  const [liveVisitorCount, setLiveVisitorCount] = useState(0);
   const [memoVisibleCounts, setMemoVisibleCounts] = useState<Record<string, number>>({});
   const [countdownSeconds, setCountdownSeconds] = useState(getSecondsUntilNextHour());
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
@@ -357,6 +378,25 @@ const PowerRankingPage = () => {
     }, 60_000);
     return () => window.clearInterval(poller);
   }, [period, user, people]);
+
+  useEffect(() => {
+    const loadLiveVisitors = async () => {
+      try {
+        const result = await apiClient.getLiveVisitors();
+        setLiveVisitorCount(result.liveVisitors);
+        setLiveVisitors(result.viewers);
+      } catch {
+        // Keep previous values when live visitor polling fails.
+      }
+    };
+
+    void loadLiveVisitors();
+    const poller = window.setInterval(() => {
+      void loadLiveVisitors();
+    }, LIVE_VISITOR_REFRESH_MS);
+
+    return () => window.clearInterval(poller);
+  }, []);
 
   useEffect(() => {
     setMemoVisibleCounts((current) => {
@@ -773,68 +813,96 @@ const PowerRankingPage = () => {
             </p>
           </div>
 
-          <div className="powerRankingControlPanel">
-            <div className="powerRankingControlGroup">
-              <span className="powerRankingControlLabel">정렬</span>
-              <div className="powerRankingHeroActions">
-                <button
-                  type="button"
-                  className={`powerRankingSortButton ${sortMode === "score" ? "isActive" : ""}`}
-                  onClick={() => setSortMode("score")}
-                >
-                  종합 랭킹
-                </button>
-                <button
-                  type="button"
-                  className={`powerRankingSortButton ${sortMode === "name" ? "isActive" : ""}`}
-                  onClick={() => setSortMode("name")}
-                >
-                  이름순
-                </button>
+          <div className="powerRankingHeroSideColumn">
+            <div className="powerRankingControlPanel">
+              <div className="powerRankingControlGroup">
+                <span className="powerRankingControlLabel">정렬</span>
+                <div className="powerRankingHeroActions">
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton ${sortMode === "score" ? "isActive" : ""}`}
+                    onClick={() => setSortMode("score")}
+                  >
+                    종합 랭킹
+                  </button>
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton ${sortMode === "name" ? "isActive" : ""}`}
+                    onClick={() => setSortMode("name")}
+                  >
+                    이름순
+                  </button>
+                </div>
+              </div>
+
+              <div className="powerRankingControlGroup">
+                <span className="powerRankingControlLabel">집계 기간</span>
+                <div className="powerRankingHeroActions powerRankingPeriodActions">
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton ${period === "all" ? "isActive" : ""}`}
+                    onClick={() => setPeriod("all")}
+                  >
+                    전체랭킹
+                  </button>
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton ${period === "weekly" ? "isActive" : ""}`}
+                    onClick={() => setPeriod("weekly")}
+                  >
+                    주간랭킹
+                  </button>
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton ${period === "daily" ? "isActive" : ""}`}
+                    onClick={() => setPeriod("daily")}
+                  >
+                    일간랭킹
+                  </button>
+                </div>
+              </div>
+
+              <div className="powerRankingStats">
+                <div className="powerRankingStatCard">
+                  <span>등록 인원</span>
+                  <strong>{people.length}</strong>
+                </div>
+                <div className="powerRankingStatCard">
+                  <span>총 득표</span>
+                  <strong>{totalVotes}</strong>
+                </div>
+                <div className="powerRankingStatCard">
+                  <span>총 메모</span>
+                  <strong>{totalNotes}</strong>
+                </div>
               </div>
             </div>
 
-            <div className="powerRankingControlGroup">
-              <span className="powerRankingControlLabel">집계 기간</span>
-              <div className="powerRankingHeroActions powerRankingPeriodActions">
-                <button
-                  type="button"
-                  className={`powerRankingSortButton ${period === "all" ? "isActive" : ""}`}
-                  onClick={() => setPeriod("all")}
-                >
-                  전체랭킹
-                </button>
-                <button
-                  type="button"
-                  className={`powerRankingSortButton ${period === "weekly" ? "isActive" : ""}`}
-                  onClick={() => setPeriod("weekly")}
-                >
-                  주간랭킹
-                </button>
-                <button
-                  type="button"
-                  className={`powerRankingSortButton ${period === "daily" ? "isActive" : ""}`}
-                  onClick={() => setPeriod("daily")}
-                >
-                  일간랭킹
-                </button>
+            <aside className="powerRankingLiveVisitorsPanel">
+              <div className="powerRankingLiveVisitorsHead">
+                <div>
+                  <span className="powerRankingControlLabel">실시간 접속자</span>
+                  <strong>{liveVisitorCount}명 접속 중</strong>
+                </div>
+                <em>최근 5분</em>
               </div>
-            </div>
-
-            <div className="powerRankingStats">
-              <div className="powerRankingStatCard">
-                <span>등록 인원</span>
-                <strong>{people.length}</strong>
+              <div className="powerRankingLiveVisitorsList">
+                {liveVisitors.length === 0 ? (
+                  <div className="powerRankingLiveVisitorEmpty">아직 표시할 접속자가 없습니다.</div>
+                ) : (
+                  liveVisitors.map((visitor, index) => (
+                    <div className="powerRankingLiveVisitorItem" key={`${visitor.label}-${visitor.lastSeenAt}-${index}`}>
+                      <div className="powerRankingLiveVisitorIdentity">
+                        <span className="powerRankingLiveVisitorDot" aria-hidden="true" />
+                        <strong>{visitor.label}</strong>
+                        <small>{visitor.isMember ? "회원" : "익명"}</small>
+                      </div>
+                      <span>{formatRelativeVisitorTime(visitor.lastSeenAt)}</span>
+                    </div>
+                  ))
+                )}
               </div>
-              <div className="powerRankingStatCard">
-                <span>총 득표</span>
-                <strong>{totalVotes}</strong>
-              </div>
-              <div className="powerRankingStatCard">
-                <span>총 메모</span>
-                <strong>{totalNotes}</strong>
-              </div>
-            </div>
+            </aside>
           </div>
         </header>
 

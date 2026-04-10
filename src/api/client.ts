@@ -49,6 +49,7 @@ import type {
   SiteContent,
   ShopBuyRequest,
   ShopItem,
+  LiveVisitorResponse,
   TodayVisitorRequest,
   TodayVisitorResponse,
   UserLoginRequest,
@@ -148,6 +149,7 @@ export const apiClient = {
   refreshCurrentUser: () => request<UserProfile>("/api/users/refresh", { method: "POST" }, undefined, false),
   logoutUser: () => request<void>("/api/users/logout", { method: "POST" }, undefined, false),
   getTodayVisitors: () => request<TodayVisitorResponse>("/api/visitors/today"),
+  getLiveVisitors: () => request<LiveVisitorResponse>("/api/visitors/live"),
   trackTodayVisitor: (payload: TodayVisitorRequest) =>
     request<TodayVisitorResponse>("/api/visitors/track", {
       method: "POST",
