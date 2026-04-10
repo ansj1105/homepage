@@ -118,13 +118,13 @@ type ScoreChartData = {
   bucketLabel: string;
 };
 
-type ScoreChartRange = "1d" | "7d" | "30d";
+type ScoreChartRange = "minute" | "day" | "week";
 
 type PowerRankingScoreChartPanelProps = {
   person: PowerRankingPerson;
   eventLogs: PowerRankingEventLog[];
   scoreChartRange: ScoreChartRange;
-  onChangeRange: (range: ScoreChartRange) => void;
+  onChangeRange: (personId: string, range: ScoreChartRange) => void;
 };
 
 const CHART_PADDING_LEFT = 42;
@@ -132,28 +132,28 @@ const CHART_PADDING_RIGHT = 12;
 const CHART_PADDING_TOP = 8;
 const CHART_PADDING_BOTTOM = 18;
 const SCORE_CHART_RANGE_DAYS: Record<ScoreChartRange, number> = {
-  "1d": 1,
-  "7d": 7,
-  "30d": 30
+  minute: 1,
+  day: 30,
+  week: 84
 };
 
 const SCORE_CHART_BUCKET_MINUTES: Record<ScoreChartRange, number> = {
-  "1d": 1,
-  "7d": 30,
-  "30d": 120
+  minute: 1,
+  day: 60 * 24,
+  week: 60 * 24 * 7
 };
 
 const getScoreChartCanvasWidth = (count: number): number => {
   if (count <= 24) {
     return 320;
   }
-  return Math.max(320, CHART_PADDING_LEFT + CHART_PADDING_RIGHT + count * 5.2);
+  return Math.max(320, CHART_PADDING_LEFT + CHART_PADDING_RIGHT + count * 18);
 };
 
 const getScoreChartRangeLabel = (range: ScoreChartRange): string => {
-  if (range === "1d") return "1일";
-  if (range === "7d") return "7일";
-  return "30일";
+  if (range === "minute") return "분봉";
+  if (range === "day") return "일봉";
+  return "주봉";
 };
 
 const getMinuteBucketTimestamp = (value: string): number => {
@@ -171,9 +171,9 @@ const alignTimestampToBucket = (timestamp: number, bucketMinutes: number): numbe
 };
 
 const getScoreChartBucketLabel = (range: ScoreChartRange): string => {
-  if (range === "1d") return "1분봉";
-  if (range === "7d") return "30분봉";
-  return "2시간봉";
+  if (range === "minute") return "1분봉";
+  if (range === "day") return "1일봉";
+  return "1주봉";
 };
 
 const formatScoreAxisLabel = (value: number): string => `${Math.round(value)}`;
@@ -184,26 +184,23 @@ const formatScoreTimeLabel = (timestamp: number, range: ScoreChartRange): string
     return "";
   }
 
-  if (range === "1d") {
+  if (range === "minute") {
     return new Intl.DateTimeFormat("ko-KR", {
       hour: "2-digit",
       minute: "2-digit"
     }).format(date);
   }
 
-  if (range === "7d") {
+  if (range === "day") {
     return new Intl.DateTimeFormat("ko-KR", {
       month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+      day: "numeric"
     }).format(date);
   }
 
   return new Intl.DateTimeFormat("ko-KR", {
     month: "numeric",
-    day: "numeric",
-    hour: "2-digit"
+    day: "numeric"
   }).format(date);
 };
 
@@ -405,12 +402,16 @@ const PowerRankingScoreChartPanel = ({
         <strong>점수 변화 차트</strong>
         <div className="powerRankingScoreChartHeadMeta">
           <div className="powerRankingScoreChartRange" role="tablist" aria-label="점수 변화 기간 선택">
-            {(["1d", "7d", "30d"] as ScoreChartRange[]).map((range) => (
+            {(["minute", "day", "week"] as ScoreChartRange[]).map((range) => (
               <button
                 key={`${person.id}-${range}`}
                 type="button"
                 className={scoreChartRange === range ? "isActive" : undefined}
-                onClick={() => onChangeRange(range)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onChangeRange(person.id, range);
+                }}
               >
                 {getScoreChartRangeLabel(range)}
               </button>
@@ -675,7 +676,7 @@ const PowerRankingPage = () => {
   const [countdownSeconds, setCountdownSeconds] = useState(getSecondsUntilNextHour());
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
   const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
-  const [scoreChartRange, setScoreChartRange] = useState<ScoreChartRange>("1d");
+  const [scoreChartRanges, setScoreChartRanges] = useState<Record<string, ScoreChartRange>>({});
   const [visibleCharts, setVisibleCharts] = useState<Record<string, boolean>>({});
   const [selectedFaction, setSelectedFaction] = useState<PowerRankingFaction>(() => {
     if (typeof window === "undefined") {
@@ -1598,6 +1599,7 @@ const PowerRankingPage = () => {
                     const upHeatClass = getVoteQueueHeatClass(upQueueCount);
                     const downHeatClass = getVoteQueueHeatClass(downQueueCount);
                     const isChartVisible = visibleCharts[person.id] ?? false;
+                    const scoreChartRange = scoreChartRanges[person.id] ?? "minute";
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
                     const blessingItem = inventoryByCode["kimdaseul-blessing"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
@@ -1843,12 +1845,14 @@ const PowerRankingPage = () => {
                               <button
                                 type="button"
                                 className="powerRankingBackLink"
-                                onClick={() =>
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
                                   setVisibleCharts((current) => ({
                                     ...current,
                                     [person.id]: !current[person.id]
-                                  }))
-                                }
+                                  }));
+                                }}
                               >
                                 {isChartVisible ? "차트 숨기기" : "차트 보기"}
                               </button>
@@ -1858,7 +1862,12 @@ const PowerRankingPage = () => {
                                 person={person}
                                 eventLogs={eventLogs}
                                 scoreChartRange={scoreChartRange}
-                                onChangeRange={setScoreChartRange}
+                                onChangeRange={(personId, range) =>
+                                  setScoreChartRanges((current) => ({
+                                    ...current,
+                                    [personId]: range
+                                  }))
+                                }
                               />
                             ) : (
                               <article className="powerRankingLogCard powerRankingChartPlaceholder">
