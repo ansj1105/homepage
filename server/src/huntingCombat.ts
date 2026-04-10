@@ -164,6 +164,7 @@ const rollRewards = (
 ): HuntingCombatReward[] => {
   const rewards: HuntingCombatReward[] = [];
   const dropMultiplier = profile.dropRateMultiplier * (session.dropBuffKills > 0 ? 1.35 : 1);
+  const nonCoinDrops = monster.dropTable.filter((drop) => drop.code !== "club-coin");
 
   const rollTable = (penalty: number) => {
     monster.dropTable.forEach((drop) => {
@@ -182,6 +183,20 @@ const rollRewards = (
   rollTable(monster.isBoss ? 0.82 : 1);
   if (monster.isBoss && Math.random() < profile.bossBonusRollRate) {
     rollTable(0.46);
+  }
+
+  const hasNonCoinReward = rewards.some((reward) => reward.code !== "club-coin");
+  if (!hasNonCoinReward && nonCoinDrops.length > 0) {
+    const pityDrop = nonCoinDrops[Math.floor(Math.random() * nonCoinDrops.length)];
+    const pityRate = Math.max(monster.isBoss ? 0.28 : 0.18, Math.min(0.72, pityDrop.rate * dropMultiplier * 0.45));
+    if (Math.random() <= pityRate) {
+      rewards.push({
+        kind: pityDrop.kind,
+        code: pityDrop.code,
+        label: pityDrop.label,
+        quantity: Math.floor(Math.random() * (pityDrop.max - pityDrop.min + 1)) + pityDrop.min
+      });
+    }
   }
 
   return rewards;

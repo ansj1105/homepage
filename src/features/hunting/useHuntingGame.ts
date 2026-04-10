@@ -24,9 +24,10 @@ import type {
 const updateProgressFromCombat = (
   current: HuntingProgress,
   result: HuntingCombatClickResponse
-): HuntingProgress => {
+): { progress: HuntingProgress; levelUps: number } => {
   let nextLevel = current.level;
   let nextExp = current.exp + result.expGained;
+  let levelUps = 0;
   const nextMaterials = { ...current.materials };
   const nextConsumables = { ...current.consumables };
 
@@ -41,20 +42,26 @@ const updateProgressFromCombat = (
   while (nextExp >= getExpToNextLevel(nextLevel)) {
     nextExp -= getExpToNextLevel(nextLevel);
     nextLevel += 1;
+    levelUps += 1;
   }
 
   return {
-    ...current,
-    level: nextLevel,
-    exp: nextExp,
-    selectedStageId: result.state.zoneId,
-    selectedMonsterId: result.state.monster.id,
-    totalClickCount: current.totalClickCount + 1,
-    todayClickCount: current.todayClickCount + 1,
-    totalDefeated: current.totalDefeated + (result.defeated ? 1 : 0),
-    totalBossDefeated: current.totalBossDefeated + (result.defeated && result.state.monster.isBoss ? 1 : 0),
-    todayDefeatedCount: current.todayDefeatedCount + (result.defeated ? 1 : 0),
-    weeklyBossDefeatedCount: current.weeklyBossDefeatedCount + (result.defeated && result.state.monster.isBoss ? 1 : 0)
+    levelUps,
+    progress: {
+      ...current,
+      level: nextLevel,
+      exp: nextExp,
+      materials: nextMaterials,
+      consumables: nextConsumables,
+      selectedStageId: result.state.zoneId,
+      selectedMonsterId: result.state.monster.id,
+      totalClickCount: current.totalClickCount + 1,
+      todayClickCount: current.todayClickCount + 1,
+      totalDefeated: current.totalDefeated + (result.defeated ? 1 : 0),
+      totalBossDefeated: current.totalBossDefeated + (result.defeated && result.state.monster.isBoss ? 1 : 0),
+      todayDefeatedCount: current.todayDefeatedCount + (result.defeated ? 1 : 0),
+      weeklyBossDefeatedCount: current.weeklyBossDefeatedCount + (result.defeated && result.state.monster.isBoss ? 1 : 0)
+    }
   };
 };
 
@@ -199,22 +206,32 @@ export const useHuntingGame = () => {
         selectedCardLevel
       });
       setCombatState(result.state);
-      setProgress((current) => ({
-        ...updateProgressFromCombat(current, result),
-        endurance: Math.max(0, current.endurance - 1),
-        cardPopularity: current.selectedCardTargetId
-          ? {
-              ...current.cardPopularity,
-              [current.selectedCardTargetId]:
-                (current.cardPopularity[current.selectedCardTargetId] ?? 0) +
-                Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
-            }
-          : current.cardPopularity,
-        dailyCardPopularityGain:
-          current.selectedCardTargetId
-            ? current.dailyCardPopularityGain + Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
-            : current.dailyCardPopularityGain
-      }));
+      let nextLevelUpCount = 0;
+      let nextLevel = progress.level;
+      setProgress((current) => {
+        const combatUpdate = updateProgressFromCombat(current, result);
+        nextLevelUpCount = combatUpdate.levelUps;
+        nextLevel = combatUpdate.progress.level;
+        return {
+          ...combatUpdate.progress,
+          endurance: Math.max(0, current.endurance - 1),
+          cardPopularity: current.selectedCardTargetId
+            ? {
+                ...current.cardPopularity,
+                [current.selectedCardTargetId]:
+                  (current.cardPopularity[current.selectedCardTargetId] ?? 0) +
+                  Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
+              }
+            : current.cardPopularity,
+          dailyCardPopularityGain:
+            current.selectedCardTargetId
+              ? current.dailyCardPopularityGain + Math.max(1, 1 + Math.floor(((profile?.cardGrowthMultiplier ?? 1) - 1) * 10))
+              : current.dailyCardPopularityGain
+        };
+      });
+      if (nextLevelUpCount > 0) {
+        window.alert(`레벨 업! 현재 레벨 ${nextLevel}`);
+      }
       if (result.rewards.length > 0) {
         window.alert(result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", "));
       }
