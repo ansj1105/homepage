@@ -154,8 +154,13 @@ const HuntingCombatPage = () => {
                       <button type="button" className="powerRankingItemButton isPositive" disabled={isAttacking} onClick={() => void attack()}>
                         {isAttacking ? "공격 중..." : "클릭 공격"}
                       </button>
-                      <button type="button" className="powerRankingItemButton" onClick={() => setAutoAttackEnabled(!autoAttackEnabled)}>
-                        {autoAttackEnabled ? "자동 사냥 중지" : "자동 사냥 시작"}
+                      <button
+                        type="button"
+                        className="powerRankingItemButton"
+                        disabled={combatState.monster.isBoss}
+                        onClick={() => setAutoAttackEnabled(!autoAttackEnabled)}
+                      >
+                        {combatState.monster.isBoss ? "보스는 수동 전투 전용" : autoAttackEnabled ? "자동 사냥 중지" : "자동 사냥 시작"}
                       </button>
                       <Link to="/dongyeon-hunting-zones" className="powerRankingItemButton">
                         사냥터 변경

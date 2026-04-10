@@ -15,6 +15,7 @@ import HuntingGuidePage from "./pages/HuntingGuidePage";
 import HuntingGroundPage from "./pages/HuntingGroundPage";
 import HuntingBattleRankingPage from "./pages/HuntingBattleRankingPage";
 import HuntingProfilePage from "./pages/HuntingProfilePage";
+import HuntingRaidPage from "./pages/HuntingRaidPage";
 import HuntingStatusPage from "./pages/HuntingStatusPage";
 import HuntingZoneSelectPage from "./pages/HuntingZoneSelectPage";
 import LoginPage from "./pages/LoginPage";
@@ -164,6 +165,8 @@ const App = () => (
         <Route path="/dongyeon-hunting-status" element={<HuntingStatusPage />} />
         <Route path="/hunting-profile" element={<HuntingProfilePage />} />
         <Route path="/dongyeon-hunting-profile" element={<HuntingProfilePage />} />
+        <Route path="/hunting-raid" element={<HuntingRaidPage />} />
+        <Route path="/dongyeon-hunting-raid" element={<HuntingRaidPage />} />
         <Route path="/hunting-guide" element={<HuntingGuidePage />} />
         <Route path="/dongyeon-hunting-guide" element={<HuntingGuidePage />} />
         <Route path="/hunting-zones" element={<HuntingZoneSelectPage />} />

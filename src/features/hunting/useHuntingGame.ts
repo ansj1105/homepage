@@ -252,6 +252,13 @@ export const useHuntingGame = () => {
     }
     const isAutoAttack = options?.auto ?? false;
     const requiredEndurance = combatState?.clickCost ?? currentZone?.clickCost ?? 1;
+    if (isAutoAttack && combatState?.monster.isBoss) {
+      setErrorMessage("보스 몬스터는 자동사냥 없이 직접 클릭으로만 처치할 수 있습니다.");
+      if (autoAttackEnabledRef.current) {
+        setAutoAttackEnabled(false);
+      }
+      return;
+    }
     if (isAutoAttack && progress.endurance < requiredEndurance) {
       setErrorMessage(`피로도가 부족합니다. 현재 지역은 ${requiredEndurance} 피로도를 소모합니다.`);
       if (autoAttackEnabledRef.current) {
@@ -436,6 +443,17 @@ export const useHuntingGame = () => {
   useEffect(() => {
     autoAttackEnabledRef.current = autoAttackEnabled;
   }, [autoAttackEnabled]);
+
+  useEffect(() => {
+    if (combatState?.monster.isBoss && autoAttackEnabled) {
+      setAutoAttackEnabled(false);
+      pushNotification({
+        tone: "info",
+        title: "보스는 수동 전투",
+        body: "보스 몬스터는 직접 클릭으로만 잡을 수 있습니다."
+      });
+    }
+  }, [autoAttackEnabled, combatState?.monster.isBoss]);
 
   useEffect(() => {
     if (autoTimerRef.current) {

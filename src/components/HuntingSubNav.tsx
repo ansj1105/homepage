@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 const huntingSubNavItems = [
   { to: "/dongyeon-hunting-ground", label: "내 정보" },
   { to: "/dongyeon-hunting-status", label: "내 상태" },
+  { to: "/dongyeon-hunting-raid", label: "보스 레이드" },
   { to: "/dongyeon-hunting-profile", label: "내 프로필" },
   { to: "/dongyeon-hunting-guide", label: "소개" }
 ];

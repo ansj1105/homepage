@@ -125,6 +125,11 @@ const HuntingGroundPage = () => {
                   <p>{currentZone ? `${currentZone.name}에서 바로 전투를 이어갑니다.` : "선택된 지역으로 바로 전투를 시작합니다."}</p>
                   <span>전투 화면 이동</span>
                 </Link>
+                <Link to="/dongyeon-hunting-raid" className="huntingHubQuickCard">
+                  <strong>보스 레이드</strong>
+                  <p>자동사냥 없이 직접 클릭으로만 잡는 후한 보상 레이드입니다.</p>
+                  <span>레이드 입장</span>
+                </Link>
                 <Link to="/dongyeon-hunting-status" className="huntingHubQuickCard">
                   <strong>내 상태</strong>
                   <p>레벨, 재화, 장비 성장 상태를 한 번에 확인합니다.</p>

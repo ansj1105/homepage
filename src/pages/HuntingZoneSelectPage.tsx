@@ -61,7 +61,7 @@ const HuntingZoneSelectPage = () => {
                   <p className="powerRankingSectionEyebrow">Zone Board</p>
                   <h2>지역 선택</h2>
                 </div>
-                <p className="powerRankingSectionHint">해금 조건과 예상 드랍을 보고 이동합니다.</p>
+                <p className="powerRankingSectionHint">해금 조건과 예상 드랍을 보고 이동합니다. 보스 몬스터는 자동사냥 없이 직접 클릭으로만 처치됩니다.</p>
               </div>
 
               <div className="huntingStageSelector">

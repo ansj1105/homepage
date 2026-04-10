@@ -7115,6 +7115,119 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: #4e647c;
 }
 
+.powerRankingPageMaple .huntingRaidBossGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.powerRankingPageMaple .huntingRaidBossCard {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #d3dfef;
+  background: #f6faff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.powerRankingPageMaple .huntingRaidBossCard.isActive {
+  border-color: #18457e;
+  background: #edf5ff;
+}
+
+.powerRankingPageMaple .huntingRaidBossCard:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.powerRankingPageMaple .huntingRaidBossImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.powerRankingPageMaple .huntingRaidBossCard strong {
+  color: #163a70;
+  font-size: 18px;
+}
+
+.powerRankingPageMaple .huntingRaidBossCard span,
+.powerRankingPageMaple .huntingRaidBossCard small,
+.powerRankingPageMaple .huntingRaidBossCard p {
+  margin: 0;
+  color: #4e647c;
+}
+
+.powerRankingPageMaple .huntingRaidArena {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 20px;
+}
+
+.powerRankingPageMaple .huntingRaidStage {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #d3dfef;
+  background: #f8fbff;
+}
+
+.powerRankingPageMaple .huntingRaidVisual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 320px;
+  border: 1px solid #d5e2f2;
+  background: linear-gradient(180deg, #f7fbff 0%, #ecf4ff 100%);
+}
+
+.powerRankingPageMaple .huntingRaidStageImage {
+  width: min(100%, 320px);
+  object-fit: contain;
+}
+
+.powerRankingPageMaple .huntingRaidSpeechBubble {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid #b9cfea;
+  background: #edf5ff;
+}
+
+.powerRankingPageMaple .huntingRaidSpeechBubble strong {
+  color: #163a70;
+}
+
+.powerRankingPageMaple .huntingRaidSpeechBubble p {
+  margin: 0;
+  color: #425d79;
+}
+
+.powerRankingPageMaple .huntingMonsterHpBar.isRaid {
+  height: 18px;
+  background: #d7e3f2;
+}
+
+.powerRankingPageMaple .huntingMonsterHpFill.isRaid {
+  background: linear-gradient(90deg, #c2355b 0%, #e46b53 100%);
+}
+
+.powerRankingPageMaple .huntingRaidRewardPanel {
+  display: grid;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .powerRankingPageMaple .huntingRaidBossGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .huntingRaidArena {
+    grid-template-columns: 1fr;
+  }
+}
+
 .powerRankingPageMaple .powerRankingInventoryEquippedStrip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
