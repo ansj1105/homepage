@@ -28,6 +28,14 @@ type HuntingNotification = {
   body: string;
 };
 
+type HuntingAttackFeedback = {
+  id: string;
+  damage: number;
+  wasCritical: boolean;
+  remainingHp: number;
+  maxHp: number;
+};
+
 const updateProgressFromCombat = (
   current: HuntingProgress,
   result: HuntingCombatClickResponse
@@ -75,6 +83,7 @@ const updateProgressFromCombat = (
 export const useHuntingGame = () => {
   const { user } = useUserAuth();
   const autoTimerRef = useRef<number | null>(null);
+  const attackFeedbackTimerRef = useRef<number | null>(null);
   const autoAttackEnabledRef = useRef(false);
   const attackRef = useRef<(options?: { auto?: boolean }) => Promise<void>>(async () => undefined);
   const notificationTimersRef = useRef<number[]>([]);
@@ -85,6 +94,7 @@ export const useHuntingGame = () => {
   const [zoneDetail, setZoneDetail] = useState<HuntingZoneDetail | null>(null);
   const [combatState, setCombatState] = useState<HuntingCombatState | null>(null);
   const [notifications, setNotifications] = useState<HuntingNotification[]>([]);
+  const [lastAttackFeedback, setLastAttackFeedback] = useState<HuntingAttackFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAttacking, setIsAttacking] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -281,6 +291,20 @@ export const useHuntingGame = () => {
         selectedCardLevel
       });
       setCombatState(result.state);
+      setLastAttackFeedback({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        damage: result.damage,
+        wasCritical: result.wasCritical,
+        remainingHp: result.state.monster.currentHp,
+        maxHp: result.state.monster.maxHp
+      });
+      if (attackFeedbackTimerRef.current) {
+        window.clearTimeout(attackFeedbackTimerRef.current);
+      }
+      attackFeedbackTimerRef.current = window.setTimeout(() => {
+        setLastAttackFeedback(null);
+        attackFeedbackTimerRef.current = null;
+      }, 1200);
       let nextLevelUpCount = 0;
       let nextLevel = progress.level;
       setProgress((current) => {
@@ -437,6 +461,9 @@ export const useHuntingGame = () => {
     return () => {
       notificationTimersRef.current.forEach((timer) => window.clearTimeout(timer));
       notificationTimersRef.current = [];
+      if (attackFeedbackTimerRef.current) {
+        window.clearTimeout(attackFeedbackTimerRef.current);
+      }
     };
   }, []);
 
@@ -503,6 +530,7 @@ export const useHuntingGame = () => {
     zones,
     zoneDetail,
     combatState,
+    lastAttackFeedback,
     notifications,
     isLoading,
     isAttacking,

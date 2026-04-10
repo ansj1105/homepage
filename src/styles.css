@@ -8866,16 +8866,34 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .huntingMonsterHpBar {
+  position: relative;
   height: 12px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(16, 36, 63, 0.08);
 }
 
+.powerRankingPageMaple .huntingMonsterHpBar.isDamaged::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  animation: hunting-hp-flash 0.45s ease-out;
+}
+
+.powerRankingPageMaple .huntingMonsterHpBar.isCritical::after {
+  background: rgba(255, 96, 96, 0.38);
+}
+
 .powerRankingPageMaple .huntingMonsterHpFill {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #163a70, #4c7cbc);
+  transition: width 180ms ease-out;
+}
+
+.powerRankingPageMaple .huntingMonsterHpFill.isCritical {
+  background: linear-gradient(90deg, #8f1227, #ef3340);
 }
 
 .powerRankingPageMaple .huntingMonsterCard small {
@@ -9176,6 +9194,14 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-weight: 800;
 }
 
+.powerRankingPageMaple .huntingDamageMeta {
+  color: #17314f;
+}
+
+.powerRankingPageMaple .huntingCriticalMeta {
+  color: #c42231;
+}
+
 .powerRankingPageMaple .huntingCombatActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -9184,6 +9210,74 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .huntingCombatActions > * {
   width: 100%;
+}
+
+.powerRankingPageMaple .huntingCombatVisual {
+  position: relative;
+  overflow: hidden;
+}
+
+.powerRankingPageMaple .huntingDamageBurst {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-width: 116px;
+  padding: 10px 12px;
+  border: 1px solid #18457e;
+  background: rgba(255, 255, 255, 0.96);
+  color: #17314f;
+  text-align: right;
+  pointer-events: none;
+  animation: hunting-damage-burst 0.9s ease-out;
+}
+
+.powerRankingPageMaple .huntingDamageBurst.isCritical {
+  border-color: #c42231;
+  background: rgba(255, 243, 243, 0.98);
+  color: #c42231;
+}
+
+.powerRankingPageMaple .huntingDamageBurst strong {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.powerRankingPageMaple .huntingDamageBurst span {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.powerRankingPageMaple .huntingDamageBurst small {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@keyframes hunting-damage-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.92);
+  }
+  18% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(1.04);
+  }
+}
+
+@keyframes hunting-hp-flash {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .powerRankingPageMaple .huntingMonsterSwitchGrid {

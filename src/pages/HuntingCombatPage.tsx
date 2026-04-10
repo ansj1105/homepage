@@ -10,6 +10,7 @@ const HuntingCombatPage = () => {
     progress,
     profile,
     combatState,
+    lastAttackFeedback,
     notifications,
     currentZone,
     zoneDetail,
@@ -108,6 +109,15 @@ const HuntingCombatPage = () => {
                 <article className="huntingCombatPanel">
                   <div className="huntingCombatVisual">
                     <img src={combatState.monster.imageUrl} alt={combatState.monster.name} className="huntingMonsterDetailImage" />
+                    {lastAttackFeedback ? (
+                      <div className={`huntingDamageBurst ${lastAttackFeedback.wasCritical ? "isCritical" : ""}`.trim()}>
+                        <strong>{lastAttackFeedback.wasCritical ? "CRITICAL" : "HIT"}</strong>
+                        <span>-{lastAttackFeedback.damage}</span>
+                        <small>
+                          HP {lastAttackFeedback.remainingHp} / {lastAttackFeedback.maxHp}
+                        </small>
+                      </div>
+                    ) : null}
                   </div>
                   <div className="huntingCombatInfo">
                     <p>{combatState.monster.patternLabel}</p>
@@ -134,9 +144,9 @@ const HuntingCombatPage = () => {
                         <div className="huntingCombatProgressFill" style={{ width: `${expProgressPercent}%` }} />
                       </div>
                     </div>
-                    <div className="huntingMonsterHpBar">
+                    <div className={`huntingMonsterHpBar ${lastAttackFeedback ? "isDamaged" : ""} ${lastAttackFeedback?.wasCritical ? "isCritical" : ""}`.trim()}>
                       <div
-                        className="huntingMonsterHpFill"
+                        className={`huntingMonsterHpFill ${lastAttackFeedback?.wasCritical ? "isCritical" : ""}`.trim()}
                         style={{ width: `${Math.max(0, (combatState.monster.currentHp / combatState.monster.maxHp) * 100)}%` }}
                       />
                     </div>
@@ -144,6 +154,13 @@ const HuntingCombatPage = () => {
                         <span>HP {combatState.monster.currentHp} / {combatState.monster.maxHp}</span>
                         <span>예상 데미지 {combatState.estimatedDamage}</span>
                         <span>치명타 {Math.round(combatState.critRate * 100)}%</span>
+                        {lastAttackFeedback ? (
+                          <span className={lastAttackFeedback.wasCritical ? "huntingCriticalMeta" : "huntingDamageMeta"}>
+                            {lastAttackFeedback.wasCritical
+                              ? `치명타 -${lastAttackFeedback.damage}`
+                              : `피해 -${lastAttackFeedback.damage}`}
+                          </span>
+                        ) : null}
                         <span>클릭 소모 {combatState.clickCost}</span>
                         <span>피로도 소모 {combatState.clickCost}</span>
                         {combatState.remainingBossEntries !== undefined ? (
