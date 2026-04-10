@@ -182,8 +182,12 @@ body {
   min-width: 42px;
   padding: 0;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 900;
+}
+
+.communityTopBarLogout svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .communityTopBarVisitor {
