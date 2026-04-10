@@ -6852,6 +6852,14 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   background: #f6f9fd;
 }
 
+.powerRankingPageMaple .powerRankingCardImage {
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(228, 239, 255, 0.85) 42%, rgba(196, 216, 244, 0.9)),
+    #eef5ff;
+  object-fit: contain;
+  padding: 8px;
+}
+
 .powerRankingPageMaple .powerRankingResourceIcon {
   width: 100%;
   aspect-ratio: 1 / 1;

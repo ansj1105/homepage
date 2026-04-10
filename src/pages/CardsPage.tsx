@@ -89,6 +89,10 @@ const CardsPage = () => {
           <div className="powerRankingInventoryGrid">
             {cards.map((card) => (
               <article key={card.id} className="powerRankingInventoryCard">
+                <div className="powerRankingInventoryVisual">
+                  <img src={card.imageUrl} alt={card.name} className="powerRankingInventoryImage powerRankingCardImage" />
+                  {progress?.selectedCardTargetId === card.id ? <span className="powerRankingEquippedBadge">선택 중</span> : null}
+                </div>
                 <div className="powerRankingInventoryBody">
                   <div className="powerRankingInventoryHeading">
                     <strong>{card.name}</strong>

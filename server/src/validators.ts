@@ -249,11 +249,11 @@ const equipmentEnhanceSchema = z.object({
 });
 
 const cardSelectSchema = z.object({
-  cardId: z.string().uuid()
+  cardId: z.string().trim().min(1).max(80)
 });
 
 const cardUpgradeSchema = z.object({
-  cardId: z.string().uuid(),
+  cardId: z.string().trim().min(1).max(80),
   pointCost: z.number().int().min(1).max(999)
 });
 
