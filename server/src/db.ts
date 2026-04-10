@@ -983,6 +983,7 @@ export const usePowerRankingItem = async (
   period: "all" | "weekly" | "daily"
 ): Promise<PowerRankingItemUseResponse | null> => {
   const item = powerRankingItemCatalog[itemCode];
+  let itemDelta = item?.effectDelta ?? 0;
   if (!item) {
     throw new Error("사용할 수 없는 아이템입니다.");
   }
@@ -1020,7 +1021,7 @@ export const usePowerRankingItem = async (
     );
 
     const equipped = await listPowerRankingEquippedByUserId(userId);
-    let itemDelta = item.effectDelta;
+    itemDelta = item.effectDelta;
     if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
       itemDelta += item.effectDelta > 0 ? 20 : -20;
     }

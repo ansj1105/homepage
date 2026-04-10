@@ -4,16 +4,20 @@ import CommunityTopBar from "../components/CommunityTopBar";
 import HuntingSubNav from "../components/HuntingSubNav";
 import { MAX_ENDURANCE, materialMeta } from "../features/huntingProgress";
 import { useHuntingGame } from "../features/hunting/useHuntingGame";
+import type { HuntingZoneSummary } from "../types";
+
+const isHuntingZoneSummary = (zone: unknown): zone is HuntingZoneSummary =>
+  typeof zone === "object" && zone !== null && "previewDrops" in zone;
 
 const HuntingGroundPage = () => {
   const { user, progress, profile, currentZone, remainingClicks, isLoading, errorMessage, zones, selectedMonster } = useHuntingGame();
 
   const featuredZones = useMemo(() => zones.slice(0, 3), [zones]);
   const currentZoneDrops = useMemo(() => {
-    if (!currentZone) {
+    if (!currentZone || !isHuntingZoneSummary(currentZone)) {
       return [];
     }
-    return currentZone.previewDrops?.slice(0, 4) ?? [];
+    return currentZone.previewDrops.slice(0, 4);
   }, [currentZone]);
 
   useEffect(() => {
@@ -36,7 +40,7 @@ const HuntingGroundPage = () => {
           <div className="huntingHubHeroCard">
             <div className="huntingHubHeroVisual">
               <img
-                src={selectedMonster?.imageUrl ?? currentZone?.monsters?.[0]?.imageUrl ?? "/assets/monsters/canteen-wolf.svg"}
+                src={selectedMonster?.imageUrl ?? "/assets/monsters/canteen-wolf.svg"}
                 alt={selectedMonster?.name ?? currentZone?.name ?? "현재 사냥터"}
                 className="huntingHubHeroImage"
               />
@@ -142,7 +146,7 @@ const HuntingGroundPage = () => {
                 <article className="huntingHubCurrentCard">
                   <div className="huntingHubCurrentVisual">
                     <img
-                      src={selectedMonster?.imageUrl ?? currentZone?.monsters?.[0]?.imageUrl ?? "/assets/monsters/canteen-wolf.svg"}
+                      src={selectedMonster?.imageUrl ?? "/assets/monsters/canteen-wolf.svg"}
                       alt={currentZone?.name ?? "현재 지역"}
                       className="huntingHubCurrentImage"
                     />
@@ -154,7 +158,7 @@ const HuntingGroundPage = () => {
                     <div className="huntingHubCurrentMeta">
                       <span>권장 {currentZone?.recommendedPower ?? "-"}</span>
                       <span>클릭 {currentZone?.clickCost ?? "-"}</span>
-                      <span>몬스터 {currentZone?.monsterNames?.length ?? currentZone?.monsters?.length ?? 0}종</span>
+                      <span>몬스터 {isHuntingZoneSummary(currentZone) ? currentZone.monsterNames.length : 0}종</span>
                     </div>
                   </div>
                 </article>
@@ -188,7 +192,9 @@ const HuntingGroundPage = () => {
 
               <div className="huntingHubZoneGrid">
                 {featuredZones.map((zone) => {
-                  const zoneImage = zone.monsters[0]?.imageUrl ?? "/assets/monsters/canteen-wolf.svg";
+                  const zoneImage = zone.id === currentZone?.id && selectedMonster?.imageUrl
+                    ? selectedMonster.imageUrl
+                    : "/assets/monsters/canteen-wolf.svg";
                   const isUnlocked = progress.level >= zone.unlockLevel;
                   return (
                     <article key={zone.id} className={`huntingHubZoneCard ${zone.id === currentZone?.id ? "isActive" : ""}`.trim()}>

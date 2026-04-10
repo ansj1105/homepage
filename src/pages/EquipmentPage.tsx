@@ -487,7 +487,7 @@ const EquipmentPage = () => {
                   equippedCardItems.map((item) => (
                     <PowerRankingEquipmentCard
                       key={`equipped-${item.code}`}
-                      item={{ ...item, quantity: 1 }}
+                      item={{ ...item, quantity: 1, createdAt: item.equippedAt }}
                       isEquipped
                     />
                   ))
