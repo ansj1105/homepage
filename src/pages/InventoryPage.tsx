@@ -21,6 +21,34 @@ import type {
 
 type InventoryTab = "equipment" | "consumables" | "other";
 
+const huntingResourceVisualMap: Record<
+  string,
+  {
+    icon: string;
+    toneClass: string;
+  }
+> = {
+  "club-coin": { icon: "DY", toneClass: "isCoin" },
+  gem: { icon: "GM", toneClass: "isGem" },
+  "enhancement-stone": { icon: "강", toneClass: "isStone" },
+  "refined-stone": { icon: "고", toneClass: "isRefined" },
+  "ancient-core": { icon: "핵", toneClass: "isCore" },
+  "card-shard": { icon: "카", toneClass: "isShard" },
+  "event-token": { icon: "토", toneClass: "isToken" },
+  "healing-potion": { icon: "HP", toneClass: "isPotion" },
+  "medium-healing-potion": { icon: "H+", toneClass: "isPotion" },
+  "power-potion": { icon: "AT", toneClass: "isBuff" },
+  "berserk-tonic": { icon: "BR", toneClass: "isBuff" },
+  "lucky-scroll": { icon: "LU", toneClass: "isScroll" },
+  "harvest-booster": { icon: "HB", toneClass: "isScroll" },
+  "energy-bar": { icon: "EN", toneClass: "isEnergy" },
+  "energy-drink": { icon: "ED", toneClass: "isEnergy" },
+  "fan-letter": { icon: "팬", toneClass: "isCard" },
+  "cheering-stick": { icon: "응", toneClass: "isCard" },
+  "viral-ticket": { icon: "바", toneClass: "isCard" },
+  "protection-scroll": { icon: "보", toneClass: "isScroll" }
+};
+
 const InventoryPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
@@ -255,6 +283,14 @@ const InventoryPage = () => {
             <div className="powerRankingInventoryGrid">
               {otherItems.map((item) => (
                 <article key={item.code} className="powerRankingInventoryCard">
+                  <div className="powerRankingInventoryVisual">
+                    <div
+                      className={`powerRankingResourceIcon ${huntingResourceVisualMap[item.code]?.toneClass ?? ""}`.trim()}
+                    >
+                      {huntingResourceVisualMap[item.code]?.icon ?? "IT"}
+                    </div>
+                    <span className="powerRankingInventoryBadge">x{item.quantity}</span>
+                  </div>
                   <div className="powerRankingInventoryBody">
                     <div className="powerRankingInventoryHeading">
                       <strong>{item.name}</strong>

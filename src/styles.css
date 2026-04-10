@@ -6388,6 +6388,80 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   background: #f6f9fd;
 }
 
+.powerRankingPageMaple .powerRankingResourceIcon {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c9d9ec;
+  background: linear-gradient(180deg, #f8fbff, #e7f0fb);
+  color: #17314f;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isCoin {
+  background: linear-gradient(180deg, #fff7d9, #f3df8c);
+  color: #7a5600;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isGem {
+  background: linear-gradient(180deg, #ebf3ff, #bdd7ff);
+  color: #19457f;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isStone {
+  background: linear-gradient(180deg, #f2f5fb, #cad5e6);
+  color: #2d405d;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isRefined {
+  background: linear-gradient(180deg, #f9f0ff, #dbbaf8);
+  color: #5d2c8d;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isCore {
+  background: linear-gradient(180deg, #eefbff, #b7ebf5);
+  color: #115a6b;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isShard {
+  background: linear-gradient(180deg, #fff1f5, #f8c2d2);
+  color: #8b2c4a;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isToken {
+  background: linear-gradient(180deg, #eefcef, #bde5c1);
+  color: #1e6930;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isPotion {
+  background: linear-gradient(180deg, #ffeef0, #f5b7c0);
+  color: #8c2941;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isBuff {
+  background: linear-gradient(180deg, #fff4e8, #f7c68a);
+  color: #8b4f00;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isScroll {
+  background: linear-gradient(180deg, #f7f0e8, #e7cfb0);
+  color: #6b4b1f;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isEnergy {
+  background: linear-gradient(180deg, #eef8ff, #b9dcff);
+  color: #0f4d86;
+}
+
+.powerRankingPageMaple .powerRankingResourceIcon.isCard {
+  background: linear-gradient(180deg, #fff0fb, #edb8df);
+  color: #7a2b67;
+}
+
 .powerRankingPageMaple .powerRankingInventoryBadge {
   position: absolute;
   right: 8px;
