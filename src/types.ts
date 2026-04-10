@@ -204,10 +204,13 @@ export interface PowerRankingNote {
 
 export type PowerRankingPeriod = "all" | "weekly" | "daily";
 export type PowerRankingVoteDelta = 1 | -1;
+export type PowerRankingFaction = "blue" | "red";
 export type PowerRankingItemCode =
   | "byeokbangjun-blanket"
   | "seoeuntaek-love"
   | "kimdaseul-blessing"
+  | "blue-campus-badge"
+  | "red-campus-flare"
   | "ranking-up-ticket"
   | "ranking-down-ticket";
 export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
@@ -236,6 +239,7 @@ export interface PowerRankingVoteRequest {
   deviceId: string;
   delta: PowerRankingVoteDelta;
   period: PowerRankingPeriod;
+  faction?: PowerRankingFaction;
 }
 
 export interface PowerRankingItemCatalogEntry {
@@ -552,6 +556,7 @@ export interface PowerRankingEventLog {
 export interface PowerRankingVoteResponse {
   person: PowerRankingPerson;
   droppedItem: PowerRankingInventoryItem | null;
+  factionDroppedItem?: PowerRankingInventoryItem | null;
   droppedEquipment: PowerRankingEquipmentInventoryItem | null;
   inventory?: PowerRankingInventoryItem[];
   consumedBonusItemCode?: PowerRankingItemCode | null;

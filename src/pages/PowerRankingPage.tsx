@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
+import { powerRankingItemCatalog } from "../data/powerRankingItems";
 import { showBrowserAlert } from "../features/alertPreference";
 import type {
   LiveVisitorEntry,
   PowerRankingEventLog,
+  PowerRankingFaction,
   PowerRankingInventoryItem,
   PowerRankingItemCode,
   PowerRankingNote,
@@ -20,6 +22,7 @@ type SortMode = "name" | "score";
 type VoteQueueItem = {
   personId: string;
   delta: PowerRankingVoteDelta;
+  faction: PowerRankingFaction;
 };
 type PowerRankingUserNotification = {
   id: string;
@@ -32,6 +35,7 @@ const collator = new Intl.Collator("ko");
 const PROFILE_MAX_BYTES = 5 * 1024 * 1024;
 const MEMO_PAGE_SIZE = 10;
 const LIVE_VISITOR_REFRESH_MS = 30_000;
+const POWER_RANKING_FACTION_STORAGE_KEY = "dongyeon-power-ranking-faction";
 
 const formatDateTime = (value: string): string => {
   const date = new Date(value);
@@ -257,11 +261,35 @@ const getItemUseConfirmMessage = (
     return `${personName}에게 김다슬의 축복을 쓰시겠습니까? 인기도가 1000 내려갑니다.`;
   }
 
+  if (itemCode === "blue-campus-badge") {
+    return `${personName}에게 청량 응원 배지를 쓰시겠습니까? 인기도가 150 올라갑니다.`;
+  }
+
+  if (itemCode === "red-campus-flare") {
+    return `${personName}에게 적색 견제 플레어를 쓰시겠습니까? 인기도가 150 내려갑니다.`;
+  }
+
   return null;
 };
 
 const isPowerRankingUsableItem = (itemCode: PowerRankingItemCode): boolean =>
-  itemCode === "byeokbangjun-blanket" || itemCode === "seoeuntaek-love" || itemCode === "kimdaseul-blessing";
+  itemCode === "byeokbangjun-blanket" ||
+  itemCode === "seoeuntaek-love" ||
+  itemCode === "kimdaseul-blessing" ||
+  itemCode === "blue-campus-badge" ||
+  itemCode === "red-campus-flare";
+
+const getFactionDisplayName = (faction: PowerRankingFaction): string =>
+  faction === "blue" ? "1번 진영" : "2번 진영";
+
+const getFactionDropItemCode = (faction: PowerRankingFaction): PowerRankingItemCode =>
+  faction === "blue" ? "blue-campus-badge" : "red-campus-flare";
+
+const getPowerRankingItemEffectLabel = (itemCode: PowerRankingItemCode): string => {
+  const item = powerRankingItemCatalog[itemCode];
+  const effectDelta = item?.effectDelta ?? 0;
+  return effectDelta > 0 ? `+${effectDelta}` : `${effectDelta}`;
+};
 
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -408,6 +436,13 @@ const PowerRankingPage = () => {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
   const [actionBurstKey, setActionBurstKey] = useState<string | null>(null);
   const [scoreChartRange, setScoreChartRange] = useState<ScoreChartRange>("1d");
+  const [selectedFaction, setSelectedFaction] = useState<PowerRankingFaction>(() => {
+    if (typeof window === "undefined") {
+      return "blue";
+    }
+    const saved = window.localStorage.getItem(POWER_RANKING_FACTION_STORAGE_KEY);
+    return saved === "red" ? "red" : "blue";
+  });
   const previousRanksRef = useRef<Map<string, number>>(new Map());
   const voteQueueRef = useRef<VoteQueueItem[]>([]);
   const isProcessingVoteQueueRef = useRef(false);
@@ -417,6 +452,10 @@ const PowerRankingPage = () => {
   useEffect(() => {
     document.title = "동아리연합회";
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(POWER_RANKING_FACTION_STORAGE_KEY, selectedFaction);
+  }, [selectedFaction]);
 
   useEffect(() => {
     let isMounted = true;
@@ -702,7 +741,8 @@ const PowerRankingPage = () => {
           const result = await apiClient.submitPowerRankingVote(currentVote.personId, {
             deviceId: getOrCreateDeviceId(),
             delta: currentVote.delta,
-            period
+            period,
+            faction: currentVote.faction
           });
           updatePerson(result.person);
           if (result.inventory) {
@@ -729,7 +769,19 @@ const PowerRankingPage = () => {
             });
             showBrowserAlert(message);
             await refreshSideData();
-          } else if (result.droppedEquipment) {
+          }
+          if (result.factionDroppedItem) {
+            const message = `${getFactionDisplayName(currentVote.faction)} 보급품 도착! ${result.factionDroppedItem.name}을 획득했습니다.`;
+            setRewardMessage(message);
+            pushNotification({
+              tone: "reward",
+              title: "진영 보너스 획득",
+              body: message
+            });
+            showBrowserAlert(message);
+            await refreshSideData();
+          }
+          if (result.droppedEquipment) {
             const message = `${result.droppedEquipment.name} 장비 획득! 내 장비에서 바로 착용할 수 있습니다.`;
             setRewardMessage(message);
             pushNotification({
@@ -767,7 +819,7 @@ const PowerRankingPage = () => {
     actionBurstTimerRef.current = window.setTimeout(() => {
       setActionBurstKey((current) => (current === nextBurstKey ? null : current));
     }, 520);
-    voteQueueRef.current.push({ personId, delta });
+    voteQueueRef.current.push({ personId, delta, faction: selectedFaction });
     adjustPendingVoteCount(personId, delta, 1);
     void processVoteQueue();
   };
@@ -907,8 +959,11 @@ const PowerRankingPage = () => {
     }
   };
 
+  const factionDropItemCode = getFactionDropItemCode(selectedFaction);
+  const factionDropItem = powerRankingItemCatalog[factionDropItemCode];
+
   return (
-    <div className="powerRankingPage powerRankingPageMaple">
+    <div className={`powerRankingPage powerRankingPageMaple ${selectedFaction === "blue" ? "isBlueFaction" : "isRedFaction"}`.trim()}>
       <div className="powerRankingShell">
         <button
           type="button"
@@ -974,6 +1029,29 @@ const PowerRankingPage = () => {
                     일간랭킹
                   </button>
                 </div>
+              </div>
+
+              <div className="powerRankingControlGroup">
+                <span className="powerRankingControlLabel">진영 선택</span>
+                <div className="powerRankingHeroActions powerRankingFactionActions">
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton powerRankingFactionButton ${selectedFaction === "blue" ? "isActive isBlue" : "isBlue"}`.trim()}
+                    onClick={() => setSelectedFaction("blue")}
+                  >
+                    1번 진영
+                  </button>
+                  <button
+                    type="button"
+                    className={`powerRankingSortButton powerRankingFactionButton ${selectedFaction === "red" ? "isActive isRed" : "isRed"}`.trim()}
+                    onClick={() => setSelectedFaction("red")}
+                  >
+                    2번 진영
+                  </button>
+                </div>
+                <p className="powerRankingFactionHint">
+                  현재 {getFactionDisplayName(selectedFaction)} 선택 중 · 투표 성공 시 {factionDropItem.name} 추가 드랍 찬스
+                </p>
               </div>
 
               <div className="powerRankingStats">
@@ -1162,12 +1240,17 @@ const PowerRankingPage = () => {
                               <summary>상세보기</summary>
                               <div className="powerRankingEquipmentDetailsBody">
                                 <p>
-                                  {item.name}은 {item.code === "byeokbangjun-blanket" || item.code === "kimdaseul-blessing" ? "상대 인기도를 크게 내리는" : "상대 인기도를 크게 올리는"} 소비 아이템입니다.
+                                  {item.name}은 {item.effectDelta < 0 ? "상대 인기도를 낮추는" : "상대 인기도를 올리는"} 소비 아이템입니다.
                                 </p>
                                 <div className="powerRankingInventoryTags">
                                   <span className="powerRankingInventoryPill">
-                                    효과량 {item.code === "byeokbangjun-blanket" ? "-100" : item.code === "kimdaseul-blessing" ? "-1000" : "+100"}
+                                    효과량 {getPowerRankingItemEffectLabel(item.code)}
                                   </span>
+                                  {(item.code === "blue-campus-badge" || item.code === "red-campus-flare") ? (
+                                    <span className="powerRankingInventoryPill">
+                                      {item.code === "blue-campus-badge" ? "1번 진영 전용 드랍" : "2번 진영 전용 드랍"}
+                                    </span>
+                                  ) : null}
                                   <span className="powerRankingInventoryPill isMuted">사용 시 확인창 표시</span>
                                 </div>
                               </div>
@@ -1260,16 +1343,22 @@ const PowerRankingPage = () => {
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
                     const blessingItem = inventoryByCode["kimdaseul-blessing"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
+                    const blueFactionItem = inventoryByCode["blue-campus-badge"];
+                    const redFactionItem = inventoryByCode["red-campus-flare"];
                     const upTicketItem = inventoryByCode["ranking-up-ticket"];
                     const downTicketItem = inventoryByCode["ranking-down-ticket"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
                     const isUsingBlessing = submittingForId === `item-${person.id}-kimdaseul-blessing`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
+                    const isUsingBlueFactionItem = submittingForId === `item-${person.id}-blue-campus-badge`;
+                    const isUsingRedFactionItem = submittingForId === `item-${person.id}-red-campus-flare`;
                     const isUpBursting = actionBurstKey?.startsWith(`${person.id}:1:`) ?? false;
                     const isDownBursting = actionBurstKey?.startsWith(`${person.id}:-1:`) ?? false;
                     const blanketDisabledReason = !blanketItem || blanketItem.quantity < 1 ? "담요 보유 수량이 없습니다." : null;
                     const blessingDisabledReason = !blessingItem || blessingItem.quantity < 1 ? "축복 보유 수량이 없습니다." : null;
                     const loveDisabledReason = !loveItem || loveItem.quantity < 1 ? "사랑 보유 수량이 없습니다." : null;
+                    const blueFactionDisabledReason = !blueFactionItem || blueFactionItem.quantity < 1 ? "청량 응원 배지 보유 수량이 없습니다." : null;
+                    const redFactionDisabledReason = !redFactionItem || redFactionItem.quantity < 1 ? "적색 견제 플레어 보유 수량이 없습니다." : null;
                     const personItemUseLogs = eventLogs
                       .filter((event) => event.personId === person.id && event.eventType === "item_use")
                       .slice(0, 5);
@@ -1400,6 +1489,23 @@ const PowerRankingPage = () => {
                               <button
                                 type="button"
                                 className="powerRankingItemButton"
+                                disabled={!redFactionItem || redFactionItem.quantity < 1 || isUsingRedFactionItem}
+                                onClick={() => void handleUseItem(person.id, "red-campus-flare")}
+                              >
+                                {isUsingRedFactionItem
+                                  ? "사용 중..."
+                                  : `적색 견제 플레어 ${redFactionItem ? `x${redFactionItem.quantity}` : "x0"}`}
+                              </button>
+                              <span className="powerRankingItemActionHint">
+                                {isUsingRedFactionItem
+                                  ? "확인 후 사용 처리 중입니다."
+                                  : redFactionDisabledReason ?? "2번 진영 추가 드랍 아이템입니다. 인기도 -150이 적용됩니다."}
+                              </span>
+                            </div>
+                            <div className="powerRankingItemActionCard">
+                              <button
+                                type="button"
+                                className="powerRankingItemButton"
                                 disabled={!blessingItem || blessingItem.quantity < 1 || isUsingBlessing}
                                 onClick={() => void handleUseItem(person.id, "kimdaseul-blessing")}
                               >
@@ -1409,6 +1515,23 @@ const PowerRankingPage = () => {
                               </button>
                               <span className="powerRankingItemActionHint">
                                 {isUsingBlessing ? "확인 후 사용 처리 중입니다." : blessingDisabledReason ?? "사용 시 확인창이 뜬 뒤 인기도 -1000이 적용됩니다."}
+                              </span>
+                            </div>
+                            <div className="powerRankingItemActionCard">
+                              <button
+                                type="button"
+                                className="powerRankingItemButton isPositive"
+                                disabled={!blueFactionItem || blueFactionItem.quantity < 1 || isUsingBlueFactionItem}
+                                onClick={() => void handleUseItem(person.id, "blue-campus-badge")}
+                              >
+                                {isUsingBlueFactionItem
+                                  ? "사용 중..."
+                                  : `청량 응원 배지 ${blueFactionItem ? `x${blueFactionItem.quantity}` : "x0"}`}
+                              </button>
+                              <span className="powerRankingItemActionHint">
+                                {isUsingBlueFactionItem
+                                  ? "확인 후 사용 처리 중입니다."
+                                  : blueFactionDisabledReason ?? "1번 진영 추가 드랍 아이템입니다. 인기도 +150이 적용됩니다."}
                               </span>
                             </div>
                             <div className="powerRankingItemActionCard">

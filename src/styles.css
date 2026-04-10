@@ -5796,6 +5796,16 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: #142033;
 }
 
+.powerRankingPageMaple.isBlueFaction {
+  background:
+    linear-gradient(180deg, #eef5ff 0%, #ffffff 22%, #ffffff 100%);
+}
+
+.powerRankingPageMaple.isRedFaction {
+  background:
+    linear-gradient(180deg, #fff0f0 0%, #ffffff 22%, #ffffff 100%);
+}
+
 .powerRankingPageMaple .powerRankingShell::before,
 .powerRankingPageMaple .boardHero {
   background-image: none !important;
@@ -6160,6 +6170,16 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   box-shadow: none;
 }
 
+.powerRankingPageMaple.isBlueFaction .powerRankingHeroMaple {
+  border-color: rgba(24, 78, 156, 0.2);
+  box-shadow: inset 0 0 0 999px rgba(234, 244, 255, 0.18);
+}
+
+.powerRankingPageMaple.isRedFaction .powerRankingHeroMaple {
+  border-color: rgba(168, 32, 32, 0.22);
+  box-shadow: inset 0 0 0 999px rgba(255, 235, 235, 0.18);
+}
+
 .powerRankingPageMaple .boardHero {
   align-items: stretch;
   padding: 34px;
@@ -6319,6 +6339,36 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingPeriodActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.powerRankingPageMaple .powerRankingFactionActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.powerRankingPageMaple .powerRankingFactionButton.isBlue {
+  border-color: rgba(24, 78, 156, 0.18);
+}
+
+.powerRankingPageMaple .powerRankingFactionButton.isRed {
+  border-color: rgba(168, 32, 32, 0.18);
+}
+
+.powerRankingPageMaple .powerRankingFactionButton.isBlue.isActive {
+  border-color: #184e9c;
+  background: linear-gradient(180deg, #2f6cc4, #184e9c);
+}
+
+.powerRankingPageMaple .powerRankingFactionButton.isRed.isActive {
+  border-color: #a82020;
+  background: linear-gradient(180deg, #cf3a3a, #a82020);
+}
+
+.powerRankingPageMaple .powerRankingFactionHint {
+  margin: 0;
+  color: #44627f;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .powerRankingPageMaple .powerRankingSortButton {

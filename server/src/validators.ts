@@ -175,12 +175,19 @@ const powerRankingNoteSchema = z.object({
 const powerRankingVoteActionSchema = z.object({
   deviceId: z.string().trim().min(12).max(120),
   delta: z.union([z.literal(1), z.literal(-1)]),
-  period: z.enum(["all", "weekly", "daily"])
+  period: z.enum(["all", "weekly", "daily"]),
+  faction: z.enum(["blue", "red"]).optional()
 });
 
 const powerRankingItemUseSchema = z.object({
   personId: z.string().uuid(),
-  itemCode: z.enum(["byeokbangjun-blanket", "seoeuntaek-love", "kimdaseul-blessing"]),
+  itemCode: z.enum([
+    "byeokbangjun-blanket",
+    "seoeuntaek-love",
+    "kimdaseul-blessing",
+    "blue-campus-badge",
+    "red-campus-flare"
+  ]),
   period: z.enum(["all", "weekly", "daily"])
 });
 

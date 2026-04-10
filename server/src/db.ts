@@ -444,9 +444,10 @@ const logPowerRankingEvent = async (
 
 const grantPowerRankingItem = async (
   userId: string,
-  itemCode: PowerRankingItemCode
+  itemCode: PowerRankingItemCode,
+  runner: Pool | PoolClient = pool
 ): Promise<PowerRankingInventoryItem> => {
-  const result = await pool.query<PowerRankingUserItemRow>(
+  const result = await runner.query<PowerRankingUserItemRow>(
     `INSERT INTO power_ranking_user_items (user_id, item_code, quantity)
      VALUES ($1, $2, 1)
      ON CONFLICT (user_id, item_code)
@@ -967,7 +968,8 @@ export const changePowerRankingScore = async (
   deviceId: string,
   delta: 1 | -1,
   period: "all" | "weekly" | "daily",
-  userId?: string | null
+  userId?: string | null,
+  faction?: "blue" | "red"
 ): Promise<PowerRankingVoteResponse | null> => {
   const personResult = await pool.query<{ id: string }>(
     "SELECT id FROM power_ranking_people WHERE id = $1 LIMIT 1",
@@ -980,6 +982,7 @@ export const changePowerRankingScore = async (
   const modifier = await getPowerRankingActionModifier(userId ?? null, delta);
   let consumedBonusItemCode: PowerRankingItemCode | null = null;
   let droppedItem: PowerRankingInventoryItem | null = null;
+  let factionDroppedItem: PowerRankingInventoryItem | null = null;
   let droppedEquipment: PowerRankingEquipmentInventoryItem | null = null;
 
   const client = await pool.connect();
@@ -1038,6 +1041,17 @@ export const changePowerRankingScore = async (
       );
     }
 
+    if (userId && faction && Math.random() < 0.24) {
+      const factionItemCode: PowerRankingItemCode =
+        faction === "blue" ? "blue-campus-badge" : "red-campus-flare";
+      factionDroppedItem = await grantPowerRankingItem(userId, factionItemCode, client);
+      await client.query(
+        `INSERT INTO power_ranking_event_logs (actor_user_id, actor_device_id, person_id, event_type, delta, item_code)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, deviceId, personId, "item_drop", 0, factionItemCode]
+      );
+    }
+
     if (userId && Math.random() < modifier.equipmentDropRate) {
       const equipmentCode = drawRandomPowerRankingEquipmentCode();
       const equipmentResult = await client.query<PowerRankingEquipmentInventoryRow>(
@@ -1067,6 +1081,7 @@ export const changePowerRankingScore = async (
   return {
     person,
     droppedItem,
+    factionDroppedItem,
     droppedEquipment,
     inventory: userId ? await listPowerRankingInventoryByUserId(userId) : undefined,
     consumedBonusItemCode

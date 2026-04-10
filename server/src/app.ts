@@ -1124,7 +1124,8 @@ export const createApp = () => {
         deviceId,
         payload.delta,
         payload.period,
-        currentUser?.id
+        currentUser?.id,
+        payload.faction
       );
       if (!updated) {
         res.status(404).json({ message: "Ranking target not found" });

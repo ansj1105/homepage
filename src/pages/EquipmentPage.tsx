@@ -539,7 +539,11 @@ const EquipmentPage = () => {
                 ) : (
                   itemInventory.map((item) => {
                     const canUseDirectly =
-                      item.code === "byeokbangjun-blanket" || item.code === "seoeuntaek-love" || item.code === "kimdaseul-blessing";
+                      item.code === "byeokbangjun-blanket" ||
+                      item.code === "seoeuntaek-love" ||
+                      item.code === "kimdaseul-blessing" ||
+                      item.code === "blue-campus-badge" ||
+                      item.code === "red-campus-flare";
 
                     return (
                       <article key={item.code} className="powerRankingInventoryCard">
@@ -563,7 +567,7 @@ const EquipmentPage = () => {
                           {canUseDirectly ? (
                             <button
                               type="button"
-                              className="powerRankingItemButton isPositive"
+                              className={`powerRankingItemButton ${item.effectDelta > 0 ? "isPositive" : ""}`.trim()}
                               disabled={item.quantity < 1 || usingItemCode === item.code || !selectedItemTargetId}
                               onClick={() => void handleUseItem(item.code)}
                             >
