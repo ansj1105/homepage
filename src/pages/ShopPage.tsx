@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import { useUserAuth } from "../auth/UserAuthContext";
+import { showBrowserAlert } from "../features/alertPreference";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { PowerRankingInventoryItem, ShopItem } from "../types";
 
@@ -88,6 +89,7 @@ const ShopPage = () => {
         );
       }
       setErrorMessage(`${item.name} 구매 완료`);
+      showBrowserAlert("구매에 성공하였습니다.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "구매하지 못했습니다.");
     }
