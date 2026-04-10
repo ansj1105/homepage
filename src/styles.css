@@ -7885,8 +7885,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingScoreChartAxisText {
   fill: #58708d;
-  font-size: 4px;
-  font-weight: 700;
+  font-size: 4.8px;
+  font-weight: 800;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartGridLine {
@@ -7959,14 +7959,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   border-top: 1px solid #d3e1f0;
 }
 
-.powerRankingPageMaple .powerRankingScoreChartLabel strong {
-  font-size: 14px;
-  line-height: 1.1;
-}
-
 .powerRankingPageMaple .powerRankingScoreChartLabel span {
-  color: var(--muted);
+  color: #4f6580;
   font-size: 11px;
+  font-weight: 700;
   line-height: 1.4;
 }
 

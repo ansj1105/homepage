@@ -178,6 +178,35 @@ const getScoreChartBucketLabel = (range: ScoreChartRange): string => {
 
 const formatScoreAxisLabel = (value: number): string => `${Math.round(value)}`;
 
+const formatScoreTimeLabel = (timestamp: number, range: ScoreChartRange): string => {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  if (range === "1d") {
+    return new Intl.DateTimeFormat("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  }
+
+  if (range === "7d") {
+    return new Intl.DateTimeFormat("ko-KR", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit"
+  }).format(date);
+};
+
 const buildScoreChartCandles = (
   person: PowerRankingPerson,
   events: PowerRankingEventLog[],
@@ -490,8 +519,7 @@ const PowerRankingScoreChartPanel = ({
               })
               .map((candle, index) => (
                 <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
-                  <strong>{formatScoreAxisLabel(candle.close)}</strong>
-                  <span>{candle.label}</span>
+                  <span>{formatScoreTimeLabel(candle.timestamp, scoreChartRange)}</span>
                 </div>
               ))}
           </div>
