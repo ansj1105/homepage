@@ -92,6 +92,13 @@ const getScoreDeltaClassName = (delta: number): string => {
   return "isNeutral";
 };
 
+const getVoteActionLabel = (delta: 1 | -1, ticketQuantity: number): string => {
+  if (delta > 0) {
+    return ticketQuantity > 0 ? `▲ 올리기권 ${ticketQuantity}개` : "▲ 올리기";
+  }
+  return ticketQuantity > 0 ? `▼ 내리기권 ${ticketQuantity}개` : "▼ 내리기";
+};
+
 type ScoreChartCandle = {
   x: number;
   openY: number;
@@ -1689,9 +1696,7 @@ const PowerRankingPage = () => {
                                   void handleVoteAction(person.id, 1);
                                 }}
                               >
-                                {upQueueCount > 0
-                                  ? `▲ 올리기 권 (${upQueueCount}) · ${upTicketItem?.quantity ?? 0}`
-                                  : `▲ 올리기 권 · ${upTicketItem?.quantity ?? 0}`}
+                                {getVoteActionLabel(1, upTicketItem?.quantity ?? 0)}
                               </button>
                               <button
                                 type="button"
@@ -1702,9 +1707,7 @@ const PowerRankingPage = () => {
                                   void handleVoteAction(person.id, -1);
                                 }}
                               >
-                                {downQueueCount > 0
-                                  ? `▼ 내리기 권 (${downQueueCount}) · ${downTicketItem?.quantity ?? 0}`
-                                  : `▼ 내리기 권 · ${downTicketItem?.quantity ?? 0}`}
+                                {getVoteActionLabel(-1, downTicketItem?.quantity ?? 0)}
                               </button>
                               <span className="powerRankingRowDetailHint">상세 보기</span>
                             </div>
@@ -1741,18 +1744,14 @@ const PowerRankingPage = () => {
                                 className={`powerRankingVoteButton powerRankingVoteActionButton isUp ${upHeatClass} ${isUpBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, 1)}
                               >
-                                {upQueueCount > 0
-                                  ? `▲ 올리기 권 (${upQueueCount}) · ${upTicketItem?.quantity ?? 0}`
-                                  : `▲ 올리기 권 · ${upTicketItem?.quantity ?? 0}`}
+                                {getVoteActionLabel(1, upTicketItem?.quantity ?? 0)}
                               </button>
                               <button
                                 type="button"
                                 className={`powerRankingDownvoteButton powerRankingVoteActionButton isDown ${downHeatClass} ${isDownBursting ? "isBursting" : ""}`.trim()}
                                 onClick={() => void handleVoteAction(person.id, -1)}
                               >
-                                {downQueueCount > 0
-                                  ? `▼ 내리기 권 (${downQueueCount}) · ${downTicketItem?.quantity ?? 0}`
-                                  : `▼ 내리기 권 · ${downTicketItem?.quantity ?? 0}`}
+                                {getVoteActionLabel(-1, downTicketItem?.quantity ?? 0)}
                               </button>
                             </div>
                           </div>
