@@ -3,13 +3,38 @@ import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
-import type { ShopItem } from "../types";
+import type { PowerRankingInventoryItem, ShopItem } from "../types";
 
 type ShopTab = "equipment" | "consumables" | "other";
+
+const shopItemVisualMap: Record<
+  string,
+  {
+    icon: string;
+    toneClass: string;
+  }
+> = {
+  "healing-potion": { icon: "HP", toneClass: "isPotion" },
+  "medium-healing-potion": { icon: "H+", toneClass: "isPotion" },
+  "power-potion": { icon: "AT", toneClass: "isBuff" },
+  "berserk-tonic": { icon: "BR", toneClass: "isBuff" },
+  "lucky-scroll": { icon: "LU", toneClass: "isScroll" },
+  "harvest-booster": { icon: "HB", toneClass: "isScroll" },
+  "energy-bar": { icon: "EN", toneClass: "isEnergy" },
+  "energy-drink": { icon: "ED", toneClass: "isEnergy" },
+  "fan-letter": { icon: "팬", toneClass: "isCard" },
+  "cheering-stick": { icon: "응", toneClass: "isCard" },
+  "viral-ticket": { icon: "바", toneClass: "isCard" },
+  "enhancement-stone": { icon: "강", toneClass: "isStone" },
+  "refined-stone": { icon: "고", toneClass: "isRefined" },
+  "night-snack-ticket": { icon: "야", toneClass: "isToken" },
+  "kimdaseul-blessing": { icon: "축", toneClass: "isBuff" }
+};
 
 const ShopPage = () => {
   const { user } = useUserAuth();
   const [items, setItems] = useState<ShopItem[]>([]);
+  const [rankingInventory, setRankingInventory] = useState<PowerRankingInventoryItem[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState<ShopTab>("consumables");
   const { progress, setProgress } = useSyncedHuntingProgress(user?.id);
@@ -23,6 +48,7 @@ const ShopPage = () => {
     apiClient.getShopItems().then(setItems).catch((error: unknown) => {
       setErrorMessage(error instanceof Error ? error.message : "상점 정보를 불러오지 못했습니다.");
     });
+    apiClient.getPowerRankingInventory().then(setRankingInventory).catch(() => undefined);
   }, [user]);
 
   const handleBuy = async (item: ShopItem) => {
@@ -37,6 +63,30 @@ const ShopPage = () => {
     try {
       const result = await apiClient.buyShopItem({ itemId: item.id });
       setProgress(result.progress);
+      if (item.powerRankingItemCode) {
+        const rankingItemCode = item.powerRankingItemCode;
+        setRankingInventory((current) =>
+          current.some((inventoryItem) => inventoryItem.code === rankingItemCode)
+            ? current.map((inventoryItem) =>
+                inventoryItem.code === rankingItemCode
+                  ? { ...inventoryItem, quantity: inventoryItem.quantity + 1 }
+                  : inventoryItem
+              )
+            : [
+                ...current,
+                {
+                  code: rankingItemCode,
+                  name: item.name,
+                  description: item.description,
+                  effectDelta: 0,
+                  imageUrl: "",
+                  quantity: 1,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
+              ]
+        );
+      }
       setErrorMessage(`${item.name} 구매 완료`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "구매하지 못했습니다.");
@@ -57,6 +107,22 @@ const ShopPage = () => {
     [activeTab, items]
   );
 
+  const getOwnedQuantity = (item: ShopItem): number => {
+    if (!progress) {
+      return 0;
+    }
+    if (item.powerRankingItemCode) {
+      return rankingInventory.find((inventoryItem) => inventoryItem.code === item.powerRankingItemCode)?.quantity ?? 0;
+    }
+    if (item.itemType === "consumable") {
+      return progress.consumables[item.code as keyof typeof progress.consumables] ?? 0;
+    }
+    if (item.itemType === "material") {
+      return progress.materials[item.code as keyof typeof progress.materials] ?? 0;
+    }
+    return progress.miscItems[item.code as keyof typeof progress.miscItems] ?? 0;
+  };
+
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
@@ -69,6 +135,19 @@ const ShopPage = () => {
             </div>
             <p className="powerRankingSectionHint">소비 아이템과 강화 재료를 동연 코인으로 구매합니다.</p>
           </div>
+          <section className="powerRankingShopHero">
+            <div className="powerRankingShopNpcVisual">
+              <img src="/assets/shops/campus-shopkeeper.svg" alt="동연 상점지기" className="powerRankingShopNpcImage" />
+            </div>
+            <div className="powerRankingShopNpcCopy">
+              <p className="powerRankingSectionEyebrow">Campus Merchant</p>
+              <h2>동연 상점지기 민트</h2>
+              <p>
+                "강화석은 미리 챙겨두고, 팬레터는 쌓아뒀다가 카드 몰아주기에 쓰세요.
+                야식 교환권도 의외로 쓸 데가 많습니다."
+              </p>
+            </div>
+          </section>
           {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
           <div className="powerRankingDashboardGrid">
             <article className="powerRankingDashboardCard">
@@ -109,6 +188,12 @@ const ShopPage = () => {
             {filteredItems.length === 0 ? <article className="powerRankingInventoryEmpty">이 카테고리에는 아직 판매 중인 상품이 없습니다.</article> : null}
             {filteredItems.map((item) => (
               <article key={item.id} className="powerRankingInventoryCard">
+                <div className="powerRankingInventoryVisual">
+                  <div className={`powerRankingResourceIcon ${shopItemVisualMap[item.code]?.toneClass ?? ""}`.trim()}>
+                    {shopItemVisualMap[item.code]?.icon ?? "상"}
+                  </div>
+                  <span className="powerRankingInventoryBadge">보유 {getOwnedQuantity(item)}</span>
+                </div>
                 <div className="powerRankingInventoryBody">
                   <div className="powerRankingInventoryHeading">
                     <strong>{item.name}</strong>
@@ -116,6 +201,7 @@ const ShopPage = () => {
                   </div>
                   <p>{item.description}</p>
                   <div className="powerRankingInventoryTags">
+                    <span className="powerRankingInventoryPill isMuted">현재 보유 {getOwnedQuantity(item)}</span>
                     <span className="powerRankingInventoryPill">동연 코인 {item.priceAmount}</span>
                     {item.nightSnackTicketCost ? (
                       <span className="powerRankingInventoryPill">야식 교환권 {item.nightSnackTicketCost}</span>

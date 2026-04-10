@@ -1,0 +1,24 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" fill="#F4F8FF"/>
+  <rect x="48" y="38" width="224" height="244" fill="#E8F1FF" stroke="#173D74" stroke-width="6"/>
+  <circle cx="160" cy="92" r="36" fill="#F7D7C4" stroke="#173D74" stroke-width="5"/>
+  <path d="M124 84C129.333 66 144 56 160 56C176 56 190.667 66 196 84" fill="#173D74"/>
+  <circle cx="146" cy="92" r="4" fill="#173D74"/>
+  <circle cx="174" cy="92" r="4" fill="#173D74"/>
+  <path d="M147 107C152.333 111 167.667 111 173 107" stroke="#173D74" stroke-width="4" stroke-linecap="round"/>
+  <path d="M112 154C112 132.909 129.909 115 151 115H169C190.091 115 208 132.909 208 154V218H112V154Z" fill="#2A5EA8" stroke="#173D74" stroke-width="5"/>
+  <rect x="129" y="138" width="62" height="23" fill="#FFFFFF" stroke="#173D74" stroke-width="4"/>
+  <path d="M100 176H220" stroke="#173D74" stroke-width="5"/>
+  <rect x="78" y="186" width="164" height="76" fill="#FFFFFF" stroke="#173D74" stroke-width="5"/>
+  <path d="M78 214H242" stroke="#173D74" stroke-width="5"/>
+  <path d="M132 187V261" stroke="#173D74" stroke-width="5"/>
+  <path d="M188 187V261" stroke="#173D74" stroke-width="5"/>
+  <rect x="92" y="198" width="26" height="14" fill="#A7C6F2"/>
+  <rect x="146" y="198" width="26" height="14" fill="#A7C6F2"/>
+  <rect x="202" y="198" width="26" height="14" fill="#A7C6F2"/>
+  <rect x="92" y="226" width="26" height="22" fill="#E6EEF9"/>
+  <rect x="146" y="226" width="26" height="22" fill="#E6EEF9"/>
+  <rect x="202" y="226" width="26" height="22" fill="#E6EEF9"/>
+  <rect x="64" y="54" width="62" height="28" fill="#173D74"/>
+  <text x="95" y="73" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="14" font-weight="700">SHOP</text>
+</svg>
