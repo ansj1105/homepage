@@ -28,6 +28,13 @@ export const powerRankingItemCatalog: Record<string, PowerRankingItemCatalogEntr
     description: "상대 인기도를 100 올립니다.",
     effectDelta: 100,
     imageUrl: "/assets/items/seoeuntaek-love.svg"
+  },
+  "kimdaseul-blessing": {
+    code: "kimdaseul-blessing",
+    name: "김다슬의 축복",
+    description: "상대 인기도를 1000 내립니다.",
+    effectDelta: -1000,
+    imageUrl: "/assets/items/kimdaseul-blessing.svg"
   }
 };
 

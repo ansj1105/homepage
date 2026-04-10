@@ -253,11 +253,15 @@ const getItemUseConfirmMessage = (
     return `${personName}에게 벽방준의 담요를 쓰시겠습니까?`;
   }
 
+  if (itemCode === "kimdaseul-blessing") {
+    return `${personName}에게 김다슬의 축복을 쓰시겠습니까? 인기도가 1000 내려갑니다.`;
+  }
+
   return null;
 };
 
 const isPowerRankingUsableItem = (itemCode: PowerRankingItemCode): boolean =>
-  itemCode === "byeokbangjun-blanket" || itemCode === "seoeuntaek-love";
+  itemCode === "byeokbangjun-blanket" || itemCode === "seoeuntaek-love" || itemCode === "kimdaseul-blessing";
 
 const formatCountdown = (totalSeconds: number): string => {
   const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -1158,11 +1162,11 @@ const PowerRankingPage = () => {
                               <summary>상세보기</summary>
                               <div className="powerRankingEquipmentDetailsBody">
                                 <p>
-                                  {item.name}은 {item.code === "byeokbangjun-blanket" ? "상대 인기도를 크게 내리는" : "상대 인기도를 크게 올리는"} 소비 아이템입니다.
+                                  {item.name}은 {item.code === "byeokbangjun-blanket" || item.code === "kimdaseul-blessing" ? "상대 인기도를 크게 내리는" : "상대 인기도를 크게 올리는"} 소비 아이템입니다.
                                 </p>
                                 <div className="powerRankingInventoryTags">
                                   <span className="powerRankingInventoryPill">
-                                    효과량 {item.code === "byeokbangjun-blanket" ? "-100" : "+100"}
+                                    효과량 {item.code === "byeokbangjun-blanket" ? "-100" : item.code === "kimdaseul-blessing" ? "-1000" : "+100"}
                                   </span>
                                   <span className="powerRankingInventoryPill isMuted">사용 시 확인창 표시</span>
                                 </div>
@@ -1254,14 +1258,17 @@ const PowerRankingPage = () => {
                     const upHeatClass = getVoteQueueHeatClass(upQueueCount);
                     const downHeatClass = getVoteQueueHeatClass(downQueueCount);
                     const blanketItem = inventoryByCode["byeokbangjun-blanket"];
+                    const blessingItem = inventoryByCode["kimdaseul-blessing"];
                     const loveItem = inventoryByCode["seoeuntaek-love"];
                     const upTicketItem = inventoryByCode["ranking-up-ticket"];
                     const downTicketItem = inventoryByCode["ranking-down-ticket"];
                     const isUsingBlanket = submittingForId === `item-${person.id}-byeokbangjun-blanket`;
+                    const isUsingBlessing = submittingForId === `item-${person.id}-kimdaseul-blessing`;
                     const isUsingLove = submittingForId === `item-${person.id}-seoeuntaek-love`;
                     const isUpBursting = actionBurstKey?.startsWith(`${person.id}:1:`) ?? false;
                     const isDownBursting = actionBurstKey?.startsWith(`${person.id}:-1:`) ?? false;
                     const blanketDisabledReason = !blanketItem || blanketItem.quantity < 1 ? "담요 보유 수량이 없습니다." : null;
+                    const blessingDisabledReason = !blessingItem || blessingItem.quantity < 1 ? "축복 보유 수량이 없습니다." : null;
                     const loveDisabledReason = !loveItem || loveItem.quantity < 1 ? "사랑 보유 수량이 없습니다." : null;
                     const personItemUseLogs = eventLogs
                       .filter((event) => event.personId === person.id && event.eventType === "item_use")
@@ -1387,6 +1394,21 @@ const PowerRankingPage = () => {
                               </button>
                               <span className="powerRankingItemActionHint">
                                 {isUsingBlanket ? "확인 후 사용 처리 중입니다." : blanketDisabledReason ?? "사용 시 확인창이 뜬 뒤 인기도 -100이 적용됩니다."}
+                              </span>
+                            </div>
+                            <div className="powerRankingItemActionCard">
+                              <button
+                                type="button"
+                                className="powerRankingItemButton"
+                                disabled={!blessingItem || blessingItem.quantity < 1 || isUsingBlessing}
+                                onClick={() => void handleUseItem(person.id, "kimdaseul-blessing")}
+                              >
+                                {isUsingBlessing
+                                  ? "사용 중..."
+                                  : `김다슬의 축복 ${blessingItem ? `x${blessingItem.quantity}` : "x0"}`}
+                              </button>
+                              <span className="powerRankingItemActionHint">
+                                {isUsingBlessing ? "확인 후 사용 처리 중입니다." : blessingDisabledReason ?? "사용 시 확인창이 뜬 뒤 인기도 -1000이 적용됩니다."}
                               </span>
                             </div>
                             <div className="powerRankingItemActionCard">

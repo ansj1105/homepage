@@ -1,3 +1,5 @@
+import type { PowerRankingItemCode } from "../types";
+
 export interface ShopCatalogItem {
   id: string;
   name: string;
@@ -7,6 +9,8 @@ export interface ShopCatalogItem {
   itemType: "consumable" | "material" | "misc";
   code: string;
   category?: string;
+  nightSnackTicketCost?: number;
+  powerRankingItemCode?: PowerRankingItemCode;
 }
 
 export const shopCatalog: ShopCatalogItem[] = [
@@ -149,5 +153,17 @@ export const shopCatalog: ShopCatalogItem[] = [
     itemType: "misc",
     code: "night-snack-ticket",
     category: "기타"
+  },
+  {
+    id: "shop-kimdaseul-blessing",
+    name: "김다슬의 축복",
+    description: "파워랭킹에서 대상 인기도를 1000 내리는 초강력 소비 아이템입니다.",
+    priceCurrency: "club-coin",
+    priceAmount: 5000,
+    nightSnackTicketCost: 25,
+    itemType: "consumable",
+    code: "kimdaseul-blessing",
+    powerRankingItemCode: "kimdaseul-blessing",
+    category: "파워랭킹"
   }
 ];

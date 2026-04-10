@@ -748,6 +748,10 @@ export const createApp = () => {
         res.status(400).json({ message: "동연 코인이 부족합니다." });
         return;
       }
+      if ((item.nightSnackTicketCost ?? 0) > progress.miscItems["night-snack-ticket"]) {
+        res.status(400).json({ message: "야식 교환권이 부족합니다." });
+        return;
+      }
 
       const nextProgress = {
         ...progress,
@@ -759,14 +763,20 @@ export const createApp = () => {
             : {})
         },
         miscItems:
-          item.itemType === "misc"
+          item.itemType === "misc" || item.nightSnackTicketCost
             ? {
                 ...progress.miscItems,
-                [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1
+                ...(item.itemType === "misc"
+                  ? { [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1 }
+                  : {}),
+                "night-snack-ticket": Math.max(
+                  0,
+                  progress.miscItems["night-snack-ticket"] - (item.nightSnackTicketCost ?? 0)
+                )
               }
             : progress.miscItems,
         consumables:
-          item.itemType === "consumable"
+          item.itemType === "consumable" && !item.powerRankingItemCode
             ? {
                 ...progress.consumables,
                 [item.code]: progress.consumables[item.code as keyof typeof progress.consumables] + 1
@@ -774,6 +784,9 @@ export const createApp = () => {
             : progress.consumables
       };
       const savedProgress = await saveUserHuntingProgress(user.id, nextProgress);
+      if (item.powerRankingItemCode) {
+        await grantPowerRankingInventoryItem(user.id, item.powerRankingItemCode);
+      }
       res.json({ item, progress: savedProgress });
     } catch (error) {
       next(error);

@@ -539,7 +539,7 @@ const EquipmentPage = () => {
                 ) : (
                   itemInventory.map((item) => {
                     const canUseDirectly =
-                      item.code === "byeokbangjun-blanket" || item.code === "seoeuntaek-love";
+                      item.code === "byeokbangjun-blanket" || item.code === "seoeuntaek-love" || item.code === "kimdaseul-blessing";
 
                     return (
                       <article key={item.code} className="powerRankingInventoryCard">

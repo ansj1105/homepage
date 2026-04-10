@@ -27,6 +27,10 @@ const ShopPage = () => {
       setErrorMessage("동연 코인이 부족합니다.");
       return;
     }
+    if ((item.nightSnackTicketCost ?? 0) > (progress?.miscItems["night-snack-ticket"] ?? 0)) {
+      setErrorMessage("야식 교환권이 부족합니다.");
+      return;
+    }
     try {
       const result = await apiClient.buyShopItem({ itemId: item.id });
       setProgress(result.progress);
@@ -66,7 +70,10 @@ const ShopPage = () => {
                   </div>
                   <p>{item.description}</p>
                   <div className="powerRankingInventoryTags">
-                    <span className="powerRankingInventoryPill">가격 {item.priceAmount}</span>
+                    <span className="powerRankingInventoryPill">동연 코인 {item.priceAmount}</span>
+                    {item.nightSnackTicketCost ? (
+                      <span className="powerRankingInventoryPill">야식 교환권 {item.nightSnackTicketCost}</span>
+                    ) : null}
                     <span className="powerRankingInventoryPill isMuted">
                       {item.category ?? (item.itemType === "consumable" ? "소비" : item.itemType === "material" ? "재료" : "기타")}
                     </span>

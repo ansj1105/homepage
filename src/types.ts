@@ -207,6 +207,7 @@ export type PowerRankingVoteDelta = 1 | -1;
 export type PowerRankingItemCode =
   | "byeokbangjun-blanket"
   | "seoeuntaek-love"
+  | "kimdaseul-blessing"
   | "ranking-up-ticket"
   | "ranking-down-ticket";
 export type PowerRankingEventType = "vote_up" | "vote_down" | "item_drop" | "item_use";
@@ -344,6 +345,8 @@ export interface ShopItem {
   itemType: "consumable" | "material" | "misc";
   code: string;
   category?: string;
+  nightSnackTicketCost?: number;
+  powerRankingItemCode?: PowerRankingItemCode;
 }
 
 export interface ShopBuyRequest {

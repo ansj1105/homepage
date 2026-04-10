@@ -180,7 +180,7 @@ const powerRankingVoteActionSchema = z.object({
 
 const powerRankingItemUseSchema = z.object({
   personId: z.string().uuid(),
-  itemCode: z.enum(["byeokbangjun-blanket", "seoeuntaek-love"]),
+  itemCode: z.enum(["byeokbangjun-blanket", "seoeuntaek-love", "kimdaseul-blessing"]),
   period: z.enum(["all", "weekly", "daily"])
 });
 
