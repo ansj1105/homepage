@@ -445,6 +445,7 @@ export interface HuntingBattleRankingEntry {
   name: string;
   nickname: string;
   rank: number;
+  level: number;
   battlePower: number;
   recommendationCoefficient: number;
   weaponAttack: number;

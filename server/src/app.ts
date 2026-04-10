@@ -45,6 +45,7 @@ import {
   getHuntingProfile,
   saveUserHuntingProgress,
   getUserHuntingProgress,
+  purchaseShopItemForUser,
   getLiveVisitorSummary,
   listHuntingBattleRanking,
   listPowerRankingEquipmentState,
@@ -743,53 +744,7 @@ export const createApp = () => {
         res.status(404).json({ message: "구매할 수 없는 아이템입니다." });
         return;
       }
-      const progress = await getUserHuntingProgress(user.id);
-      if (progress.materials["club-coin"] < item.priceAmount) {
-        res.status(400).json({ message: "동연 코인이 부족합니다." });
-        return;
-      }
-      if ((item.nightSnackTicketCost ?? 0) > progress.miscItems["night-snack-ticket"]) {
-        res.status(400).json({ message: "야식 교환권이 부족합니다." });
-        return;
-      }
-
-      const nextProgress = {
-        ...progress,
-        materials: {
-          ...progress.materials,
-          "club-coin": progress.materials["club-coin"] - item.priceAmount,
-          ...(item.itemType === "material"
-            ? { [item.code]: progress.materials[item.code as keyof typeof progress.materials] + 1 }
-            : {})
-        },
-        miscItems:
-          item.itemType === "misc" || item.nightSnackTicketCost
-            ? {
-                ...progress.miscItems,
-                "night-snack-ticket":
-                  item.code === "night-snack-ticket"
-                    ? progress.miscItems["night-snack-ticket"] + 1 - (item.nightSnackTicketCost ?? 0)
-                    : Math.max(
-                        0,
-                        progress.miscItems["night-snack-ticket"] - (item.nightSnackTicketCost ?? 0)
-                      ),
-                ...(item.itemType === "misc" && item.code !== "night-snack-ticket"
-                  ? { [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1 }
-                  : {})
-              }
-            : progress.miscItems,
-        consumables:
-          item.itemType === "consumable" && !item.powerRankingItemCode
-            ? {
-                ...progress.consumables,
-                [item.code]: progress.consumables[item.code as keyof typeof progress.consumables] + 1
-              }
-            : progress.consumables
-      };
-      const savedProgress = await saveUserHuntingProgress(user.id, nextProgress);
-      if (item.powerRankingItemCode) {
-        await grantPowerRankingInventoryItem(user.id, item.powerRankingItemCode);
-      }
+      const savedProgress = await purchaseShopItemForUser(user.id, item);
       res.json({ item, progress: savedProgress });
     } catch (error) {
       next(error);

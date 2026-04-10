@@ -6,6 +6,7 @@ import {
   powerRankingEquipmentRarityDropWeights,
   powerRankingEquipmentSetCatalog
 } from "../../src/data/powerRankingEquipment";
+import type { ShopCatalogItem } from "../../src/data/shopCatalog";
 import { getGameCardById } from "../../src/data/gameCards";
 import { getHuntingLevelBenefits } from "../../src/data/huntingLevelBenefits";
 import { powerRankingItemCatalog } from "../../src/data/powerRankingItems";
@@ -1383,6 +1384,180 @@ export const saveUserHuntingProgress = async (
   return mapUserHuntingProgressRow(result.rows[0]);
 };
 
+const saveUserHuntingProgressWithRunner = async (
+  runner: Pool | PoolClient,
+  userId: string,
+  progress: HuntingProgress
+): Promise<HuntingProgress> => {
+  const result = await runner.query<UserHuntingProgressRow>(
+    `INSERT INTO user_hunting_progress (
+       user_id,
+       level,
+       exp,
+       endurance,
+       selected_stage_id,
+       selected_monster_id,
+       auto_attack_enabled,
+       materials,
+       misc_items,
+       consumables,
+       enhancement_levels,
+       card_levels,
+       card_popularity,
+       total_defeated,
+       total_click_count,
+       total_boss_defeated,
+       total_consumables_used,
+       today_click_count,
+       today_defeated_count,
+       daily_enhance_count,
+       daily_consumable_use_count,
+       daily_card_popularity_gain,
+       weekly_boss_defeated_count,
+       claimed_daily_mission_ids,
+       claimed_weekly_mission_ids,
+       claimed_achievement_ids,
+       last_daily_reset_date,
+       last_weekly_reset_date,
+       selected_card_target_id,
+       card_support_points
+     )
+     VALUES (
+       $1, $2, $3, $4, $5, $6, $7,
+       $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12::jsonb, $13::jsonb,
+       $14, $15, $16, $17, $18, $19, $20, $21, $22, $23,
+       $24::jsonb, $25::jsonb, $26::jsonb, $27, $28, $29, $30
+     )
+     ON CONFLICT (user_id) DO UPDATE SET
+       level = EXCLUDED.level,
+       exp = EXCLUDED.exp,
+       endurance = EXCLUDED.endurance,
+       selected_stage_id = EXCLUDED.selected_stage_id,
+       selected_monster_id = EXCLUDED.selected_monster_id,
+       auto_attack_enabled = EXCLUDED.auto_attack_enabled,
+       materials = EXCLUDED.materials,
+       misc_items = EXCLUDED.misc_items,
+       consumables = EXCLUDED.consumables,
+       enhancement_levels = EXCLUDED.enhancement_levels,
+       card_levels = EXCLUDED.card_levels,
+       card_popularity = EXCLUDED.card_popularity,
+       total_defeated = EXCLUDED.total_defeated,
+       total_click_count = EXCLUDED.total_click_count,
+       total_boss_defeated = EXCLUDED.total_boss_defeated,
+       total_consumables_used = EXCLUDED.total_consumables_used,
+       today_click_count = EXCLUDED.today_click_count,
+       today_defeated_count = EXCLUDED.today_defeated_count,
+       daily_enhance_count = EXCLUDED.daily_enhance_count,
+       daily_consumable_use_count = EXCLUDED.daily_consumable_use_count,
+       daily_card_popularity_gain = EXCLUDED.daily_card_popularity_gain,
+       weekly_boss_defeated_count = EXCLUDED.weekly_boss_defeated_count,
+       claimed_daily_mission_ids = EXCLUDED.claimed_daily_mission_ids,
+       claimed_weekly_mission_ids = EXCLUDED.claimed_weekly_mission_ids,
+       claimed_achievement_ids = EXCLUDED.claimed_achievement_ids,
+       last_daily_reset_date = EXCLUDED.last_daily_reset_date,
+       last_weekly_reset_date = EXCLUDED.last_weekly_reset_date,
+       selected_card_target_id = EXCLUDED.selected_card_target_id,
+       card_support_points = EXCLUDED.card_support_points,
+       updated_at = NOW()
+     RETURNING *`,
+    [
+      userId,
+      progress.level,
+      progress.exp,
+      progress.endurance,
+      progress.selectedStageId,
+      progress.selectedMonsterId,
+      progress.autoAttackEnabled,
+      JSON.stringify(progress.materials),
+      JSON.stringify(progress.miscItems),
+      JSON.stringify(progress.consumables),
+      JSON.stringify(progress.enhancementLevels),
+      JSON.stringify(progress.cardLevels),
+      JSON.stringify(progress.cardPopularity),
+      progress.totalDefeated,
+      progress.totalClickCount,
+      progress.totalBossDefeated,
+      progress.totalConsumablesUsed,
+      progress.todayClickCount,
+      progress.todayDefeatedCount,
+      progress.dailyEnhanceCount,
+      progress.dailyConsumableUseCount,
+      progress.dailyCardPopularityGain,
+      progress.weeklyBossDefeatedCount,
+      JSON.stringify(progress.claimedDailyMissionIds),
+      JSON.stringify(progress.claimedWeeklyMissionIds),
+      JSON.stringify(progress.claimedAchievementIds),
+      progress.lastDailyResetDate,
+      progress.lastWeeklyResetDate,
+      progress.selectedCardTargetId,
+      progress.cardSupportPoints
+    ]
+  );
+
+  return mapUserHuntingProgressRow(result.rows[0]);
+};
+
+export const purchaseShopItemForUser = async (
+  userId: string,
+  item: ShopCatalogItem
+): Promise<HuntingProgress> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const progress = await getUserHuntingProgress(userId);
+
+    if (progress.materials["club-coin"] < item.priceAmount) {
+      throw new Error("동연 코인이 부족합니다.");
+    }
+    if ((item.nightSnackTicketCost ?? 0) > progress.miscItems["night-snack-ticket"]) {
+      throw new Error("야식 교환권이 부족합니다.");
+    }
+
+    const nextProgress: HuntingProgress = {
+      ...progress,
+      materials: {
+        ...progress.materials,
+        "club-coin": progress.materials["club-coin"] - item.priceAmount,
+        ...(item.itemType === "material"
+          ? { [item.code]: progress.materials[item.code as keyof typeof progress.materials] + 1 }
+          : {})
+      },
+      miscItems:
+        item.itemType === "misc" || item.nightSnackTicketCost
+          ? {
+              ...progress.miscItems,
+              "night-snack-ticket":
+                item.code === "night-snack-ticket"
+                  ? progress.miscItems["night-snack-ticket"] + 1 - (item.nightSnackTicketCost ?? 0)
+                  : Math.max(0, progress.miscItems["night-snack-ticket"] - (item.nightSnackTicketCost ?? 0)),
+              ...(item.itemType === "misc" && item.code !== "night-snack-ticket"
+                ? { [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1 }
+                : {})
+            }
+          : progress.miscItems,
+      consumables:
+        item.itemType === "consumable" && !item.powerRankingItemCode
+          ? {
+              ...progress.consumables,
+              [item.code]: progress.consumables[item.code as keyof typeof progress.consumables] + 1
+            }
+          : progress.consumables
+    };
+
+    const savedProgress = await saveUserHuntingProgressWithRunner(client, userId, nextProgress);
+    if (item.powerRankingItemCode) {
+      await grantPowerRankingItem(userId, item.powerRankingItemCode, client);
+    }
+    await client.query("COMMIT");
+    return savedProgress;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 export const listPowerRankingEventLogs = async (limit = 40): Promise<PowerRankingEventLog[]> => {
   const safeLimit = Math.max(1, Math.min(limit, 100));
   const result = await pool.query<PowerRankingEventLogRow>(
@@ -2066,6 +2241,7 @@ export const listHuntingBattleRanking = async (): Promise<HuntingBattleRankingEn
         username: user.username,
         name: user.name,
         nickname: user.nickname,
+        level: (await getUserHuntingProgress(user.id)).level,
         battlePower: profile.battlePower,
         recommendationCoefficient: profile.recommendationCoefficient,
         weaponAttack: profile.weaponAttack,

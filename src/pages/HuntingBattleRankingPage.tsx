@@ -98,6 +98,7 @@ const HuntingBattleRankingPage = () => {
                 <span>순위</span>
                 <span>닉네임</span>
                 <span>이름</span>
+                <span>레벨</span>
                 <span>전투력</span>
                 <span>무기</span>
                 <span>추천</span>
@@ -122,6 +123,10 @@ const HuntingBattleRankingPage = () => {
                           <span>{entry.name}</span>
                         </div>
                         <div className="huntingBattleRankingCell">
+                          <span className="powerRankingRowLabel">레벨</span>
+                          <strong>Lv. {entry.level}</strong>
+                        </div>
+                        <div className="huntingBattleRankingCell">
                           <span className="powerRankingRowLabel">전투력</span>
                           <strong>{entry.battlePower}</strong>
                         </div>
@@ -135,7 +140,7 @@ const HuntingBattleRankingPage = () => {
                         </div>
                         <div className="huntingBattleRankingCell">
                           <span className="powerRankingRowLabel">장비</span>
-                          <span>{entry.equippedCount} / 5</span>
+                          <span>{entry.equippedCount} / 6</span>
                         </div>
                         <div className="huntingBattleRankingCell">
                           <span className="powerRankingRowLabel">업데이트</span>
