@@ -39,6 +39,12 @@ const CommunityTopBar = ({
   const { user, logout } = useUserAuth();
   const { todayVisitors } = useTodayVisitors();
   const [isEquipmentOpen, setIsEquipmentOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const closeMenus = () => {
+    setIsMobileMenuOpen(false);
+    setIsEquipmentOpen(false);
+  };
 
   return (
     <div className="communityTopBar">
@@ -46,12 +52,24 @@ const CommunityTopBar = ({
         <p>Community</p>
         <strong>동아리연합회</strong>
       </div>
-      <nav className="communityTopBarNav" aria-label="커뮤니티 메뉴">
+      <button
+        type="button"
+        className={`communityTopBarMenuButton ${isMobileMenuOpen ? "isOpen" : ""}`.trim()}
+        aria-label="모바일 메뉴"
+        aria-expanded={isMobileMenuOpen}
+        onClick={() => setIsMobileMenuOpen((current) => !current)}
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+      <nav className={`communityTopBarNav ${isMobileMenuOpen ? "isOpen" : ""}`.trim()} aria-label="커뮤니티 메뉴">
         <NavLink
           to="/dongyeon-power-ranking"
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           파워랭킹
         </NavLink>
@@ -60,6 +78,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           내 정보
         </NavLink>
@@ -68,6 +87,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           게시판
         </NavLink>
@@ -76,6 +96,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           카드
         </NavLink>
@@ -84,6 +105,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           상점
         </NavLink>
@@ -92,6 +114,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           도감
         </NavLink>
@@ -101,6 +124,7 @@ const CommunityTopBar = ({
             className={({ isActive }) =>
               `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
             }
+            onClick={closeMenus}
           >
             내 장비
           </NavLink>
@@ -110,6 +134,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           사냥터
         </NavLink>
@@ -118,6 +143,7 @@ const CommunityTopBar = ({
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
+          onClick={closeMenus}
         >
           전투력 랭킹
         </NavLink>
@@ -128,6 +154,7 @@ const CommunityTopBar = ({
               className={({ isActive }) =>
                 `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
               }
+              onClick={closeMenus}
             >
               로그인
             </NavLink>
@@ -136,6 +163,7 @@ const CommunityTopBar = ({
               className={({ isActive }) =>
                 `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
               }
+              onClick={closeMenus}
             >
               회원가입
             </NavLink>
@@ -259,7 +287,15 @@ const CommunityTopBar = ({
                 ) : null}
               </div>
             ) : null}
-            <button type="button" className="communityTopBarLink communityTopBarLogout" onClick={() => void logout()} aria-label="로그아웃">
+            <button
+              type="button"
+              className="communityTopBarLink communityTopBarLogout"
+              onClick={() => {
+                closeMenus();
+                void logout();
+              }}
+              aria-label="로그아웃"
+            >
               <span aria-hidden="true">↪</span>
             </button>
             <span className="communityTopBarUser">{user.nickname}님 환영합니다</span>

@@ -92,6 +92,39 @@ body {
   letter-spacing: -0.03em;
 }
 
+.communityTopBarMenuButton {
+  display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  border: 1px solid #bfd0e1;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.communityTopBarMenuButton span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #17314f;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.communityTopBarMenuButton.isOpen span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.communityTopBarMenuButton.isOpen span:nth-child(2) {
+  opacity: 0;
+}
+
+.communityTopBarMenuButton.isOpen span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
 .communityTopBarNav {
   display: flex;
   align-items: center;
@@ -1237,16 +1270,29 @@ body {
     gap: 14px;
     padding: 14px;
     border-radius: 18px;
+    flex-direction: row;
+    align-items: center;
   }
 
   .communityTopBarBrand strong {
     font-size: 16px;
   }
 
+  .communityTopBarMenuButton {
+    display: inline-flex;
+    flex-direction: column;
+    margin-left: auto;
+  }
+
   .communityTopBarNav {
-    display: grid;
+    display: none;
+    grid-column: 1 / -1;
     grid-template-columns: 1fr;
     width: 100%;
+  }
+
+  .communityTopBarNav.isOpen {
+    display: grid;
   }
 
   .communityTopBarEquipmentPanel {
@@ -1262,6 +1308,12 @@ body {
 
   .communityTopBarLink {
     width: 100%;
+  }
+
+  .communityTopBarUser,
+  .communityTopBarVisitor {
+    width: 100%;
+    justify-content: center;
   }
 
   .powerRankingHero {
