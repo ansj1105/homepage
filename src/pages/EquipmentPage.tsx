@@ -521,6 +521,7 @@ const EquipmentPage = () => {
                             +{progress?.enhancementLevels[equipped.code] ?? 0}
                           </span>
                           <strong>{equipped.name}</strong>
+                          <small className="equipmentPageSetLabel">{equipped.setName}</small>
                           <small>{equipped.effectSummary}</small>
                           <small>현재 강화 +{progress?.enhancementLevels[equipped.code] ?? 0}</small>
                           <div className="equipmentPageSlotActions">

@@ -7024,6 +7024,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   border-color: currentColor;
 }
 
+.powerRankingPageMaple .equipmentSetPill {
+  border-color: #94b6df;
+  background: #edf5ff;
+  color: #18457e;
+}
+
 .powerRankingPageMaple .equipmentRarityPill.is-common {
   background: #f5f8fc;
   color: #49627f;
@@ -7063,6 +7069,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.powerRankingPageMaple .equipmentPageSetLabel {
+  color: #18457e;
+  font-weight: 800;
 }
 
 .powerRankingPageMaple .gameHomeHelpButton {

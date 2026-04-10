@@ -39,6 +39,7 @@ const PowerRankingEquipmentCard = ({
         <p>{item.description}</p>
 
         <div className="powerRankingInventoryTags">
+          <span className="powerRankingInventoryPill equipmentSetPill">{item.setName}</span>
           <span className="powerRankingInventoryPill">강화 +{enhancementLevel}</span>
           <span className={`powerRankingInventoryPill equipmentRarityPill is-${item.rarity}`.trim()}>
             {powerRankingEquipmentRarityLabels[item.rarity]}
@@ -53,6 +54,9 @@ const PowerRankingEquipmentCard = ({
           <div className="powerRankingEquipmentDetailsBody">
             <p>
               {powerRankingEquipmentSlotLabels[item.slot]} 슬롯 장비입니다. 착용 시 <strong>{item.effectSummary}</strong> 효과가 적용됩니다.
+            </p>
+            <p>
+              이 장비는 <strong>{item.setName}</strong> 소속입니다.
             </p>
             <p>현재 강화 단계는 <strong>+{enhancementLevel}</strong> 입니다.</p>
             <p>
