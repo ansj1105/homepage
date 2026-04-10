@@ -6570,10 +6570,13 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 16px;
   padding: 16px;
   align-items: center;
+  min-width: 0;
 }
 
 .powerRankingPageMaple .powerRankingInventoryVisual {
   position: relative;
+  width: 100px;
+  min-width: 0;
 }
 
 .powerRankingPageMaple .powerRankingInventoryEmpty,
@@ -6582,8 +6585,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingInventoryImage {
-  width: 100px;
-  height: 100px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 10px;
   object-fit: cover;
   border: 1px solid rgba(16, 36, 63, 0.08);
@@ -6591,8 +6596,8 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingResourceIcon {
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6700,6 +6705,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingInventoryBody {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .powerRankingPageMaple .powerRankingInventoryBody strong,
@@ -6710,9 +6716,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingInventoryHeading {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .powerRankingPageMaple .powerRankingInventoryHeading span {
@@ -6721,6 +6728,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  flex: 0 0 auto;
 }
 
 .powerRankingPageMaple .powerRankingInventoryBody p {
@@ -6728,12 +6736,18 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .powerRankingPageMaple .powerRankingInventoryBody > span {
   color: #17314f;
   font-size: 13px;
   font-weight: 800;
+}
+
+.powerRankingPageMaple .powerRankingInventoryCard > .powerRankingInventoryBody:only-child {
+  grid-column: 1 / -1;
 }
 
 .powerRankingPageMaple .powerRankingInventoryTags {
@@ -8573,7 +8587,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   }
 
   .powerRankingPageMaple .powerRankingInventoryVisual {
-    width: 100px;
+    width: min(108px, 100%);
+    justify-self: center;
+  }
+
+  .powerRankingPageMaple .powerRankingInventoryBody {
+    width: 100%;
   }
 
   .powerRankingPageMaple .powerRankingScoreChart {
@@ -8663,6 +8682,24 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .powerRankingRowIdentityText strong {
     font-size: 21px;
+  }
+
+  .powerRankingPageMaple .powerRankingInventoryCard {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .powerRankingPageMaple .powerRankingInventoryHeading {
+    gap: 8px;
+  }
+
+  .powerRankingPageMaple .powerRankingInventoryHeading strong,
+  .powerRankingPageMaple .powerRankingLogCard > strong {
+    font-size: 18px;
+  }
+
+  .powerRankingPageMaple .powerRankingInventoryTags {
+    gap: 6px;
   }
 
   .powerRankingPageMaple .powerRankingScoreWithDelta {
