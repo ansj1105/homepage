@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { ShopItem } from "../types";
 
+type ShopTab = "equipment" | "consumables" | "other";
+
 const ShopPage = () => {
   const { user } = useUserAuth();
   const [items, setItems] = useState<ShopItem[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<ShopTab>("consumables");
   const { progress, setProgress } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
@@ -40,6 +43,20 @@ const ShopPage = () => {
     }
   };
 
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        if (activeTab === "equipment") {
+          return item.itemType === "material";
+        }
+        if (activeTab === "consumables") {
+          return item.itemType === "consumable";
+        }
+        return item.itemType === "misc";
+      }),
+    [activeTab, items]
+  );
+
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
@@ -59,14 +76,43 @@ const ShopPage = () => {
               <strong>{progress?.materials["club-coin"] ?? 0}</strong>
               <p>상점과 강화의 공용 화폐입니다.</p>
             </article>
+            <article className="powerRankingDashboardCard">
+              <span>보유 야식 교환권</span>
+              <strong>{progress?.miscItems["night-snack-ticket"] ?? 0}</strong>
+              <p>특수 상품 구매에 같이 쓰는 기타 재화입니다.</p>
+            </article>
+          </div>
+          <div className="huntingSubNav">
+            <button
+              type="button"
+              className={`huntingSubNavLink ${activeTab === "equipment" ? "isActive" : ""}`}
+              onClick={() => setActiveTab("equipment")}
+            >
+              장비
+            </button>
+            <button
+              type="button"
+              className={`huntingSubNavLink ${activeTab === "consumables" ? "isActive" : ""}`}
+              onClick={() => setActiveTab("consumables")}
+            >
+              소비
+            </button>
+            <button
+              type="button"
+              className={`huntingSubNavLink ${activeTab === "other" ? "isActive" : ""}`}
+              onClick={() => setActiveTab("other")}
+            >
+              기타
+            </button>
           </div>
           <div className="powerRankingInventoryGrid">
-            {items.map((item) => (
+            {filteredItems.length === 0 ? <article className="powerRankingInventoryEmpty">이 카테고리에는 아직 판매 중인 상품이 없습니다.</article> : null}
+            {filteredItems.map((item) => (
               <article key={item.id} className="powerRankingInventoryCard">
                 <div className="powerRankingInventoryBody">
                   <div className="powerRankingInventoryHeading">
                     <strong>{item.name}</strong>
-                    <span>{item.category ?? (item.itemType === "consumable" ? "소비" : "재료")}</span>
+                    <span>{item.category ?? (item.itemType === "consumable" ? "소비" : item.itemType === "material" ? "장비/강화" : "기타")}</span>
                   </div>
                   <p>{item.description}</p>
                   <div className="powerRankingInventoryTags">

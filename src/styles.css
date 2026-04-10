@@ -8341,6 +8341,50 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: #ffffff;
 }
 
+.powerRankingPageMaple .powerRankingSetExchangeMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.powerRankingPageMaple .powerRankingSetExchangeBlock {
+  padding: 12px;
+  border: 1px solid #cfe0f4;
+  background: #f9fbff;
+}
+
+.powerRankingPageMaple .powerRankingSetExchangeBlock > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #224e93;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.powerRankingPageMaple .powerRankingSetExchangeList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .powerRankingSetExchangeList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #10233f;
+  font-size: 14px;
+}
+
+.powerRankingPageMaple .powerRankingSetExchangeList strong {
+  font-size: 13px;
+}
+
 .powerRankingPageMaple .huntingMonsterCard,
 .powerRankingPageMaple .huntingBreakdownCard {
   border: 1px solid rgba(16, 36, 63, 0.08);
@@ -9089,6 +9133,10 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .huntingSubNav {
     top: 12px;
     padding: 12px;
+  }
+
+  .powerRankingPageMaple .powerRankingSetExchangeMeta {
+    grid-template-columns: 1fr;
   }
 
   .powerRankingPageMaple .powerRankingSectionHead h2 {
