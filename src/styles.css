@@ -980,6 +980,51 @@ body {
   color: #24364f;
 }
 
+.boardRecommendStrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  margin-bottom: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 50, 95, 0.12);
+  background: #f7fbff;
+}
+
+.boardRecommendSummary {
+  display: grid;
+  gap: 4px;
+}
+
+.boardRecommendSummary strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.boardRecommendSummary span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.boardRecommendBestBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(22, 58, 112, 0.16);
+  background: #163a70;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
 .boardAttachment {
   display: inline-flex;
   margin-top: 12px;
@@ -1108,6 +1153,42 @@ body {
   background: transparent;
 }
 
+.boardCard .powerRankingMemoButtons button,
+.boardReplyItem .powerRankingMemoButtons button,
+.boardComposerActions button,
+.boardReplyComposerActions button,
+.boardReplyMore .powerRankingBackLink,
+.boardPagination .powerRankingBackLink,
+.boardPagination .powerRankingSortButton,
+.boardPaginationNumbers .powerRankingSortButton {
+  border-radius: 0;
+}
+
+.boardRecommendButton {
+  border-color: #163a70;
+  background: #163a70;
+  color: #ffffff;
+}
+
+.boardEditButton {
+  border: 1px solid #163a70;
+  background: #eaf2ff;
+  color: #163a70;
+}
+
+.boardDeleteButton {
+  border: 1px solid #8f2f3a;
+  background: #fff1f3;
+  color: #8f2f3a;
+}
+
+.boardCard .powerRankingMemoButtons .boardEditButton,
+.boardReplyItem .powerRankingMemoButtons .boardEditButton,
+.boardCard .powerRankingMemoButtons .boardDeleteButton,
+.boardReplyItem .powerRankingMemoButtons .boardDeleteButton {
+  background-clip: padding-box;
+}
+
 @media (max-width: 980px) {
   .powerRankingShell {
     width: min(1180px, 94vw);
@@ -1116,6 +1197,11 @@ body {
 
   .powerRankingGrid {
     grid-template-columns: 1fr;
+  }
+
+  .boardRecommendStrip {
+    align-items: start;
+    flex-direction: column;
   }
 
   .powerRankingHero,
@@ -6012,6 +6098,20 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .boardReplyItem {
   border-radius: 0;
   background: #ffffff;
+}
+
+.powerRankingPageMaple .boardRecommendButton,
+.powerRankingPageMaple .boardEditButton,
+.powerRankingPageMaple .boardDeleteButton,
+.powerRankingPageMaple .boardComposerActions button,
+.powerRankingPageMaple .boardReplyComposerActions button,
+.powerRankingPageMaple .boardReplyMore .powerRankingBackLink,
+.powerRankingPageMaple .boardPagination .powerRankingBackLink,
+.powerRankingPageMaple .boardPagination .powerRankingSortButton,
+.powerRankingPageMaple .boardPaginationNumbers .powerRankingSortButton,
+.powerRankingPageMaple .boardCard .powerRankingMemoButtons button,
+.powerRankingPageMaple .boardReplyItem .powerRankingMemoButtons button {
+  border-radius: 0;
 }
 
 .powerRankingPageMaple .boardPagination {

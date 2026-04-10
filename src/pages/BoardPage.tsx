@@ -619,8 +619,6 @@ const BoardPage = () => {
                     <header className="boardCardHead">
                       <div>
                         <div className="boardCardMeta">
-                          {selectedPost.isBest ? <span className="boardCardBadge isBest">BEST</span> : null}
-                          <span className="boardCardMetaText">개추 {selectedPost.recommendationCount}</span>
                           <span className="boardCardMetaText">답글 {selectedPost.replies.length}</span>
                           {selectedPost.fileUrl ? <span className="boardCardMetaText">첨부 있음</span> : null}
                         </div>
@@ -641,12 +639,12 @@ const BoardPage = () => {
                         </button>
                         {user && selectedPost.userId === user.id ? (
                           <>
-                            <button type="button" className="isGhost" onClick={() => startPostEdit(selectedPost)}>
+                            <button type="button" className="boardEditButton" onClick={() => startPostEdit(selectedPost)}>
                               수정
                             </button>
                             <button
                               type="button"
-                              className="isGhost"
+                              className="boardDeleteButton"
                               disabled={submittingId === selectedPost.id}
                               onClick={() => void handleDeletePost(selectedPost.id)}
                             >
@@ -657,6 +655,21 @@ const BoardPage = () => {
                       </div>
                     </header>
                     <p className="boardCardBody">{selectedPost.content}</p>
+                    <div className="boardRecommendStrip">
+                      <div className="boardRecommendSummary">
+                        <strong>
+                          <span aria-hidden="true">▲</span>
+                          개추 {selectedPost.recommendationCount}
+                        </strong>
+                        <span>이 글에 반응한 추천 수</span>
+                      </div>
+                      {selectedPost.isBest ? (
+                        <span className="boardRecommendBestBadge">
+                          <span aria-hidden="true">★</span>
+                          BEST
+                        </span>
+                      ) : null}
+                    </div>
                     {selectedPost.fileUrl ? (
                       <>
                         {isImageAttachment(selectedPost.fileUrl, selectedPost.fileMimeType) ? (
@@ -734,12 +747,12 @@ const BoardPage = () => {
                               </div>
                               <p>{reply.content}</p>
                               <div className="powerRankingMemoButtons">
-                                <button type="button" className="isGhost" onClick={() => startReplyEdit(reply)}>
+                                <button type="button" className="boardEditButton" onClick={() => startReplyEdit(reply)}>
                                   수정
                                 </button>
                                 <button
                                   type="button"
-                                  className="isGhost"
+                                  className="boardDeleteButton"
                                   disabled={submittingId === reply.id}
                                   onClick={() => void handleDeleteReply(reply.id)}
                                 >
