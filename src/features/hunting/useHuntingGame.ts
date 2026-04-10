@@ -181,12 +181,19 @@ export const useHuntingGame = () => {
   const syncZone = async (zoneId: string, monsterId?: string) => {
     try {
       await loadZoneBundle(zoneId, monsterId, progress.selectedCardTargetId, selectedCardLevel);
-      setProgress((current) => ({
-        ...current,
-        selectedStageId: zoneId,
-        selectedMonsterId:
-          monsterId ?? getHuntingZone(zoneId)?.monsters[0]?.id ?? current.selectedMonsterId
-      }));
+      const nextMonsterId =
+        monsterId ?? getHuntingZone(zoneId)?.monsters[0]?.id ?? progress.selectedMonsterId;
+      setProgress((current) => {
+        const nextProgress = {
+          ...current,
+          selectedStageId: zoneId,
+          selectedMonsterId: nextMonsterId
+        };
+        if (storageKey) {
+          saveHuntingProgress(storageKey, nextProgress);
+        }
+        return nextProgress;
+      });
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "사냥터를 이동하지 못했습니다.");
