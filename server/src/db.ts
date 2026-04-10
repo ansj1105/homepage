@@ -36,6 +36,12 @@ import type {
   UserProfile
 } from "../../src/types";
 import type {
+  HuntingConsumableCode,
+  HuntingMaterialCode,
+  HuntingMiscCode,
+  HuntingProgress
+} from "../../src/features/huntingProgress";
+import type {
   InquiryCreatePayload,
   BoardPostRow,
   BoardReplyRow,
@@ -56,6 +62,7 @@ import type {
   PublicSiteSettingsRow,
   ResourceRow,
   UserRow,
+  UserHuntingProgressRow,
   VisitorDailyVisitRow,
   UserSessionRow
 } from "./types";
@@ -81,9 +88,84 @@ const powerRankingSeedNames = [
   "최영웅"
 ];
 
+const createDefaultServerHuntingProgress = (): HuntingProgress => ({
+  level: 1,
+  exp: 0,
+  endurance: 100,
+  selectedStageId: "beginner-yard",
+  selectedMonsterId: "slime-chairman",
+  autoAttackEnabled: false,
+  materials: {
+    "club-coin": 0,
+    gem: 0,
+    "enhancement-stone": 0,
+    "refined-stone": 0,
+    "ancient-core": 0,
+    "card-shard": 0,
+    "event-token": 0
+  },
+  miscItems: {
+    "night-snack-ticket": 0,
+    "festival-exchange-coupon": 0
+  },
+  consumables: {
+    "healing-potion": 0,
+    "medium-healing-potion": 0,
+    "power-potion": 0,
+    "berserk-tonic": 0,
+    "lucky-scroll": 0,
+    "harvest-booster": 0,
+    "energy-bar": 0,
+    "energy-drink": 0,
+    "fan-letter": 0,
+    "cheering-stick": 0,
+    "viral-ticket": 0,
+    "protection-scroll": 0
+  },
+  enhancementLevels: {},
+  cardLevels: {},
+  cardPopularity: {},
+  totalDefeated: 0,
+  totalClickCount: 0,
+  totalBossDefeated: 0,
+  totalConsumablesUsed: 0,
+  todayClickCount: 0,
+  todayDefeatedCount: 0,
+  dailyEnhanceCount: 0,
+  dailyConsumableUseCount: 0,
+  dailyCardPopularityGain: 0,
+  weeklyBossDefeatedCount: 0,
+  claimedDailyMissionIds: [],
+  claimedWeeklyMissionIds: [],
+  claimedAchievementIds: [],
+  lastDailyResetDate: new Date().toISOString().slice(0, 10),
+  lastWeeklyResetDate: new Date().toISOString().slice(0, 10),
+  selectedCardTargetId: "",
+  cardSupportPoints: 0
+});
+
 const parsePort = (value: string | undefined, fallback: number): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const getTodayDateKey = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getWeekDateKey = (): string => {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  now.setDate(now.getDate() + diff);
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const date = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
 };
 
 const connectionString = process.env.DATABASE_URL;
@@ -223,6 +305,56 @@ const mapUserRow = (row: UserRow): UserProfile => ({
   nickname: row.nickname,
   createdAt: row.created_at
 });
+
+const mapUserHuntingProgressRow = (row: UserHuntingProgressRow): HuntingProgress => {
+  const defaults = createDefaultServerHuntingProgress();
+  const currentDateKey = getTodayDateKey();
+  const currentWeekKey = getWeekDateKey();
+  const needsDailyReset = row.last_daily_reset_date !== currentDateKey;
+  const needsWeeklyReset = row.last_weekly_reset_date !== currentWeekKey;
+
+  return {
+    ...defaults,
+    level: row.level,
+    exp: row.exp,
+    endurance: row.endurance,
+    selectedStageId: row.selected_stage_id,
+    selectedMonsterId: row.selected_monster_id,
+    autoAttackEnabled: row.auto_attack_enabled,
+    materials: {
+      ...defaults.materials,
+      ...(row.materials ?? {})
+    },
+    miscItems: {
+      ...defaults.miscItems,
+      ...(row.misc_items ?? {})
+    },
+    consumables: {
+      ...defaults.consumables,
+      ...(row.consumables ?? {})
+    },
+    enhancementLevels: { ...(row.enhancement_levels ?? {}) } as HuntingProgress["enhancementLevels"],
+    cardLevels: { ...(row.card_levels ?? {}) } as HuntingProgress["cardLevels"],
+    cardPopularity: { ...(row.card_popularity ?? {}) } as HuntingProgress["cardPopularity"],
+    totalDefeated: row.total_defeated,
+    totalClickCount: row.total_click_count,
+    totalBossDefeated: row.total_boss_defeated,
+    totalConsumablesUsed: row.total_consumables_used,
+    todayClickCount: needsDailyReset ? 0 : row.today_click_count,
+    todayDefeatedCount: needsDailyReset ? 0 : row.today_defeated_count,
+    dailyEnhanceCount: needsDailyReset ? 0 : row.daily_enhance_count,
+    dailyConsumableUseCount: needsDailyReset ? 0 : row.daily_consumable_use_count,
+    dailyCardPopularityGain: needsDailyReset ? 0 : row.daily_card_popularity_gain,
+    weeklyBossDefeatedCount: needsWeeklyReset ? 0 : row.weekly_boss_defeated_count,
+    claimedDailyMissionIds: needsDailyReset ? [] : row.claimed_daily_mission_ids ?? [],
+    claimedWeeklyMissionIds: needsWeeklyReset ? [] : row.claimed_weekly_mission_ids ?? [],
+    claimedAchievementIds: row.claimed_achievement_ids ?? [],
+    lastDailyResetDate: currentDateKey,
+    lastWeeklyResetDate: currentWeekKey,
+    selectedCardTargetId: row.selected_card_target_id,
+    cardSupportPoints: row.card_support_points
+  };
+};
 
 const passwordMismatchError = () => new Error("Invalid password");
 const powerRankingDailyActionLimit = 1000;
@@ -950,6 +1082,199 @@ export const listPowerRankingEquipmentState = async (
   inventory: await listPowerRankingEquipmentInventoryByUserId(userId),
   equipped: await listPowerRankingEquippedByUserId(userId)
 });
+
+export const getUserHuntingProgress = async (userId: string): Promise<HuntingProgress> => {
+  const defaults = createDefaultServerHuntingProgress();
+  const result = await pool.query<UserHuntingProgressRow>(
+    `INSERT INTO user_hunting_progress (
+       user_id,
+       level,
+       exp,
+       endurance,
+       selected_stage_id,
+       selected_monster_id,
+       auto_attack_enabled,
+       materials,
+       misc_items,
+       consumables,
+       enhancement_levels,
+       card_levels,
+       card_popularity,
+       total_defeated,
+       total_click_count,
+       total_boss_defeated,
+       total_consumables_used,
+       today_click_count,
+       today_defeated_count,
+       daily_enhance_count,
+       daily_consumable_use_count,
+       daily_card_popularity_gain,
+       weekly_boss_defeated_count,
+       claimed_daily_mission_ids,
+       claimed_weekly_mission_ids,
+       claimed_achievement_ids,
+       last_daily_reset_date,
+       last_weekly_reset_date,
+       selected_card_target_id,
+       card_support_points
+     )
+     VALUES (
+       $1, $2, $3, $4, $5, $6, $7,
+       $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12::jsonb, $13::jsonb,
+       $14, $15, $16, $17, $18, $19, $20, $21, $22, $23,
+       $24::jsonb, $25::jsonb, $26::jsonb, $27, $28, $29, $30
+     )
+     ON CONFLICT (user_id) DO UPDATE
+       SET updated_at = NOW()
+     RETURNING *`,
+    [
+      userId,
+      defaults.level,
+      defaults.exp,
+      defaults.endurance,
+      defaults.selectedStageId,
+      defaults.selectedMonsterId,
+      defaults.autoAttackEnabled,
+      JSON.stringify(defaults.materials),
+      JSON.stringify(defaults.miscItems),
+      JSON.stringify(defaults.consumables),
+      JSON.stringify(defaults.enhancementLevels),
+      JSON.stringify(defaults.cardLevels),
+      JSON.stringify(defaults.cardPopularity),
+      defaults.totalDefeated,
+      defaults.totalClickCount,
+      defaults.totalBossDefeated,
+      defaults.totalConsumablesUsed,
+      defaults.todayClickCount,
+      defaults.todayDefeatedCount,
+      defaults.dailyEnhanceCount,
+      defaults.dailyConsumableUseCount,
+      defaults.dailyCardPopularityGain,
+      defaults.weeklyBossDefeatedCount,
+      JSON.stringify(defaults.claimedDailyMissionIds),
+      JSON.stringify(defaults.claimedWeeklyMissionIds),
+      JSON.stringify(defaults.claimedAchievementIds),
+      defaults.lastDailyResetDate,
+      defaults.lastWeeklyResetDate,
+      defaults.selectedCardTargetId,
+      defaults.cardSupportPoints
+    ]
+  );
+
+  return mapUserHuntingProgressRow(result.rows[0]);
+};
+
+export const saveUserHuntingProgress = async (
+  userId: string,
+  progress: HuntingProgress
+): Promise<HuntingProgress> => {
+  const result = await pool.query<UserHuntingProgressRow>(
+    `INSERT INTO user_hunting_progress (
+       user_id,
+       level,
+       exp,
+       endurance,
+       selected_stage_id,
+       selected_monster_id,
+       auto_attack_enabled,
+       materials,
+       misc_items,
+       consumables,
+       enhancement_levels,
+       card_levels,
+       card_popularity,
+       total_defeated,
+       total_click_count,
+       total_boss_defeated,
+       total_consumables_used,
+       today_click_count,
+       today_defeated_count,
+       daily_enhance_count,
+       daily_consumable_use_count,
+       daily_card_popularity_gain,
+       weekly_boss_defeated_count,
+       claimed_daily_mission_ids,
+       claimed_weekly_mission_ids,
+       claimed_achievement_ids,
+       last_daily_reset_date,
+       last_weekly_reset_date,
+       selected_card_target_id,
+       card_support_points
+     )
+     VALUES (
+       $1, $2, $3, $4, $5, $6, $7,
+       $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12::jsonb, $13::jsonb,
+       $14, $15, $16, $17, $18, $19, $20, $21, $22, $23,
+       $24::jsonb, $25::jsonb, $26::jsonb, $27, $28, $29, $30
+     )
+     ON CONFLICT (user_id) DO UPDATE SET
+       level = EXCLUDED.level,
+       exp = EXCLUDED.exp,
+       endurance = EXCLUDED.endurance,
+       selected_stage_id = EXCLUDED.selected_stage_id,
+       selected_monster_id = EXCLUDED.selected_monster_id,
+       auto_attack_enabled = EXCLUDED.auto_attack_enabled,
+       materials = EXCLUDED.materials,
+       misc_items = EXCLUDED.misc_items,
+       consumables = EXCLUDED.consumables,
+       enhancement_levels = EXCLUDED.enhancement_levels,
+       card_levels = EXCLUDED.card_levels,
+       card_popularity = EXCLUDED.card_popularity,
+       total_defeated = EXCLUDED.total_defeated,
+       total_click_count = EXCLUDED.total_click_count,
+       total_boss_defeated = EXCLUDED.total_boss_defeated,
+       total_consumables_used = EXCLUDED.total_consumables_used,
+       today_click_count = EXCLUDED.today_click_count,
+       today_defeated_count = EXCLUDED.today_defeated_count,
+       daily_enhance_count = EXCLUDED.daily_enhance_count,
+       daily_consumable_use_count = EXCLUDED.daily_consumable_use_count,
+       daily_card_popularity_gain = EXCLUDED.daily_card_popularity_gain,
+       weekly_boss_defeated_count = EXCLUDED.weekly_boss_defeated_count,
+       claimed_daily_mission_ids = EXCLUDED.claimed_daily_mission_ids,
+       claimed_weekly_mission_ids = EXCLUDED.claimed_weekly_mission_ids,
+       claimed_achievement_ids = EXCLUDED.claimed_achievement_ids,
+       last_daily_reset_date = EXCLUDED.last_daily_reset_date,
+       last_weekly_reset_date = EXCLUDED.last_weekly_reset_date,
+       selected_card_target_id = EXCLUDED.selected_card_target_id,
+       card_support_points = EXCLUDED.card_support_points,
+       updated_at = NOW()
+     RETURNING *`,
+    [
+      userId,
+      progress.level,
+      progress.exp,
+      progress.endurance,
+      progress.selectedStageId,
+      progress.selectedMonsterId,
+      progress.autoAttackEnabled,
+      JSON.stringify(progress.materials),
+      JSON.stringify(progress.miscItems),
+      JSON.stringify(progress.consumables),
+      JSON.stringify(progress.enhancementLevels),
+      JSON.stringify(progress.cardLevels),
+      JSON.stringify(progress.cardPopularity),
+      progress.totalDefeated,
+      progress.totalClickCount,
+      progress.totalBossDefeated,
+      progress.totalConsumablesUsed,
+      progress.todayClickCount,
+      progress.todayDefeatedCount,
+      progress.dailyEnhanceCount,
+      progress.dailyConsumableUseCount,
+      progress.dailyCardPopularityGain,
+      progress.weeklyBossDefeatedCount,
+      JSON.stringify(progress.claimedDailyMissionIds),
+      JSON.stringify(progress.claimedWeeklyMissionIds),
+      JSON.stringify(progress.claimedAchievementIds),
+      progress.lastDailyResetDate,
+      progress.lastWeeklyResetDate,
+      progress.selectedCardTargetId,
+      progress.cardSupportPoints
+    ]
+  );
+
+  return mapUserHuntingProgressRow(result.rows[0]);
+};
 
 export const listPowerRankingEventLogs = async (limit = 40): Promise<PowerRankingEventLog[]> => {
   const safeLimit = Math.max(1, Math.min(limit, 100));

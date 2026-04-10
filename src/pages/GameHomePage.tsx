@@ -42,13 +42,18 @@ const GameHomePage = () => {
       return;
     }
 
-    const saved = loadHuntingProgress(getHuntingStorageKey(user.id));
-    setProgress(saved);
+    const localSaved = loadHuntingProgress(getHuntingStorageKey(user.id));
+    setProgress(localSaved);
     apiClient
-      .getGameHome(
-        saved.selectedCardTargetId,
-        saved.selectedCardTargetId ? (saved.cardLevels[saved.selectedCardTargetId] ?? 1) : 1
-      )
+      .getHuntingProgress()
+      .catch(() => localSaved)
+      .then((saved) => {
+        setProgress(saved);
+        return apiClient.getGameHome(
+          saved.selectedCardTargetId,
+          saved.selectedCardTargetId ? (saved.cardLevels[saved.selectedCardTargetId] ?? 1) : 1
+        );
+      })
       .then((payload) => {
         setHome(payload);
         setErrorMessage("");

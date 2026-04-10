@@ -96,7 +96,16 @@ export const useHuntingGame = () => {
       setProgress(createDefaultProgress());
       return;
     }
-    setProgress(loadHuntingProgress(storageKey));
+    const localProgress = loadHuntingProgress(storageKey);
+    setProgress(localProgress);
+    void apiClient
+      .getHuntingProgress()
+      .then((serverProgress) => {
+        setProgress(serverProgress);
+      })
+      .catch(() => {
+        // Keep local fallback until all pages fully migrate.
+      });
   }, [storageKey, user]);
 
   useEffect(() => {
@@ -104,6 +113,9 @@ export const useHuntingGame = () => {
       return;
     }
     saveHuntingProgress(storageKey, progress);
+    void apiClient.saveHuntingProgress(progress).catch(() => {
+      // Keep local copy even if server sync fails.
+    });
   }, [progress, storageKey, user]);
 
   const selectedZoneId = zoneDetail?.id ?? progress.selectedStageId;
@@ -139,7 +151,9 @@ export const useHuntingGame = () => {
 
     setIsLoading(true);
     try {
-      const savedProgress = storageKey ? loadHuntingProgress(storageKey) : progress;
+      const savedProgress = user
+        ? await apiClient.getHuntingProgress().catch(() => (storageKey ? loadHuntingProgress(storageKey) : progress))
+        : progress;
       const [nextProfile, nextZones] = await Promise.all([
         apiClient.getHuntingProfile(
           savedProgress.selectedCardTargetId,

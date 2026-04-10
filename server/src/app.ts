@@ -43,6 +43,8 @@ import {
   grantPowerRankingInventoryItem,
   equipPowerRankingEquipment,
   getHuntingProfile,
+  saveUserHuntingProgress,
+  getUserHuntingProgress,
   getLiveVisitorSummary,
   listHuntingBattleRanking,
   listPowerRankingEquipmentState,
@@ -588,6 +590,32 @@ export const createApp = () => {
       }
       const inventory = await listPowerRankingInventory(user.id);
       res.json(inventory);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/hunting/progress", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      res.json(await getUserHuntingProgress(user.id));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.put("/api/hunting/progress", async (req, res, next) => {
+    try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
+      res.json(await saveUserHuntingProgress(user.id, req.body));
     } catch (error) {
       next(error);
     }

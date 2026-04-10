@@ -57,6 +57,7 @@ import type {
   UserSignupRequest,
   UploadedFileResponse
 } from "../types";
+import type { HuntingProgress } from "../features/huntingProgress";
 import { getOrCreateDeviceId } from "../utils/deviceId";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -182,6 +183,12 @@ export const apiClient = {
       `/api/hunting/stage-1${selectedCardId ? `?selectedCardId=${encodeURIComponent(selectedCardId)}&selectedCardLevel=${selectedCardLevel ?? 1}` : ""}`
     ),
   getHuntingZones: () => request<HuntingZoneSummary[]>("/api/zones"),
+  getHuntingProgress: () => request<HuntingProgress>("/api/hunting/progress"),
+  saveHuntingProgress: (payload: HuntingProgress) =>
+    request<HuntingProgress>("/api/hunting/progress", {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    }),
   getHuntingZone: (zoneId: string) => request<HuntingZoneDetail>(`/api/zones/${zoneId}`),
   getHuntingZoneDrops: (zoneId: string) => request<HuntingZoneDropEntry[]>(`/api/zones/${zoneId}/drops`),
   getCombatState: (zoneId?: string, monsterId?: string, selectedCardId?: string, selectedCardLevel?: number) =>

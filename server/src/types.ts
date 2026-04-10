@@ -35,6 +35,12 @@ import type {
   UserProfile,
   UserSignupRequest
 } from "../../src/types";
+import type {
+  HuntingConsumableCode,
+  HuntingMaterialCode,
+  HuntingMiscCode,
+  HuntingProgress
+} from "../../src/features/huntingProgress";
 
 export interface AdminLoginRequest {
   username: string;
@@ -256,6 +262,41 @@ export interface PowerRankingEquippedRow {
   slot_code: PowerRankingEquipmentSlot;
   equipment_code: PowerRankingEquipmentCode;
   equipped_at: string;
+  updated_at: string;
+}
+
+export interface UserHuntingProgressRow {
+  user_id: string;
+  level: number;
+  exp: number;
+  endurance: number;
+  selected_stage_id: string;
+  selected_monster_id: string;
+  auto_attack_enabled: boolean;
+  materials: Partial<Record<HuntingMaterialCode, number>> | null;
+  misc_items: Partial<Record<HuntingMiscCode, number>> | null;
+  consumables: Partial<Record<HuntingConsumableCode, number>> | null;
+  enhancement_levels: Partial<HuntingProgress["enhancementLevels"]> | null;
+  card_levels: Partial<HuntingProgress["cardLevels"]> | null;
+  card_popularity: Partial<HuntingProgress["cardPopularity"]> | null;
+  total_defeated: number;
+  total_click_count: number;
+  total_boss_defeated: number;
+  total_consumables_used: number;
+  today_click_count: number;
+  today_defeated_count: number;
+  daily_enhance_count: number;
+  daily_consumable_use_count: number;
+  daily_card_popularity_gain: number;
+  weekly_boss_defeated_count: number;
+  claimed_daily_mission_ids: string[] | null;
+  claimed_weekly_mission_ids: string[] | null;
+  claimed_achievement_ids: string[] | null;
+  last_daily_reset_date: string;
+  last_weekly_reset_date: string;
+  selected_card_target_id: string;
+  card_support_points: number;
+  created_at: string;
   updated_at: string;
 }
 

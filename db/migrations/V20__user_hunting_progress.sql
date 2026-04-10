@@ -1,0 +1,37 @@
+CREATE TABLE IF NOT EXISTS user_hunting_progress (
+  user_id UUID PRIMARY KEY REFERENCES app_users(id) ON DELETE CASCADE,
+  level INTEGER NOT NULL DEFAULT 1,
+  exp INTEGER NOT NULL DEFAULT 0,
+  endurance INTEGER NOT NULL DEFAULT 100,
+  selected_stage_id TEXT NOT NULL DEFAULT 'beginner-yard',
+  selected_monster_id TEXT NOT NULL DEFAULT 'slime-chairman',
+  auto_attack_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  materials JSONB NOT NULL DEFAULT '{}'::jsonb,
+  misc_items JSONB NOT NULL DEFAULT '{}'::jsonb,
+  consumables JSONB NOT NULL DEFAULT '{}'::jsonb,
+  enhancement_levels JSONB NOT NULL DEFAULT '{}'::jsonb,
+  card_levels JSONB NOT NULL DEFAULT '{}'::jsonb,
+  card_popularity JSONB NOT NULL DEFAULT '{}'::jsonb,
+  total_defeated INTEGER NOT NULL DEFAULT 0,
+  total_click_count INTEGER NOT NULL DEFAULT 0,
+  total_boss_defeated INTEGER NOT NULL DEFAULT 0,
+  total_consumables_used INTEGER NOT NULL DEFAULT 0,
+  today_click_count INTEGER NOT NULL DEFAULT 0,
+  today_defeated_count INTEGER NOT NULL DEFAULT 0,
+  daily_enhance_count INTEGER NOT NULL DEFAULT 0,
+  daily_consumable_use_count INTEGER NOT NULL DEFAULT 0,
+  daily_card_popularity_gain INTEGER NOT NULL DEFAULT 0,
+  weekly_boss_defeated_count INTEGER NOT NULL DEFAULT 0,
+  claimed_daily_mission_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+  claimed_weekly_mission_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+  claimed_achievement_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+  last_daily_reset_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  last_weekly_reset_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  selected_card_target_id TEXT NOT NULL DEFAULT '',
+  card_support_points INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_hunting_progress_updated_at
+  ON user_hunting_progress (updated_at DESC);
