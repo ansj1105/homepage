@@ -78,12 +78,12 @@ const CardsPage = () => {
             <article className="powerRankingDashboardCard">
               <span>현재 선택 카드</span>
               <strong>{cards.find((card) => card.id === progress?.selectedCardTargetId)?.name ?? "미선택"}</strong>
-              <p>선택 카드 인기도 성장에 응원 포인트를 사용합니다.</p>
+              <p>선택 카드 인기도는 사냥 중 자동으로 조금씩 오르고, 응원 포인트로 추가 성장할 수 있습니다.</p>
             </article>
             <article className="powerRankingDashboardCard">
               <span>응원 포인트</span>
               <strong>{progress?.cardSupportPoints ?? 0}</strong>
-              <p>5포인트마다 카드 인기도를 올릴 수 있습니다.</p>
+              <p>파워랭킹 투표 성공과 사냥 처치로 모으며, 5포인트마다 카드 인기도를 올릴 수 있습니다.</p>
             </article>
           </div>
           <div className="powerRankingInventoryGrid">

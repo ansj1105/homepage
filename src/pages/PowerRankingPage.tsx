@@ -5,6 +5,7 @@ import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import { powerRankingItemCatalog } from "../data/powerRankingItems";
 import { showBrowserAlert } from "../features/alertPreference";
+import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type {
   LiveVisitorEntry,
   PowerRankingEventLog,
@@ -473,6 +474,7 @@ const InteractiveHonorCard = ({
 const PowerRankingPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const { setProgress } = useSyncedHuntingProgress(user?.id);
   const [people, setPeople] = useState<PowerRankingPerson[]>([]);
   const [period, setPeriod] = useState<PowerRankingPeriod>("all");
   const [sortMode, setSortMode] = useState<SortMode>("score");
@@ -806,7 +808,20 @@ const PowerRankingPage = () => {
           if (result.inventory) {
             setInventory(result.inventory);
           }
+          setProgress((current) =>
+            current
+              ? {
+                  ...current,
+                  cardSupportPoints: current.cardSupportPoints + 1
+                }
+              : current
+          );
           await refreshPeople();
+          pushNotification({
+            tone: "reward",
+            title: "카드 응원 포인트",
+            body: "파워랭킹 투표 보상으로 응원 포인트 +1"
+          });
           if (result.consumedBonusItemCode) {
             pushNotification({
               tone: "info",

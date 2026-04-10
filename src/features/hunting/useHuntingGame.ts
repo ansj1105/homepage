@@ -280,11 +280,13 @@ export const useHuntingGame = () => {
         const combatUpdate = updateProgressFromCombat(current, result);
         nextLevelUpCount = combatUpdate.levelUps;
         nextLevel = combatUpdate.progress.level;
+        const supportPointGain = result.defeated ? (result.state.monster.isBoss ? 2 : 1) : 0;
         return {
           ...combatUpdate.progress,
           endurance: isAutoAttack
             ? Math.max(0, current.endurance - result.state.clickCost)
             : current.endurance,
+          cardSupportPoints: current.cardSupportPoints + supportPointGain,
           cardPopularity: current.selectedCardTargetId
             ? {
                 ...current.cardPopularity,
@@ -318,6 +320,13 @@ export const useHuntingGame = () => {
           tone: "reward",
           title: "드랍 획득",
           body: result.rewards.map((reward) => `${reward.label} x${reward.quantity}`).join(", ")
+        });
+      }
+      if (result.defeated) {
+        pushNotification({
+          tone: "reward",
+          title: "카드 응원 포인트",
+          body: `몬스터 처치 보상으로 응원 포인트 +${result.state.monster.isBoss ? 2 : 1}`
         });
       }
       if (result.bonusVoteItem) {
