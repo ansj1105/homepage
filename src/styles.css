@@ -8439,6 +8439,38 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-size: 13px;
 }
 
+.powerRankingPageMaple .powerRankingCollectionCardGrid {
+  align-items: stretch;
+}
+
+.powerRankingPageMaple .powerRankingCollectionCard {
+  min-height: 100%;
+}
+
+.powerRankingPageMaple .powerRankingCollectionCard.isHidden .powerRankingInventoryImage {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.powerRankingPageMaple .powerRankingCollectionCard.isHidden .powerRankingInventoryBody strong {
+  color: #54687f;
+}
+
+.powerRankingPageMaple .powerRankingCollectionPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.powerRankingPageMaple .powerRankingCollectionPagination span {
+  min-width: 72px;
+  text-align: center;
+  color: #17314f;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .powerRankingPageMaple .huntingMonsterCard,
 .powerRankingPageMaple .huntingBreakdownCard {
   border: 1px solid rgba(16, 36, 63, 0.08);

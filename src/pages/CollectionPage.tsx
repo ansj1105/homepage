@@ -7,6 +7,7 @@ import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingPr
 import type { HuntingConsumableCode, HuntingMaterialCode } from "../features/huntingProgress";
 import type { MonsterCollectionEntry, SetCollectionEntry } from "../types";
 
+type CollectionTab = "monsters" | "equipment" | "sets" | "exchange";
 type SetExchangeRecipe = {
   id: string;
   name: string;
@@ -16,8 +17,51 @@ type SetExchangeRecipe = {
   rewards: Array<{ code: HuntingConsumableCode; amount: number; label: string }>;
 };
 
+const COLLECTION_PAGE_SIZE = 6;
+
+const setVisualMap: Record<
+  string,
+  {
+    imageUrl: string;
+    flavor: string;
+  }
+> = {
+  "balanced-freshman": {
+    imageUrl: "/assets/equipment/mint-beret.svg",
+    flavor: "입문 사냥터를 돌며 장비와 드랍을 균형 있게 챙기는 초심자용 세트입니다."
+  },
+  "honor-knight": {
+    imageUrl: "/assets/equipment/commander-jacket.svg",
+    flavor: "성채 계열 장비를 중심으로 화력을 끌어올리는 전투 특화 세트입니다."
+  },
+  "golden-harvester": {
+    imageUrl: "/assets/equipment/golden-harness.svg",
+    flavor: "재료와 골드를 더 많이 끌어오는 파밍 루프용 세트입니다."
+  },
+  "starlight-idol": {
+    imageUrl: "/assets/equipment/star-visor.svg",
+    flavor: "카드 성장과 응원 포인트 수급을 밀어주는 카드 성장형 세트입니다."
+  },
+  "gale-chaser": {
+    imageUrl: "/assets/equipment/crystal-sneakers.svg",
+    flavor: "클릭 여유와 자동 사냥 템포를 보정하는 속도형 세트입니다."
+  }
+};
+
+const getPageSlice = <T,>(items: T[], page: number, pageSize: number) => {
+  const safePage = Math.max(1, Math.min(page, Math.max(1, Math.ceil(items.length / pageSize))));
+  const start = (safePage - 1) * pageSize;
+  return {
+    page: safePage,
+    totalPages: Math.max(1, Math.ceil(items.length / pageSize)),
+    items: items.slice(start, start + pageSize)
+  };
+};
+
 const CollectionPage = () => {
   const { user } = useUserAuth();
+  const [activeTab, setActiveTab] = useState<CollectionTab>("monsters");
+  const [currentPage, setCurrentPage] = useState(1);
   const [equipment, setEquipment] = useState<any[]>([]);
   const [monsters, setMonsters] = useState<MonsterCollectionEntry[]>([]);
   const [sets, setSets] = useState<SetCollectionEntry[]>([]);
@@ -28,6 +72,10 @@ const CollectionPage = () => {
   useEffect(() => {
     document.title = "도감";
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     if (!user) return;
@@ -125,6 +173,50 @@ const CollectionPage = () => {
     setErrorMessage(`${recipe.name} 교환 완료`);
   };
 
+  const monsterCards = monsters.map((monster, index) => {
+    const discovered = index < discoveredMonsterCount;
+    return {
+      id: monster.id,
+      imageUrl: monster.imageUrl,
+      title: discovered ? monster.name : "미발견 몬스터",
+      subtitle: monster.zoneName,
+      description: discovered ? monster.rarityLabel : "더 많은 사냥이 필요합니다.",
+      tag: discovered ? "발견 완료" : "미발견",
+      hidden: !discovered
+    };
+  });
+
+  const equipmentCards = equipment.map((item) => ({
+    id: item.code,
+    imageUrl: item.imageUrl,
+    title: item.name,
+    subtitle: item.slot,
+    description: item.effectSummary,
+    tag: "장비 효과"
+  }));
+
+  const setCards = sets.map((setItem) => ({
+    id: setItem.id,
+    imageUrl: setVisualMap[setItem.id]?.imageUrl ?? "/assets/equipment/crown-of-cheers.svg",
+    title: setItem.name,
+    subtitle: setItem.typeLabel ?? "세트",
+    description: setVisualMap[setItem.id]?.flavor ?? setItem.requirement,
+    requirement: setItem.requirement,
+    bonusSummary: setItem.bonusSummary
+  }));
+
+  const pagedMonsterCards = getPageSlice(monsterCards, currentPage, COLLECTION_PAGE_SIZE);
+  const pagedEquipmentCards = getPageSlice(equipmentCards, currentPage, COLLECTION_PAGE_SIZE);
+  const pagedSetCards = getPageSlice(setCards, currentPage, COLLECTION_PAGE_SIZE);
+  const pagedExchangeCards = getPageSlice(setExchangeRecipes, currentPage, 3);
+
+  const activePagination = (() => {
+    if (activeTab === "monsters") return { page: pagedMonsterCards.page, totalPages: pagedMonsterCards.totalPages };
+    if (activeTab === "equipment") return { page: pagedEquipmentCards.page, totalPages: pagedEquipmentCards.totalPages };
+    if (activeTab === "sets") return { page: pagedSetCards.page, totalPages: pagedSetCards.totalPages };
+    return { page: pagedExchangeCards.page, totalPages: pagedExchangeCards.totalPages };
+  })();
+
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
@@ -156,115 +248,173 @@ const CollectionPage = () => {
               <p>세트 유형별 보너스 방향과 현재 달성 상태를 확인합니다.</p>
             </article>
           </div>
+          <div className="huntingSubNav">
+            <button type="button" className={`huntingSubNavLink ${activeTab === "monsters" ? "isActive" : ""}`} onClick={() => setActiveTab("monsters")}>몬스터 도감</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "equipment" ? "isActive" : ""}`} onClick={() => setActiveTab("equipment")}>장비 도감</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "sets" ? "isActive" : ""}`} onClick={() => setActiveTab("sets")}>세트 효과</button>
+            <button type="button" className={`huntingSubNavLink ${activeTab === "exchange" ? "isActive" : ""}`} onClick={() => setActiveTab("exchange")}>세트 교환소</button>
+          </div>
 
-          <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Monsters</p><h2>몬스터 도감</h2></div></div>
-          <div className="powerRankingInventoryGrid">
-            {monsters.map((monster, index) => {
-              const discovered = index < discoveredMonsterCount;
-              return (
-                <article key={monster.id} className="powerRankingInventoryCard">
-                  <div className="powerRankingInventoryBody">
-                    <div className="powerRankingInventoryHeading">
-                      <strong>{discovered ? monster.name : "미발견 몬스터"}</strong>
-                      <span>{monster.zoneName}</span>
+          {activeTab === "monsters" ? (
+            <>
+              <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Monsters</p><h2>몬스터 도감</h2></div></div>
+              <div className="powerRankingInventoryGrid powerRankingCollectionCardGrid">
+                {pagedMonsterCards.items.map((monster) => (
+                  <article key={monster.id} className={`powerRankingInventoryCard powerRankingCollectionCard ${monster.hidden ? "isHidden" : ""}`.trim()}>
+                    <div className="powerRankingInventoryVisual">
+                      <img src={monster.imageUrl} alt={monster.title} className="powerRankingInventoryImage" />
+                      <span className="powerRankingInventoryBadge">{monster.tag}</span>
                     </div>
-                    <p>{discovered ? monster.rarityLabel : "더 많은 사냥이 필요합니다."}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-
-          <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Equipment</p><h2>장비 수집</h2></div></div>
-          <div className="powerRankingInventoryGrid">
-            {equipment.map((item) => (
-              <article key={item.code} className="powerRankingInventoryCard">
-                <div className="powerRankingInventoryBody">
-                  <div className="powerRankingInventoryHeading">
-                    <strong>{item.name}</strong>
-                    <span>{item.slot}</span>
-                  </div>
-                  <p>{item.effectSummary}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Sets</p><h2>세트 달성 현황</h2></div></div>
-          <div className="powerRankingInventoryGrid">
-            {sets.map((setItem) => (
-              <article key={setItem.id} className="powerRankingInventoryCard">
-                <div className="powerRankingInventoryBody">
-                  <div className="powerRankingInventoryHeading">
-                    <strong>{setItem.name}</strong>
-                    <span>{setItem.typeLabel ?? "세트"}</span>
-                  </div>
-                  <p>{setItem.requirement}</p>
-                  <div className="powerRankingInventoryTags">
-                    <span className="powerRankingInventoryPill">{setItem.bonusSummary}</span>
-                    <span className="powerRankingInventoryPill isMuted">{equippedCount >= 2 ? "활성 가능" : "장비 필요"}</span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="powerRankingSectionHead">
-            <div>
-              <p className="powerRankingSectionEyebrow">Set Exchange</p>
-              <h2>세트 조각 교환소</h2>
-            </div>
-            <p className="powerRankingSectionHint">세트 조각 느낌의 재료를 바로 소비 아이템으로 바꿔서 쓸 수 있습니다.</p>
-          </div>
-          <div className="powerRankingInventoryGrid">
-            {setExchangeRecipes.map((recipe) => {
-              const canExchange = progress
-                ? recipe.costs.every((cost) => (progress.materials[cost.code] ?? 0) >= cost.amount)
-                : false;
-              return (
-                <article key={recipe.id} className="powerRankingInventoryCard powerRankingSetExchangeCard">
-                  <div className="powerRankingInventoryBody">
-                    <div className="powerRankingInventoryHeading">
-                      <strong>{recipe.name}</strong>
-                      <span>{recipe.subtitle}</span>
-                    </div>
-                    <p>{recipe.description}</p>
-                    <div className="powerRankingSetExchangeMeta">
-                      <div className="powerRankingSetExchangeBlock">
-                        <span>필요 재료</span>
-                        <ul className="powerRankingSetExchangeList">
-                          {recipe.costs.map((cost) => (
-                            <li key={`${recipe.id}-${cost.code}`}>
-                              <strong>{cost.label}</strong>
-                              <span>{progress?.materials[cost.code] ?? 0} / {cost.amount}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{monster.title}</strong>
+                        <span>{monster.subtitle}</span>
                       </div>
-                      <div className="powerRankingSetExchangeBlock">
-                        <span>교환 보상</span>
-                        <ul className="powerRankingSetExchangeList">
-                          {recipe.rewards.map((reward) => (
-                            <li key={`${recipe.id}-${reward.code}`}>
-                              <strong>{reward.label}</strong>
-                              <span>x{reward.amount}</span>
-                            </li>
-                          ))}
-                        </ul>
+                      <p>{monster.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeTab === "equipment" ? (
+            <>
+              <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Equipment</p><h2>장비 도감</h2></div></div>
+              <div className="powerRankingInventoryGrid powerRankingCollectionCardGrid">
+                {pagedEquipmentCards.items.map((item) => (
+                  <article key={item.id} className="powerRankingInventoryCard powerRankingCollectionCard">
+                    <div className="powerRankingInventoryVisual">
+                      <img src={item.imageUrl} alt={item.title} className="powerRankingInventoryImage" />
+                      <span className="powerRankingInventoryBadge">{item.subtitle}</span>
+                    </div>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{item.title}</strong>
+                        <span>{item.subtitle}</span>
+                      </div>
+                      <p>{item.description}</p>
+                      <div className="powerRankingInventoryTags">
+                        <span className="powerRankingInventoryPill">효과</span>
+                        <span className="powerRankingInventoryPill isMuted">{item.description}</span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      className="powerRankingItemButton isPositive"
-                      disabled={!canExchange}
-                      onClick={() => handleExchangeSetRecipe(recipe)}
-                    >
-                      {canExchange ? "세트 조각 교환" : "재료 부족"}
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeTab === "sets" ? (
+            <>
+              <div className="powerRankingSectionHead"><div><p className="powerRankingSectionEyebrow">Sets</p><h2>세트 효과</h2></div></div>
+              <div className="powerRankingInventoryGrid powerRankingCollectionCardGrid">
+                {pagedSetCards.items.map((setItem) => (
+                  <article key={setItem.id} className="powerRankingInventoryCard powerRankingCollectionCard">
+                    <div className="powerRankingInventoryVisual">
+                      <img src={setItem.imageUrl} alt={setItem.title} className="powerRankingInventoryImage" />
+                      <span className="powerRankingInventoryBadge">{setItem.subtitle}</span>
+                    </div>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{setItem.title}</strong>
+                        <span>{setItem.subtitle}</span>
+                      </div>
+                      <p>{setItem.description}</p>
+                      <div className="powerRankingInventoryTags">
+                        <span className="powerRankingInventoryPill">{setItem.requirement}</span>
+                        <span className="powerRankingInventoryPill isMuted">{setItem.bonusSummary}</span>
+                        <span className="powerRankingInventoryPill isMuted">{equippedCount >= 2 ? "활성 가능" : "장비 필요"}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {activeTab === "exchange" ? (
+            <>
+              <div className="powerRankingSectionHead">
+                <div>
+                  <p className="powerRankingSectionEyebrow">Set Exchange</p>
+                  <h2>세트 조각 교환소</h2>
+                </div>
+                <p className="powerRankingSectionHint">세트 조각 느낌의 재료를 바로 소비 아이템으로 바꿔서 쓸 수 있습니다.</p>
+              </div>
+              <div className="powerRankingInventoryGrid">
+                {pagedExchangeCards.items.map((recipe) => {
+                  const canExchange = progress
+                    ? recipe.costs.every((cost) => (progress.materials[cost.code] ?? 0) >= cost.amount)
+                    : false;
+                  return (
+                    <article key={recipe.id} className="powerRankingInventoryCard powerRankingSetExchangeCard">
+                      <div className="powerRankingInventoryBody">
+                        <div className="powerRankingInventoryHeading">
+                          <strong>{recipe.name}</strong>
+                          <span>{recipe.subtitle}</span>
+                        </div>
+                        <p>{recipe.description}</p>
+                        <div className="powerRankingSetExchangeMeta">
+                          <div className="powerRankingSetExchangeBlock">
+                            <span>필요 재료</span>
+                            <ul className="powerRankingSetExchangeList">
+                              {recipe.costs.map((cost) => (
+                                <li key={`${recipe.id}-${cost.code}`}>
+                                  <strong>{cost.label}</strong>
+                                  <span>{progress?.materials[cost.code] ?? 0} / {cost.amount}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="powerRankingSetExchangeBlock">
+                            <span>교환 보상</span>
+                            <ul className="powerRankingSetExchangeList">
+                              {recipe.rewards.map((reward) => (
+                                <li key={`${recipe.id}-${reward.code}`}>
+                                  <strong>{reward.label}</strong>
+                                  <span>x{reward.amount}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="powerRankingItemButton isPositive"
+                          disabled={!canExchange}
+                          onClick={() => handleExchangeSetRecipe(recipe)}
+                        >
+                          {canExchange ? "세트 조각 교환" : "재료 부족"}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
+
+          <div className="powerRankingCollectionPagination">
+            <button
+              type="button"
+              className="powerRankingItemButton"
+              disabled={activePagination.page <= 1}
+              onClick={() => setCurrentPage((current) => Math.max(1, current - 1))}
+            >
+              이전
+            </button>
+            <span>
+              {activePagination.page} / {activePagination.totalPages}
+            </span>
+            <button
+              type="button"
+              className="powerRankingItemButton"
+              disabled={activePagination.page >= activePagination.totalPages}
+              onClick={() => setCurrentPage((current) => Math.min(activePagination.totalPages, current + 1))}
+            >
+              다음
+            </button>
           </div>
         </section>
       </div>
