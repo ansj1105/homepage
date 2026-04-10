@@ -86,10 +86,16 @@ const getScoreDeltaClassName = (delta: number): string => {
   return "isNeutral";
 };
 
-type ScoreChartPoint = {
+type ScoreChartCandle = {
   x: number;
-  y: number;
-  score: number;
+  openY: number;
+  closeY: number;
+  highY: number;
+  lowY: number;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
   label: string;
   delta: number;
 };
@@ -109,56 +115,113 @@ const getScoreChartRangeLabel = (range: ScoreChartRange): string => {
   return "30일";
 };
 
-const buildScoreChartPoints = (
+const getMinuteBucketTimestamp = (value: string): number => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 0;
+  }
+  date.setSeconds(0, 0);
+  return date.getTime();
+};
+
+const buildScoreChartCandles = (
   person: PowerRankingPerson,
   events: PowerRankingEventLog[],
   range: ScoreChartRange
-): ScoreChartPoint[] => {
+): ScoreChartCandle[] => {
   const cutoff = Date.now() - SCORE_CHART_RANGE_DAYS[range] * 24 * 60 * 60 * 1000;
   const recentEvents = events
     .filter((event) => event.personId === person.id && new Date(event.createdAt).getTime() >= cutoff)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   if (recentEvents.length === 0) {
     return [
       {
         x: 50,
-        y: 50,
-        score: person.score,
+        openY: 50,
+        closeY: 50,
+        highY: 50,
+        lowY: 50,
+        open: person.score,
+        close: person.score,
+        high: person.score,
+        low: person.score,
         label: `${getScoreChartRangeLabel(range)} 변화 없음`,
         delta: 0
       }
     ];
   }
 
+  const grouped = recentEvents.reduce<
+    Array<{
+      timestamp: number;
+      label: string;
+      deltas: number[];
+    }>
+  >((accumulator, event) => {
+    const timestamp = getMinuteBucketTimestamp(event.createdAt);
+    const last = accumulator[accumulator.length - 1];
+    if (last && last.timestamp === timestamp) {
+      last.deltas.push(event.delta);
+      return accumulator;
+    }
+    accumulator.push({
+      timestamp,
+      label: formatDateTime(new Date(timestamp).toISOString()),
+      deltas: [event.delta]
+    });
+    return accumulator;
+  }, []);
+
   const startingScore = person.score - recentEvents.reduce((sum, event) => sum + event.delta, 0);
-  const scoreValues = [startingScore];
   let running = startingScore;
-  recentEvents.forEach((event) => {
-    running += event.delta;
-    scoreValues.push(running);
+  const rawCandles = grouped.map((bucket) => {
+    const open = running;
+    let high = running;
+    let low = running;
+    bucket.deltas.forEach((delta) => {
+      running += delta;
+      high = Math.max(high, running);
+      low = Math.min(low, running);
+    });
+    return {
+      open,
+      close: running,
+      high,
+      low,
+      label: bucket.label,
+      delta: bucket.deltas.reduce((sum, delta) => sum + delta, 0)
+    };
   });
 
-  const minScore = Math.min(...scoreValues);
-  const maxScore = Math.max(...scoreValues);
+  const minScore = Math.min(...rawCandles.flatMap((candle) => [candle.low, candle.high]));
+  const maxScore = Math.max(...rawCandles.flatMap((candle) => [candle.low, candle.high]));
   const scoreRange = Math.max(1, maxScore - minScore);
   const usableSize = 100 - CHART_PADDING * 2;
 
-  return scoreValues.map((score, index) => ({
-    x:
-      scoreValues.length === 1
+  return rawCandles.map((candle, index) => {
+    const x =
+      rawCandles.length === 1
         ? 50
-        : CHART_PADDING + (index / (scoreValues.length - 1)) * usableSize,
-    y:
-      CHART_PADDING +
-      (1 - (score - minScore) / scoreRange) * usableSize,
-    score,
-    label:
-      index === 0
-        ? `${getScoreChartRangeLabel(range)} 시작`
-        : formatDateTime(recentEvents[index - 1]?.createdAt ?? "") || `변화 ${index}`,
-    delta: index === 0 ? 0 : recentEvents[index - 1]?.delta ?? 0
-  }));
+        : CHART_PADDING + (index / (rawCandles.length - 1)) * usableSize;
+
+    const toY = (value: number) =>
+      CHART_PADDING + (1 - (value - minScore) / scoreRange) * usableSize;
+
+    return {
+      x,
+      openY: toY(candle.open),
+      closeY: toY(candle.close),
+      highY: toY(candle.high),
+      lowY: toY(candle.low),
+      open: candle.open,
+      close: candle.close,
+      high: candle.high,
+      low: candle.low,
+      label: candle.label,
+      delta: candle.delta
+    };
+  });
 };
 
 const getEventLabel = (event: PowerRankingEventLog): string => {
@@ -1183,7 +1246,7 @@ const PowerRankingPage = () => {
                   {orderedPeople.map((person) => {
                     const officialRank = person.rank;
                     const recentScoreDelta = getRecentScoreDelta(eventLogs, person.id, 60);
-                    const scoreChartPoints = buildScoreChartPoints(person, eventLogs, scoreChartRange);
+                    const scoreChartCandles = buildScoreChartCandles(person, eventLogs, scoreChartRange);
                     const isProfileSubmitting = submittingForId === `profile-${person.id}`;
                     const upQueueCount = pendingVoteCounts[`${person.id}:1`] ?? 0;
                     const downQueueCount = pendingVoteCounts[`${person.id}:-1`] ?? 0;
@@ -1358,7 +1421,7 @@ const PowerRankingPage = () => {
                                     </button>
                                   ))}
                                 </div>
-                                <span>{`${getScoreChartRangeLabel(scoreChartRange)} 기준 ${scoreChartPoints.length > 1 ? scoreChartPoints.length - 1 : 0}회 반영`}</span>
+                                <span>{`${getScoreChartRangeLabel(scoreChartRange)} 기준 ${scoreChartCandles.length}개 1분봉`}</span>
                               </div>
                             </div>
                             <div className="powerRankingScoreChartWrap">
@@ -1367,55 +1430,51 @@ const PowerRankingPage = () => {
                                 <line x1="8" y1="61.33" x2="92" y2="61.33" className="powerRankingScoreChartGridLine isMid" />
                                 <line x1="8" y1="34.66" x2="92" y2="34.66" className="powerRankingScoreChartGridLine isMid" />
                                 <line x1="8" y1="8" x2="92" y2="8" className="powerRankingScoreChartGridLine" />
-                                {scoreChartPoints.map((point, index) => {
-                                  if (index === 0) {
-                                    return null;
-                                  }
-                                  const previousPoint = scoreChartPoints[index - 1];
-                                  const isPositive = point.delta >= 0;
-                                  const top = Math.min(previousPoint.y, point.y);
-                                  const bottom = Math.max(previousPoint.y, point.y);
-                                  const centerY = (previousPoint.y + point.y) / 2;
-                                  const bodyHeight = Math.max(3.6, bottom - top);
-                                  const bodyY = centerY - bodyHeight / 2;
-                                  const wickTop = Math.max(8, top - 5);
-                                  const wickBottom = Math.min(92, bottom + 5);
+                                {scoreChartCandles.map((candle, index) => {
+                                  const previousCandle = scoreChartCandles[index - 1];
+                                  const isPositive = candle.close >= candle.open;
+                                  const top = Math.min(candle.openY, candle.closeY);
+                                  const bottom = Math.max(candle.openY, candle.closeY);
+                                  const bodyHeight = Math.max(2.2, bottom - top);
                                   const toneClass = isPositive ? "isPositive" : "isNegative";
+                                  const bodyWidth = scoreChartCandles.length > 180 ? 0.48 : scoreChartCandles.length > 60 ? 0.72 : scoreChartCandles.length > 24 ? 1.05 : 1.45;
 
                                   return (
                                     <g key={`${person.id}-chart-segment-${index}`}>
+                                      {previousCandle ? (
+                                        <line
+                                          x1={previousCandle.x}
+                                          y1={previousCandle.closeY}
+                                          x2={candle.x}
+                                          y2={candle.closeY}
+                                          className={`powerRankingScoreChartLine ${toneClass}`.trim()}
+                                        />
+                                      ) : null}
                                       <line
-                                        x1={previousPoint.x}
-                                        y1={previousPoint.y}
-                                        x2={point.x}
-                                        y2={point.y}
-                                        className={`powerRankingScoreChartLine ${toneClass}`.trim()}
-                                      />
-                                      <line
-                                        x1={point.x}
-                                        y1={wickTop}
-                                        x2={point.x}
-                                        y2={wickBottom}
+                                        x1={candle.x}
+                                        y1={candle.highY}
+                                        x2={candle.x}
+                                        y2={candle.lowY}
                                         className={`powerRankingScoreChartWick ${toneClass}`.trim()}
                                       />
                                       <rect
-                                        x={point.x - 1.15}
-                                        y={bodyY}
-                                        width={2.3}
+                                        x={candle.x - bodyWidth / 2}
+                                        y={top}
+                                        width={bodyWidth}
                                         height={bodyHeight}
-                                        rx={0.45}
+                                        rx={0.2}
                                         className={`powerRankingScoreChartCandle ${toneClass}`.trim()}
                                       />
                                     </g>
                                   );
                                 })}
-                                {scoreChartPoints.map((point, index) => (
+                                {scoreChartCandles.map((candle, index) => (
                                   <g key={`${person.id}-chart-${index}`}>
                                     {index === 0 ? (
                                       <circle
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r="0.95"
+                                        cx={candle.x}
+                                        cy={candle.openY}
+                                        r="0.55"
                                         className="powerRankingScoreChartDot"
                                       />
                                     ) : null}
@@ -1423,12 +1482,17 @@ const PowerRankingPage = () => {
                                 ))}
                               </svg>
                               <div className="powerRankingScoreChartLabels">
-                                {scoreChartPoints.map((point, index) => (
-                                  <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
-                                    <strong>{point.score}</strong>
-                                    <span>{point.label}</span>
-                                  </div>
-                                ))}
+                                {scoreChartCandles
+                                  .filter((_, index) => {
+                                    const step = scoreChartCandles.length > 24 ? Math.ceil(scoreChartCandles.length / 6) : 1;
+                                    return index === 0 || index === scoreChartCandles.length - 1 || index % step === 0;
+                                  })
+                                  .map((candle, index) => (
+                                    <div key={`${person.id}-label-${index}`} className="powerRankingScoreChartLabel">
+                                      <strong>{candle.close}</strong>
+                                      <span>{candle.label}</span>
+                                    </div>
+                                  ))}
                               </div>
                             </div>
                           </article>
