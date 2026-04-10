@@ -93,6 +93,8 @@ type ScoreChartPoint = {
   label: string;
 };
 
+const CHART_PADDING = 8;
+
 const buildScoreChartPoints = (
   person: PowerRankingPerson,
   events: PowerRankingEventLog[]
@@ -124,10 +126,16 @@ const buildScoreChartPoints = (
   const minScore = Math.min(...scoreValues);
   const maxScore = Math.max(...scoreValues);
   const scoreRange = Math.max(1, maxScore - minScore);
+  const usableSize = 100 - CHART_PADDING * 2;
 
   return scoreValues.map((score, index) => ({
-    x: scoreValues.length === 1 ? 0 : (index / (scoreValues.length - 1)) * 100,
-    y: 100 - ((score - minScore) / scoreRange) * 100,
+    x:
+      scoreValues.length === 1
+        ? 50
+        : CHART_PADDING + (index / (scoreValues.length - 1)) * usableSize,
+    y:
+      CHART_PADDING +
+      (1 - (score - minScore) / scoreRange) * usableSize,
     score,
     label:
       index === 0
@@ -1298,6 +1306,9 @@ const PowerRankingPage = () => {
                             </div>
                             <div className="powerRankingScoreChartWrap">
                               <svg viewBox="0 0 100 100" className="powerRankingScoreChart" preserveAspectRatio="none" aria-label="점수 변화 차트">
+                                <line x1="8" y1="92" x2="92" y2="92" className="powerRankingScoreChartGridLine" />
+                                <line x1="8" y1="50" x2="92" y2="50" className="powerRankingScoreChartGridLine isMid" />
+                                <line x1="8" y1="8" x2="92" y2="8" className="powerRankingScoreChartGridLine" />
                                 <polyline
                                   fill="none"
                                   points={chartPolylinePoints}
