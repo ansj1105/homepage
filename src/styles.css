@@ -145,6 +145,14 @@ body {
   font-weight: 800;
 }
 
+.communityTopBarLogout {
+  min-width: 42px;
+  padding: 0;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+}
+
 .communityTopBarVisitor {
   display: inline-flex;
   align-items: center;
@@ -5749,18 +5757,20 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: var(--ink);
   border-color: rgba(16, 36, 63, 0.08);
   background: #ffffff;
+  border-radius: 0;
 }
 
 .powerRankingPageMaple .communityTopBarVisitor {
   color: var(--brand-deep);
   border-color: rgba(16, 36, 63, 0.08);
   background: #ffffff;
+  border-radius: 0;
 }
 
 .powerRankingPageMaple .communityTopBarLink {
   border-color: rgba(16, 36, 63, 0.08);
   background: #ffffff;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .powerRankingPageMaple .communityTopBarLink:hover {
@@ -7010,46 +7020,46 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingHonorRank1 {
   grid-column: 2;
   min-height: 500px;
-  --honor-base: linear-gradient(180deg, #edf4fb 0%, #dce8f7 38%, #c8d9ef 100%);
-  --honor-glow: rgba(35, 79, 145, 0.28);
-  --honor-sheen: rgba(255, 255, 255, 0.94);
-  --honor-shadow: rgba(22, 58, 112, 0.2);
-  --honor-line: rgba(255, 255, 255, 0.94);
-  --honor-rank-bg: linear-gradient(180deg, #2d5aa0, #163a70);
-  --honor-rank-color: #ffffff;
-  --honor-rank-shadow: rgba(22, 58, 112, 0.24);
-  --honor-name-color: #163a70;
-  --honor-name-shadow: rgba(255, 255, 255, 0.9);
+  --honor-base: linear-gradient(180deg, #fff6dc 0%, #f4df9d 40%, #dfbf59 100%);
+  --honor-glow: rgba(227, 180, 47, 0.34);
+  --honor-sheen: rgba(255, 250, 223, 0.96);
+  --honor-shadow: rgba(166, 116, 13, 0.22);
+  --honor-line: rgba(255, 248, 214, 0.94);
+  --honor-rank-bg: linear-gradient(180deg, #f5c95f, #c79324);
+  --honor-rank-color: #4b2f00;
+  --honor-rank-shadow: rgba(193, 146, 30, 0.28);
+  --honor-name-color: #6b4700;
+  --honor-name-shadow: rgba(255, 247, 214, 0.92);
 }
 
 .powerRankingPageMaple .powerRankingHonorRank2 {
   grid-column: 1;
   min-height: 450px;
-  --honor-base: linear-gradient(180deg, #f8fbff 0%, #ebf1f8 42%, #dae3ef 100%);
-  --honor-glow: rgba(247, 250, 255, 0.84);
-  --honor-sheen: rgba(255, 255, 255, 0.94);
-  --honor-shadow: rgba(102, 119, 145, 0.18);
-  --honor-line: rgba(242, 247, 255, 0.9);
-  --honor-rank-bg: linear-gradient(180deg, #324968, #1d2f47);
+  --honor-base: linear-gradient(180deg, #fbfcfe 0%, #e6ebf2 42%, #c9d1dc 100%);
+  --honor-glow: rgba(210, 217, 226, 0.82);
+  --honor-sheen: rgba(255, 255, 255, 0.96);
+  --honor-shadow: rgba(109, 120, 136, 0.2);
+  --honor-line: rgba(246, 249, 253, 0.92);
+  --honor-rank-bg: linear-gradient(180deg, #c9d2db, #8e99a7);
   --honor-rank-color: #ffffff;
-  --honor-rank-shadow: rgba(103, 125, 162, 0.28);
-  --honor-name-color: #243a59;
+  --honor-rank-shadow: rgba(121, 133, 148, 0.28);
+  --honor-name-color: #4c5b6f;
   --honor-name-shadow: rgba(255, 255, 255, 0.9);
 }
 
 .powerRankingPageMaple .powerRankingHonorRank3 {
   grid-column: 3;
   min-height: 420px;
-  --honor-base: linear-gradient(180deg, #eef2f7 0%, #d9e1ea 38%, #bcc8d6 100%);
-  --honor-glow: rgba(17, 28, 44, 0.16);
-  --honor-sheen: rgba(255, 255, 255, 0.92);
-  --honor-shadow: rgba(16, 36, 63, 0.18);
-  --honor-line: rgba(255, 255, 255, 0.9);
-  --honor-rank-bg: linear-gradient(180deg, #31455f, #111c2c);
+  --honor-base: linear-gradient(180deg, #fff1e7 0%, #e5bf9d 38%, #c58452 100%);
+  --honor-glow: rgba(191, 118, 65, 0.22);
+  --honor-sheen: rgba(255, 248, 242, 0.92);
+  --honor-shadow: rgba(137, 78, 40, 0.2);
+  --honor-line: rgba(255, 245, 238, 0.9);
+  --honor-rank-bg: linear-gradient(180deg, #d5915b, #9a6032);
   --honor-rank-color: #ffffff;
-  --honor-rank-shadow: rgba(17, 28, 44, 0.28);
-  --honor-name-color: #1b2d46;
-  --honor-name-shadow: rgba(255, 255, 255, 0.9);
+  --honor-rank-shadow: rgba(132, 79, 41, 0.3);
+  --honor-name-color: #6f3f18;
+  --honor-name-shadow: rgba(255, 244, 236, 0.9);
 }
 
 .powerRankingPageMaple .powerRankingHonorOverlay {
@@ -7255,7 +7265,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingPodiumLabel {
-  color: var(--brand);
+  color: #5f6f86;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;

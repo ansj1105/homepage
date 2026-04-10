@@ -53,7 +53,7 @@ const CommunityTopBar = ({
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
           }
         >
-          메인 로비
+          내 정보
         </NavLink>
         <NavLink
           to="/dongyeon-power-ranking"
@@ -259,10 +259,10 @@ const CommunityTopBar = ({
                 ) : null}
               </div>
             ) : null}
-            <span className="communityTopBarUser">{user.nickname}</span>
-            <button type="button" className="communityTopBarLink" onClick={() => void logout()}>
-              로그아웃
+            <button type="button" className="communityTopBarLink communityTopBarLogout" onClick={() => void logout()} aria-label="로그아웃">
+              <span aria-hidden="true">↪</span>
             </button>
+            <span className="communityTopBarUser">{user.nickname}님 환영합니다</span>
           </>
         )}
         <NavLink to="/" className="communityTopBarLink isGhost">

@@ -48,15 +48,15 @@ const formatDateTime = (value: string): string => {
 const getInitials = (name: string): string => name.slice(0, 2) || "DY";
 
 const getPodiumLabel = (rank: number): string => {
-  if (rank === 1) return "Champion";
-  if (rank === 2) return "Runner Up";
-  return "Top 3";
+  if (rank === 1) return "Gold";
+  if (rank === 2) return "Silver";
+  return "Bronze";
 };
 
 const getHonorRankLabel = (rank: number): string => {
-  if (rank === 1) return "1ST";
-  if (rank === 2) return "2ND";
-  return "3RD";
+  if (rank === 1) return "1";
+  if (rank === 2) return "2";
+  return "3";
 };
 
 const getVoteQueueHeatClass = (count: number): string => {

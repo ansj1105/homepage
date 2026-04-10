@@ -32,7 +32,7 @@ const GameHomePage = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    document.title = "게임 메인 로비";
+    document.title = "내 정보";
   }, []);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ const GameHomePage = () => {
         setErrorMessage("");
       })
       .catch((error: unknown) => {
-        setErrorMessage(error instanceof Error ? error.message : "메인 로비 데이터를 불러오지 못했습니다.");
+        setErrorMessage(error instanceof Error ? error.message : "내 정보 데이터를 불러오지 못했습니다.");
       })
       .finally(() => {
         setIsLoading(false);
@@ -135,10 +135,10 @@ const GameHomePage = () => {
 
         <header className="powerRankingHero powerRankingHeroMaple gameHomeHero">
           <div className="powerRankingHeroCopy">
-            <p className="powerRankingEyebrow">Game Lobby</p>
-            <h1>메인 로비</h1>
+            <p className="powerRankingEyebrow">My Overview</p>
+            <h1>내 정보</h1>
             <p className="powerRankingLead">
-              사냥, 장비, 카드 상태를 한곳에서 보고 바로 이동할 수 있게 현재 사이트 구조에 맞춘 허브를 추가했습니다.
+              사냥, 장비, 카드, 자원 상태를 한곳에서 보고 바로 이동할 수 있게 정리한 개인 허브입니다.
             </p>
           </div>
 
@@ -165,15 +165,15 @@ const GameHomePage = () => {
         </header>
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
-        {isLoading ? <div className="powerRankingLoading">메인 로비를 불러오는 중입니다.</div> : null}
+        {isLoading ? <div className="powerRankingLoading">내 정보를 불러오는 중입니다.</div> : null}
 
         {!isLoading && home && progress ? (
           <>
             <section className="powerRankingDashboardSection">
               <div className="powerRankingSectionHead">
                 <div>
-                  <p className="powerRankingSectionEyebrow">Lobby Status</p>
-                  <h2>전체 상태</h2>
+                  <p className="powerRankingSectionEyebrow">My Status</p>
+                  <h2>내 상태</h2>
                 </div>
                 <p className="powerRankingSectionHint">현재 사이트에 저장되는 실제 데이터만 연결해서 보여줍니다.</p>
               </div>
