@@ -4,6 +4,7 @@ import { apiClient } from "../api/client";
 import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
+import { getHuntingLevelBenefits } from "../data/huntingLevelBenefits";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import {
   getHuntingStorageKey,
@@ -31,6 +32,7 @@ const GameHomePage = () => {
   const [progress, setProgress] = useState<HuntingProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLevelGuideOpen, setIsLevelGuideOpen] = useState(false);
 
   useEffect(() => {
     document.title = "내 정보";
@@ -71,6 +73,7 @@ const GameHomePage = () => {
   const ownedEquipmentCount = (home?.huntingProfile.equipmentInventory.length ?? 0) + equippedCount;
   const selectedCardLevel = progress?.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0;
   const selectedCardPopularity = progress?.selectedCardTargetId ? (progress.cardPopularity[progress.selectedCardTargetId] ?? 0) : 0;
+  const levelBenefits = useMemo(() => getHuntingLevelBenefits(progress?.level ?? 1), [progress?.level]);
 
   const maxEnhanceLevel = Math.max(0, ...Object.values(progress?.enhancementLevels ?? {}).map((value) => value ?? 0));
   const dailyMissions = useMemo(() => (progress ? getDailyMissions(progress) : []), [progress]);
@@ -152,8 +155,18 @@ const GameHomePage = () => {
           <div className="powerRankingControlPanel">
             <div className="powerRankingStats">
               <div className="powerRankingStatCard">
-                <span>유저 레벨</span>
+                <span className="gameHomeStatLabelWithHelp">
+                  유저 레벨
+                  <button type="button" className="gameHomeHelpButton" onClick={() => setIsLevelGuideOpen(true)} aria-label="레벨 혜택 보기">
+                    ?
+                  </button>
+                </span>
                 <strong>{progress?.level ?? 1}</strong>
+                <p className="gameHomeLevelBenefitInline">
+                  {levelBenefits.nextTier
+                    ? `다음 혜택 Lv.${levelBenefits.nextTier.level} · ${levelBenefits.nextTier.title}`
+                    : "모든 레벨 혜택 해금 완료"}
+                </p>
               </div>
               <div className="powerRankingStatCard">
                 <span>현재 전투력</span>
@@ -395,6 +408,44 @@ const GameHomePage = () => {
               </div>
             </section>
           </>
+        ) : null}
+
+        {isLevelGuideOpen && progress ? (
+          <div className="powerRankingResultModalBackdrop" role="presentation" onClick={() => setIsLevelGuideOpen(false)}>
+            <section
+              className="powerRankingResultModal isSuccess gameHomeLevelGuideModal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="level-guide-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="powerRankingResultModalBody">
+                <h2 id="level-guide-title">레벨 시스템 안내</h2>
+                <p>현재 레벨 Lv.{progress.level}</p>
+                <p>
+                  누적 혜택: 전투력 +{levelBenefits.battlePowerBonus}, 클릭 여유 +{levelBenefits.dailyClickBonus},
+                  드랍 +{Math.round(levelBenefits.dropRateBonus * 100)}%, 카드 성장 +{Math.round(levelBenefits.cardGrowthBonus * 100)}%
+                </p>
+                <div className="gameHomeLevelBenefitList">
+                  {levelBenefits.unlocked.map((tier) => (
+                    <article key={tier.level} className="gameHomeLevelBenefitItem isUnlocked">
+                      <strong>Lv.{tier.level} {tier.title}</strong>
+                      <p>{tier.summary}</p>
+                    </article>
+                  ))}
+                  {levelBenefits.nextTier ? (
+                    <article className="gameHomeLevelBenefitItem">
+                      <strong>다음 해금 · Lv.{levelBenefits.nextTier.level} {levelBenefits.nextTier.title}</strong>
+                      <p>{levelBenefits.nextTier.summary}</p>
+                    </article>
+                  ) : null}
+                </div>
+                <button type="button" className="powerRankingItemButton isPositive" onClick={() => setIsLevelGuideOpen(false)}>
+                  확인
+                </button>
+              </div>
+            </section>
+          </div>
         ) : null}
       </div>
     </div>

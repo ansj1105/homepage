@@ -7,6 +7,7 @@ import {
   powerRankingEquipmentSetCatalog
 } from "../../src/data/powerRankingEquipment";
 import { getGameCardById } from "../../src/data/gameCards";
+import { getHuntingLevelBenefits } from "../../src/data/huntingLevelBenefits";
 import { powerRankingItemCatalog } from "../../src/data/powerRankingItems";
 import { defaultCmsPages } from "../../src/data/cmsPageDefaults";
 import { defaultMainPageContent } from "../../src/data/mainPageDefaults";
@@ -1696,6 +1697,7 @@ export const getHuntingProfile = async (
   selectedCardId?: string,
   selectedCardLevel = 1
 ): Promise<HuntingProfile> => {
+  const progress = await getUserHuntingProgress(userId);
   const equipmentState = await listPowerRankingEquipmentState(userId);
   const equippedItems = Object.values(equipmentState.equipped);
   const recommendationCountResult = await pool.query<{ count: string }>(
@@ -1746,6 +1748,7 @@ export const getHuntingProfile = async (
   let cardGrowthMultiplier = 1;
   let dailyClickLimit = 300;
   const effectBreakdown: string[] = [];
+  const levelBenefits = getHuntingLevelBenefits(progress.level);
 
   for (const item of equippedItems) {
     switch (item.code) {
@@ -1970,6 +1973,22 @@ export const getHuntingProfile = async (
   }
 
   const apparelMultiplier = 1 + apparelPercentBonus;
+  flatBonus += levelBenefits.battlePowerBonus;
+  dailyClickLimit += levelBenefits.dailyClickBonus;
+  dropRateMultiplier += levelBenefits.dropRateBonus;
+  cardGrowthMultiplier += levelBenefits.cardGrowthBonus;
+  if (levelBenefits.battlePowerBonus > 0) {
+    effectBreakdown.unshift(`레벨 보너스 전투력 +${levelBenefits.battlePowerBonus}`);
+  }
+  if (levelBenefits.dailyClickBonus > 0) {
+    effectBreakdown.unshift(`레벨 보너스 클릭 여유 +${levelBenefits.dailyClickBonus}`);
+  }
+  if (levelBenefits.dropRateBonus > 0) {
+    effectBreakdown.unshift(`레벨 보너스 드랍 x${(1 + levelBenefits.dropRateBonus).toFixed(2)}`);
+  }
+  if (levelBenefits.cardGrowthBonus > 0) {
+    effectBreakdown.unshift(`레벨 보너스 카드 성장 x${(1 + levelBenefits.cardGrowthBonus).toFixed(2)}`);
+  }
   dropRateMultiplier = Math.min(dropRateMultiplier, 1.18);
   bossBonusRollRate = Math.min(bossBonusRollRate, 0.18);
   autoGrowthMultiplier = Math.min(autoGrowthMultiplier, 1.16);

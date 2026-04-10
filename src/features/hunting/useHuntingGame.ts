@@ -369,6 +369,10 @@ export const useHuntingGame = () => {
             ? Math.min(MAX_ENDURANCE, current.endurance + 35)
             : code === "medium-healing-potion"
               ? Math.min(MAX_ENDURANCE, current.endurance + 60)
+              : code === "energy-bar"
+                ? Math.min(MAX_ENDURANCE, current.endurance + 18)
+                : code === "energy-drink"
+                  ? Math.min(MAX_ENDURANCE, current.endurance + 35)
               : current.endurance,
         todayClickCount:
           code === "energy-bar"
@@ -395,7 +399,10 @@ export const useHuntingGame = () => {
         pushNotification({
           tone: "reward",
           title: "클릭 여유 회복",
-          body: code === "energy-bar" ? "에너지 바 사용 · 클릭 여유 +12" : "고농축 에너지 드링크 사용 · 클릭 여유 +24"
+          body:
+            code === "energy-bar"
+              ? "에너지 바 사용 · 클릭 여유 +12 / 피로도 +18"
+              : "고농축 에너지 드링크 사용 · 클릭 여유 +24 / 피로도 +35"
         });
       }
       setErrorMessage("");

@@ -7059,6 +7059,62 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   color: #b42345;
 }
 
+.powerRankingPageMaple .gameHomeStatLabelWithHelp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .gameHomeHelpButton {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #9ab9dc;
+  background: #eef5ff;
+  color: #1b4b86;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitInline {
+  color: #48617d;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.powerRankingPageMaple .gameHomeLevelGuideModal {
+  max-width: 560px;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitList {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitItem {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #d3dfef;
+  background: #f6faff;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitItem.isUnlocked {
+  border-color: #a7c4e6;
+  background: #edf5ff;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitItem strong {
+  color: #163a70;
+}
+
+.powerRankingPageMaple .gameHomeLevelBenefitItem p {
+  margin: 0;
+  color: #4e647c;
+}
+
 .powerRankingPageMaple .powerRankingInventoryEquippedStrip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
