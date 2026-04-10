@@ -3,12 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../auth/UserAuthContext";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
-import PowerRankingEquipmentCard from "../components/PowerRankingEquipmentCard";
 import type {
-  PowerRankingEquipmentCode,
-  PowerRankingEquipmentInventoryItem,
-  PowerRankingEquipmentSlot,
-  PowerRankingEquippedItem,
   PowerRankingEventLog,
   PowerRankingInventoryItem,
   PowerRankingItemCode,
@@ -219,8 +214,6 @@ const PowerRankingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [inventory, setInventory] = useState<PowerRankingInventoryItem[]>([]);
-  const [equipmentInventory, setEquipmentInventory] = useState<PowerRankingEquipmentInventoryItem[]>([]);
-  const [equippedItems, setEquippedItems] = useState<Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>>({});
   const [eventLogs, setEventLogs] = useState<PowerRankingEventLog[]>([]);
   const [rewardMessage, setRewardMessage] = useState("");
   const [notifications, setNotifications] = useState<PowerRankingUserNotification[]>([]);
@@ -246,16 +239,14 @@ const PowerRankingPage = () => {
       apiClient.getPowerRanking(period),
       apiClient.getPowerRankingEvents(),
       user ? apiClient.getPowerRankingInventory() : Promise.resolve([]),
-      user ? apiClient.getPowerRankingEquipment() : Promise.resolve({ inventory: [], equipped: {} })
+      Promise.resolve(null)
     ])
-      .then(([items, events, itemsInventory, equipment]) => {
+      .then(([items, events, itemsInventory]) => {
         if (!isMounted) return;
         previousRanksRef.current = new Map(people.map((person) => [person.id, person.rank]));
         setPeople(items);
         setEventLogs(events);
         setInventory(itemsInventory);
-        setEquipmentInventory(equipment.inventory);
-        setEquippedItems(equipment.equipped);
         setLastUpdatedAt(new Date().toISOString());
         setErrorMessage("");
       })
@@ -459,23 +450,7 @@ const PowerRankingPage = () => {
           .then(setInventory)
           .catch(() => setInventory([]))
       : Promise.resolve(setInventory([]));
-    const equipmentPromise = user
-      ? apiClient
-          .getPowerRankingEquipment()
-          .then((equipment) => {
-            setEquipmentInventory(equipment.inventory);
-            setEquippedItems(equipment.equipped);
-          })
-          .catch(() => {
-            setEquipmentInventory([]);
-            setEquippedItems({});
-          })
-      : Promise.resolve().then(() => {
-          setEquipmentInventory([]);
-          setEquippedItems({});
-        });
-
-    await Promise.all([eventsPromise, inventoryPromise, equipmentPromise]);
+    await Promise.all([eventsPromise, inventoryPromise]);
   };
 
   const refreshPeople = async () => {
@@ -611,35 +586,6 @@ const PowerRankingPage = () => {
       setSortMode("score");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "아이템을 사용하지 못했습니다.");
-    } finally {
-      setSubmittingForId(null);
-    }
-  };
-
-  const handleEquipEquipment = async (equipmentCode: PowerRankingEquipmentCode) => {
-    if (!user) {
-      setErrorMessage("회원가입 이후 이용가능합니다.");
-      navigate("/dongyeon-login");
-      return;
-    }
-    setSubmittingForId(`equip-${equipmentCode}`);
-    setErrorMessage("");
-    setRewardMessage("");
-    try {
-      const equipment = await apiClient.equipPowerRankingEquipment({
-        equipmentCode
-      });
-      setEquipmentInventory(equipment.inventory);
-      setEquippedItems(equipment.equipped);
-      const message = "장비 착용이 반영되었습니다.";
-      setRewardMessage(message);
-      pushNotification({
-        tone: "info",
-        title: "장비 착용",
-        body: message
-      });
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "장비를 착용하지 못했습니다.");
     } finally {
       setSubmittingForId(null);
     }
@@ -929,7 +875,7 @@ const PowerRankingPage = () => {
                   <h2>인벤토리</h2>
                 </div>
                 <p className="powerRankingSectionHint">
-                  올리기나 내리기 반영 시 아이템과 장비를 획득할 수 있으며, 장비는 상세보기에서 강화 확률과 강화석 요구량까지 확인할 수 있습니다.
+                  파워랭킹에서는 소비 아이템만 확인할 수 있습니다. 장비 관리는 내 장비 화면에서만 진행됩니다.
                 </p>
               </div>
 
@@ -977,32 +923,6 @@ const PowerRankingPage = () => {
                             </details>
                           </div>
                         </article>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="powerRankingInventoryGroup">
-                  <div className="powerRankingInventoryGroupHead">
-                    <strong>장비 보관함</strong>
-                    <span>기본 장비 드롭 확률 1%</span>
-                  </div>
-
-                  <div className="powerRankingInventoryGrid">
-                    {equipmentInventory.length === 0 ? (
-                      <article className="powerRankingInventoryEmpty">
-                        아직 획득한 장비가 없습니다. 추천을 반영해 장비를 모아보세요.
-                      </article>
-                    ) : (
-                      equipmentInventory.map((item) => (
-                        <PowerRankingEquipmentCard
-                          key={item.code}
-                          item={item}
-                          onEquipEquipment={handleEquipEquipment}
-                          equipSubmittingCode={
-                            submittingForId?.startsWith("equip-") ? submittingForId.replace("equip-", "") : null
-                          }
-                        />
                       ))
                     )}
                   </div>
