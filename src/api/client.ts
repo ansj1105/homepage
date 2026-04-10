@@ -223,7 +223,7 @@ export const apiClient = {
     ),
   getShopItems: () => request<ShopItem[]>("/api/shop/items"),
   buyShopItem: (payload: ShopBuyRequest) =>
-    request<{ item: ShopItem }>("/api/shop/buy", {
+    request<{ item: ShopItem; progress: HuntingProgress }>("/api/shop/buy", {
       method: "POST",
       body: JSON.stringify(payload)
     }),

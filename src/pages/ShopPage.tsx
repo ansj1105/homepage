@@ -28,36 +28,8 @@ const ShopPage = () => {
       return;
     }
     try {
-      await apiClient.buyShopItem({ itemId: item.id });
-      setProgress((current) => {
-        if (!current) {
-          return current;
-        }
-        return {
-          ...current,
-          materials: {
-            ...current.materials,
-            "club-coin": current.materials["club-coin"] - item.priceAmount,
-            ...(item.itemType === "material"
-              ? { [item.code]: current.materials[item.code as keyof typeof current.materials] + 1 }
-              : {})
-          },
-          miscItems:
-            item.itemType === "misc"
-              ? {
-                  ...current.miscItems,
-                  [item.code]: current.miscItems[item.code as keyof typeof current.miscItems] + 1
-                }
-              : current.miscItems,
-          consumables:
-            item.itemType === "consumable"
-              ? {
-                  ...current.consumables,
-                  [item.code]: current.consumables[item.code as keyof typeof current.consumables] + 1
-                }
-              : current.consumables
-        };
-      });
+      const result = await apiClient.buyShopItem({ itemId: item.id });
+      setProgress(result.progress);
       setErrorMessage(`${item.name} 구매 완료`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "구매하지 못했습니다.");

@@ -732,13 +732,49 @@ export const createApp = () => {
 
   app.post("/api/shop/buy", async (req, res, next) => {
     try {
+      const user = await resolveAuthenticatedUser(req);
+      if (!user) {
+        res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
+        return;
+      }
       const payload = parseShopBuy(req.body);
       const item = shopCatalog.find((entry) => entry.id === payload.itemId);
       if (!item) {
         res.status(404).json({ message: "구매할 수 없는 아이템입니다." });
         return;
       }
-      res.json({ item });
+      const progress = await getUserHuntingProgress(user.id);
+      if (progress.materials["club-coin"] < item.priceAmount) {
+        res.status(400).json({ message: "동연 코인이 부족합니다." });
+        return;
+      }
+
+      const nextProgress = {
+        ...progress,
+        materials: {
+          ...progress.materials,
+          "club-coin": progress.materials["club-coin"] - item.priceAmount,
+          ...(item.itemType === "material"
+            ? { [item.code]: progress.materials[item.code as keyof typeof progress.materials] + 1 }
+            : {})
+        },
+        miscItems:
+          item.itemType === "misc"
+            ? {
+                ...progress.miscItems,
+                [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1
+              }
+            : progress.miscItems,
+        consumables:
+          item.itemType === "consumable"
+            ? {
+                ...progress.consumables,
+                [item.code]: progress.consumables[item.code as keyof typeof progress.consumables] + 1
+              }
+            : progress.consumables
+      };
+      const savedProgress = await saveUserHuntingProgress(user.id, nextProgress);
+      res.json({ item, progress: savedProgress });
     } catch (error) {
       next(error);
     }
