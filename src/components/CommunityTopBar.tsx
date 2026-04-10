@@ -92,15 +92,6 @@ const CommunityTopBar = ({
           게시판
         </NavLink>
         <NavLink
-          to="/dongyeon-cards"
-          className={({ isActive }) =>
-            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
-          }
-          onClick={closeMenus}
-        >
-          카드
-        </NavLink>
-        <NavLink
           to="/dongyeon-shop"
           className={({ isActive }) =>
             `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
@@ -108,15 +99,6 @@ const CommunityTopBar = ({
           onClick={closeMenus}
         >
           상점
-        </NavLink>
-        <NavLink
-          to="/dongyeon-collection"
-          className={({ isActive }) =>
-            `communityTopBarLink ${isActive ? "isActive" : ""}`.trim()
-          }
-          onClick={closeMenus}
-        >
-          도감
         </NavLink>
         {!user || !onEquipEquipment ? (
           <NavLink

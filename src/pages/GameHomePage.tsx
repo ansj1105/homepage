@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client";
 import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
+import MyInfoSubNav from "../components/MyInfoSubNav";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import {
   getHuntingStorageKey,
@@ -132,6 +133,7 @@ const GameHomePage = () => {
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
         <CommunityTopBar />
+        <MyInfoSubNav />
 
         <header className="powerRankingHero powerRankingHeroMaple gameHomeHero">
           <div className="powerRankingHeroCopy">

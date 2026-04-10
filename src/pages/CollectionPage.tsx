@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
+import MyInfoSubNav from "../components/MyInfoSubNav";
 import { getHuntingStorageKey, loadHuntingProgress } from "../features/huntingProgress";
 import { useUserAuth } from "../auth/UserAuthContext";
 import type { MonsterCollectionEntry, SetCollectionEntry } from "../types";
@@ -41,6 +42,7 @@ const CollectionPage = () => {
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
         <CommunityTopBar />
+        <MyInfoSubNav />
         <section className="powerRankingInventorySection">
           <div className="powerRankingSectionHead">
             <div>
