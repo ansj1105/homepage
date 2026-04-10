@@ -1,5 +1,17 @@
 import type { CardEntry } from "../types";
 
+export type GameCardStage = "child" | "growth" | "complete" | "ultimate";
+
+export const gameCardStageMeta: Record<
+  GameCardStage,
+  { label: string; minLevel: number; maxLevel: number | null }
+> = {
+  child: { label: "유년기", minLevel: 1, maxLevel: 4 },
+  growth: { label: "성장기", minLevel: 5, maxLevel: 9 },
+  complete: { label: "완전체", minLevel: 10, maxLevel: 19 },
+  ultimate: { label: "궁극체", minLevel: 20, maxLevel: null }
+};
+
 export const gameCardsCatalog: CardEntry[] = [
   {
     id: "flame-idol-ria",
@@ -53,3 +65,44 @@ export const gameCardsCatalog: CardEntry[] = [
 
 export const getGameCardById = (cardId: string): CardEntry | undefined =>
   gameCardsCatalog.find((card) => card.id === cardId);
+
+export const getCardStageByLevel = (level: number): GameCardStage => {
+  if (level >= 20) {
+    return "ultimate";
+  }
+  if (level >= 10) {
+    return "complete";
+  }
+  if (level >= 5) {
+    return "growth";
+  }
+  return "child";
+};
+
+export const getCardStageLabel = (level: number): string => gameCardStageMeta[getCardStageByLevel(level)].label;
+
+export const getCardStageImageUrl = (cardId: string, level: number): string => {
+  const stage = getCardStageByLevel(level);
+  return stage === "child" ? `/assets/cards/${cardId}.svg` : `/assets/cards/${cardId}-${stage}.svg`;
+};
+
+export const getCardStageRangeLabel = (stage: GameCardStage): string => {
+  const meta = gameCardStageMeta[stage];
+  return meta.maxLevel ? `Lv.${meta.minLevel}-${meta.maxLevel}` : `Lv.${meta.minLevel}+`;
+};
+
+export const getCardBonusSummaryForLevel = (card: CardEntry, level: number): string => {
+  const levelBonus = Math.max(0, level - 1);
+  switch (card.effectKind) {
+    case "damage":
+      return `데미지 +${Math.round((card.effectValue + levelBonus * 0.01) * 100)}%`;
+    case "drop":
+      return `재료 드랍 +${Math.round((card.effectValue + levelBonus * 0.01) * 100)}%`;
+    case "click":
+      return `오늘의 클릭 +${Math.floor(card.effectValue + levelBonus * 5)}`;
+    case "popularity":
+      return `카드 인기도 성장 보정 +${Math.round((card.effectValue + levelBonus * 0.03) * 100)}%`;
+    default:
+      return card.bonusSummary;
+  }
+};

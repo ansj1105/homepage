@@ -1,0 +1,15 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="28" fill="#FFF5FD"/>
+  <rect x="14" y="14" width="292" height="292" rx="26" fill="url(#bg)" stroke="#8A67FF" stroke-width="6"/>
+  <circle cx="160" cy="112" r="48" fill="#FFE6E3"/>
+  <path d="M122 92C132 48 150 28 160 28C170 28 188 48 198 92C185 82 173 78 160 78C147 78 135 82 122 92Z" fill="#7A3BB1"/>
+  <path d="M126 130C142 114 178 114 194 130V184H126V130Z" fill="#FFF8FE"/>
+  <path d="M108 266C118 212 136 178 160 178C184 178 202 212 212 266H108Z" fill="#C94F9E"/>
+  <path d="M160 58L170 80H194L176 92L184 114L160 100L136 114L144 92L126 80H150L160 58Z" fill="#FFE186"/>
+  <path d="M116 88L122 102H136L124 110L130 124L116 116L102 124L108 110L96 102H110L116 88Z" fill="#FFE186"/>
+  <path d="M204 88L210 102H224L212 110L218 124L204 116L190 124L196 110L184 102H198L204 88Z" fill="#FFE186"/>
+  <circle cx="160" cy="188" r="12" fill="#FFE186"/>
+  <rect x="82" y="22" width="156" height="36" rx="18" fill="#7A3BB1"/><text x="160" y="46" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="700">완전체</text>
+  <text x="160" y="294" text-anchor="middle" fill="#17314F" font-family="Arial, sans-serif" font-size="20" font-weight="700">스타 에린</text>
+  <defs><linearGradient id="bg" x1="160" y1="14" x2="160" y2="306" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF0FE"/><stop offset="1" stop-color="#E9B4E8"/></linearGradient></defs>
+</svg>

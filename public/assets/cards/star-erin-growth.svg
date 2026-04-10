@@ -1,0 +1,14 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="28" fill="#FFF5FD"/>
+  <rect x="18" y="18" width="284" height="284" rx="24" fill="url(#bg)" stroke="#D975C8" stroke-width="4"/>
+  <circle cx="160" cy="116" r="46" fill="#FFE6E3"/>
+  <path d="M126 96C132 62 150 46 160 46C170 46 188 62 194 96C183 88 172 84 160 84C148 84 137 88 126 96Z" fill="#8C4BC2"/>
+  <path d="M126 132C140 118 180 118 194 132V180H126V132Z" fill="#FFF7FE"/>
+  <path d="M112 262C120 216 136 184 160 184C184 184 200 216 208 262H112Z" fill="#D663A6"/>
+  <path d="M160 68L168 84H184L171 94L176 110L160 100L144 110L149 94L136 84H152L160 68Z" fill="#FFD775"/>
+  <path d="M112 92L118 104H130L120 111L124 123L112 116L100 123L104 111L94 104H106L112 92Z" fill="#FFD775"/>
+  <path d="M208 92L214 104H226L216 111L220 123L208 116L196 123L200 111L190 104H202L208 92Z" fill="#FFD775"/>
+  <rect x="90" y="24" width="140" height="34" rx="17" fill="#D663A6"/><text x="160" y="46" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="700">성장기</text>
+  <text x="160" y="292" text-anchor="middle" fill="#17314F" font-family="Arial, sans-serif" font-size="20" font-weight="700">스타 에린</text>
+  <defs><linearGradient id="bg" x1="160" y1="18" x2="160" y2="302" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF2FF"/><stop offset="1" stop-color="#F3C4EA"/></linearGradient></defs>
+</svg>

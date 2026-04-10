@@ -3,6 +3,14 @@ import { apiClient } from "../api/client";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
 import { useUserAuth } from "../auth/UserAuthContext";
+import {
+  gameCardStageMeta,
+  getCardBonusSummaryForLevel,
+  getCardStageByLevel,
+  getCardStageImageUrl,
+  getCardStageLabel,
+  getCardStageRangeLabel
+} from "../data/gameCards";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { CardEntry } from "../types";
 
@@ -78,7 +86,11 @@ const CardsPage = () => {
             <article className="powerRankingDashboardCard">
               <span>현재 선택 카드</span>
               <strong>{cards.find((card) => card.id === progress?.selectedCardTargetId)?.name ?? "미선택"}</strong>
-              <p>선택 카드 인기도는 사냥 중 자동으로 조금씩 오르고, 응원 포인트로 추가 성장할 수 있습니다.</p>
+              <p>
+                {progress?.selectedCardTargetId
+                  ? `현재 단계 ${getCardStageLabel(progress.cardLevels[progress.selectedCardTargetId] ?? 1)}`
+                  : "선택 카드 인기도는 사냥 중 자동으로 조금씩 오르고, 응원 포인트로 추가 성장할 수 있습니다."}
+              </p>
             </article>
             <article className="powerRankingDashboardCard">
               <span>응원 포인트</span>
@@ -86,11 +98,22 @@ const CardsPage = () => {
               <p>파워랭킹 투표 성공과 사냥 처치로 모으며, 5포인트마다 카드 인기도를 올릴 수 있습니다.</p>
             </article>
           </div>
+          <div className="powerRankingInventoryTags gameCardStageGuide">
+            {Object.entries(gameCardStageMeta).map(([stage, meta]) => (
+              <span key={stage} className="powerRankingInventoryPill">
+                {meta.label} · {getCardStageRangeLabel(stage as keyof typeof gameCardStageMeta)}
+              </span>
+            ))}
+          </div>
           <div className="powerRankingInventoryGrid">
             {cards.map((card) => (
-              <article key={card.id} className="powerRankingInventoryCard">
+              <article key={card.id} className={`powerRankingInventoryCard gameCardStageCard is-${getCardStageByLevel(progress?.cardLevels[card.id] ?? 1)}`}>
                 <div className="powerRankingInventoryVisual">
-                  <img src={card.imageUrl} alt={card.name} className="powerRankingInventoryImage powerRankingCardImage" />
+                  <img
+                    src={getCardStageImageUrl(card.id, progress?.cardLevels[card.id] ?? 1)}
+                    alt={card.name}
+                    className="powerRankingInventoryImage powerRankingCardImage"
+                  />
                   {progress?.selectedCardTargetId === card.id ? <span className="powerRankingEquippedBadge">선택 중</span> : null}
                 </div>
                 <div className="powerRankingInventoryBody">
@@ -99,12 +122,23 @@ const CardsPage = () => {
                     <span>{card.grade.toUpperCase()}</span>
                   </div>
                   <p>
-                    {card.typeLabel} · 레벨 {progress?.cardLevels[card.id] ?? 1} · 인기도 {(progress?.cardPopularity[card.id] ?? 0) + card.popularity}
+                    {card.typeLabel} · 레벨 {progress?.cardLevels[card.id] ?? 1} · {getCardStageLabel(progress?.cardLevels[card.id] ?? 1)} · 인기도{" "}
+                    {(progress?.cardPopularity[card.id] ?? 0) + card.popularity}
                   </p>
                   <div className="powerRankingInventoryTags">
                     <span className="powerRankingInventoryPill">등급 {card.grade}</span>
-                    <span className="powerRankingInventoryPill isMuted">{card.bonusSummary}</span>
+                    <span className="powerRankingInventoryPill">{getCardStageLabel(progress?.cardLevels[card.id] ?? 1)}</span>
+                    <span className="powerRankingInventoryPill isMuted">
+                      현재 효과 {getCardBonusSummaryForLevel(card, progress?.cardLevels[card.id] ?? 1)}
+                    </span>
                   </div>
+                  <p className="gameCardStageHint">
+                    다음 단계 {(() => {
+                      const level = progress?.cardLevels[card.id] ?? 1;
+                      const nextStage = getCardStageByLevel(level + 1);
+                      return nextStage === getCardStageByLevel(level) ? "동일 단계 성장 중" : `${getCardStageLabel(level + 1)} 진입`;
+                    })()}
+                  </p>
                   <div className="huntingCombatActions">
                     <button type="button" className="powerRankingItemButton" onClick={() => void handleSelect(card.id)}>선택</button>
                     <button type="button" className="powerRankingItemButton isPositive" onClick={() => void handleUpgrade(card.id)}>인기도 성장</button>

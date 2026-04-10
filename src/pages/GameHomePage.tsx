@@ -4,6 +4,7 @@ import { apiClient } from "../api/client";
 import { useUserAuth } from "../auth/UserAuthContext";
 import CommunityTopBar from "../components/CommunityTopBar";
 import MyInfoSubNav from "../components/MyInfoSubNav";
+import { getCardStageImageUrl, getCardStageLabel } from "../data/gameCards";
 import { getHuntingLevelBenefits } from "../data/huntingLevelBenefits";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import {
@@ -277,12 +278,25 @@ const GameHomePage = () => {
 
               <div className="powerRankingInventoryGrid">
                 <article className="powerRankingInventoryCard">
+                  {progress.selectedCardTargetId ? (
+                    <div className="powerRankingInventoryVisual">
+                      <img
+                        src={getCardStageImageUrl(progress.selectedCardTargetId, progress.cardLevels[progress.selectedCardTargetId] ?? 1)}
+                        alt={home.cards.find((card) => card.id === progress.selectedCardTargetId)?.name ?? "선택 카드"}
+                        className="powerRankingInventoryImage powerRankingCardImage"
+                      />
+                    </div>
+                  ) : null}
                   <div className="powerRankingInventoryBody">
                     <div className="powerRankingInventoryHeading">
                       <strong>현재 응원 카드</strong>
                       <span>{home.cards.find((card) => card.id === progress.selectedCardTargetId)?.name ?? "미선택"}</span>
                     </div>
-                    <p>응원 포인트 {progress.cardSupportPoints}점 · 카드 레벨 {progress.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0}</p>
+                    <p>
+                      응원 포인트 {progress.cardSupportPoints}점 · 카드 레벨{" "}
+                      {progress.selectedCardTargetId ? (progress.cardLevels[progress.selectedCardTargetId] ?? 1) : 0} ·{" "}
+                      {progress.selectedCardTargetId ? getCardStageLabel(progress.cardLevels[progress.selectedCardTargetId] ?? 1) : "미선택"}
+                    </p>
                   </div>
                 </article>
                 {home.cards.slice(0, 3).map((card) => (

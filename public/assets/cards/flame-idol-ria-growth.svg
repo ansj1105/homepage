@@ -1,0 +1,16 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="28" fill="#FFF7F3"/>
+  <rect x="18" y="18" width="284" height="284" rx="24" fill="url(#bg)" stroke="#F08A5B" stroke-width="4"/>
+  <circle cx="160" cy="118" r="50" fill="#FFE3DB"/>
+  <path d="M116 96C124 54 150 34 160 34C170 34 196 54 204 96C191 84 178 80 160 80C142 80 129 84 116 96Z" fill="#F25A37"/>
+  <path d="M132 128C144 114 176 114 188 128V182H132V128Z" fill="#FFF8F5"/>
+  <path d="M116 268C122 214 138 184 160 184C182 184 198 214 204 268H116Z" fill="#F25A37"/>
+  <path d="M104 246C124 228 140 220 160 220C180 220 196 228 216 246L224 268H96L104 246Z" fill="#2D467B"/>
+  <circle cx="145" cy="122" r="5" fill="#243A73"/><circle cx="175" cy="122" r="5" fill="#243A73"/>
+  <path d="M146 144C153 149 167 149 174 144" stroke="#B55D54" stroke-width="4" stroke-linecap="round"/>
+  <path d="M122 92L136 70L150 92" stroke="#FFD27A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M198 92L184 70L170 92" stroke="#FFD27A" stroke-width="10" stroke-linecap="round"/>
+  <rect x="90" y="24" width="140" height="34" rx="17" fill="#F25A37"/><text x="160" y="46" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="700">성장기</text>
+  <text x="160" y="294" text-anchor="middle" fill="#17314F" font-family="Arial, sans-serif" font-size="20" font-weight="700">불꽃 아이돌 리아</text>
+  <defs><linearGradient id="bg" x1="160" y1="18" x2="160" y2="302" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF3ED"/><stop offset="1" stop-color="#FFC5AE"/></linearGradient></defs>
+</svg>

@@ -1,0 +1,15 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="320" rx="28" fill="#F8FFF2"/>
+  <rect x="18" y="18" width="284" height="284" rx="24" fill="url(#bg)" stroke="#8DBF57" stroke-width="4"/>
+  <ellipse cx="160" cy="268" rx="88" ry="16" fill="#D4EAB0"/>
+  <circle cx="160" cy="116" r="46" fill="#FFE9D9"/>
+  <path d="M124 96C132 60 148 42 160 42C172 42 188 60 196 96C184 89 173 86 160 86C147 86 136 89 124 96Z" fill="#7BAE59"/>
+  <path d="M130 132C142 118 178 118 190 132V180H130V132Z" fill="#F8FFF3"/>
+  <path d="M114 262C122 214 138 184 160 184C182 184 198 214 206 262H114Z" fill="#7BAE59"/>
+  <path d="M98 216C128 194 192 194 222 216" stroke="#DAB45D" stroke-width="12" stroke-linecap="round"/>
+  <path d="M160 184V244" stroke="#DAB45D" stroke-width="10" stroke-linecap="round"/>
+  <path d="M126 84L108 64" stroke="#A9CF68" stroke-width="8" stroke-linecap="round"/><path d="M194 84L212 64" stroke="#A9CF68" stroke-width="8" stroke-linecap="round"/>
+  <rect x="90" y="24" width="140" height="34" rx="17" fill="#7BAE59"/><text x="160" y="46" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="700">성장기</text>
+  <text x="160" y="292" text-anchor="middle" fill="#17314F" font-family="Arial, sans-serif" font-size="20" font-weight="700">수확 요정 벨</text>
+  <defs><linearGradient id="bg" x1="160" y1="18" x2="160" y2="302" gradientUnits="userSpaceOnUse"><stop stop-color="#F6FFE7"/><stop offset="1" stop-color="#D4EAAF"/></linearGradient></defs>
+</svg>

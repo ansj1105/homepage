@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import CommunityTopBar from "../components/CommunityTopBar";
 import HuntingSubNav from "../components/HuntingSubNav";
+import { getCardStageImageUrl, getCardStageLabel } from "../data/gameCards";
 import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import { useHuntingGame } from "../features/hunting/useHuntingGame";
 import type { PowerRankingEquipmentSlot } from "../types";
@@ -50,7 +51,11 @@ const HuntingProfilePage = () => {
                 <article className="powerRankingDashboardCard">
                   <span>선택 카드</span>
                   <strong>{profile?.activeCardName ?? "미선택"}</strong>
-                  <p>{profile?.activeCardId ? `레벨 ${progress.cardLevels[profile.activeCardId] ?? 1}` : "카드 선택 필요"}</p>
+                  <p>
+                    {profile?.activeCardId
+                      ? `레벨 ${progress.cardLevels[profile.activeCardId] ?? 1} · ${getCardStageLabel(progress.cardLevels[profile.activeCardId] ?? 1)}`
+                      : "카드 선택 필요"}
+                  </p>
                 </article>
                 <article className="powerRankingDashboardCard">
                   <span>카드 성장 배수</span>
@@ -58,6 +63,26 @@ const HuntingProfilePage = () => {
                   <p>머리 장비와 카드 효과 반영</p>
                 </article>
               </div>
+              {profile?.activeCardId ? (
+                <div className="powerRankingInventoryGrid">
+                  <article className="powerRankingInventoryCard">
+                    <div className="powerRankingInventoryVisual">
+                      <img
+                        src={getCardStageImageUrl(profile.activeCardId, progress.cardLevels[profile.activeCardId] ?? 1)}
+                        alt={profile.activeCardName ?? "선택 카드"}
+                        className="powerRankingInventoryImage powerRankingCardImage"
+                      />
+                    </div>
+                    <div className="powerRankingInventoryBody">
+                      <div className="powerRankingInventoryHeading">
+                        <strong>{profile.activeCardName}</strong>
+                        <span>{getCardStageLabel(progress.cardLevels[profile.activeCardId] ?? 1)}</span>
+                      </div>
+                      <p>현재 선택된 카드의 성장 단계 이미지와 레벨 상태입니다.</p>
+                    </div>
+                  </article>
+                </div>
+              ) : null}
             </section>
 
             <section className="powerRankingInventorySection">

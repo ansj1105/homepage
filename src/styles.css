@@ -6860,6 +6860,32 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   padding: 8px;
 }
 
+.powerRankingPageMaple .gameCardStageGuide {
+  margin: 0 0 12px;
+}
+
+.powerRankingPageMaple .gameCardStageCard.is-child {
+  border-color: #cfe0f4;
+}
+
+.powerRankingPageMaple .gameCardStageCard.is-growth {
+  border-color: #9ec5ff;
+}
+
+.powerRankingPageMaple .gameCardStageCard.is-complete {
+  border-color: #7f8cff;
+}
+
+.powerRankingPageMaple .gameCardStageCard.is-ultimate {
+  border-color: #ff9fd2;
+}
+
+.powerRankingPageMaple .gameCardStageHint {
+  color: #17314f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .powerRankingPageMaple .powerRankingResourceIcon {
   width: 100%;
   aspect-ratio: 1 / 1;
