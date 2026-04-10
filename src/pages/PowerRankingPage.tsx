@@ -362,11 +362,11 @@ const getItemUseConfirmMessage = (
   }
 
   if (itemCode === "blue-campus-badge") {
-    return `${personName}에게 청량 응원 배지를 쓰시겠습니까? 인기도가 150 올라갑니다.`;
+    return `${personName}에게 청량 응원 배지를 쓰시겠습니까? 인기도가 50 올라갑니다.`;
   }
 
   if (itemCode === "red-campus-flare") {
-    return `${personName}에게 적색 견제 플레어를 쓰시겠습니까? 인기도가 150 내려갑니다.`;
+    return `${personName}에게 적색 견제 플레어를 쓰시겠습니까? 인기도가 50 내려갑니다.`;
   }
 
   return null;
@@ -1808,7 +1808,7 @@ const PowerRankingPage = () => {
                               <span className="powerRankingItemActionHint">
                                 {isUsingRedFactionItem
                                   ? "확인 후 사용 처리 중입니다."
-                                  : redFactionDisabledReason ?? "2번 진영 추가 드랍 아이템입니다. 인기도 -150이 적용됩니다."}
+                                  : redFactionDisabledReason ?? "2번 진영 추가 드랍 아이템입니다. 인기도 -50이 적용됩니다."}
                               </span>
                             </div>
                             <div className="powerRankingItemActionCard">
@@ -1840,7 +1840,7 @@ const PowerRankingPage = () => {
                               <span className="powerRankingItemActionHint">
                                 {isUsingBlueFactionItem
                                   ? "확인 후 사용 처리 중입니다."
-                                  : blueFactionDisabledReason ?? "1번 진영 추가 드랍 아이템입니다. 인기도 +150이 적용됩니다."}
+                                  : blueFactionDisabledReason ?? "1번 진영 추가 드랍 아이템입니다. 인기도 +50이 적용됩니다."}
                               </span>
                             </div>
                             <div className="powerRankingItemActionCard">

@@ -39,15 +39,15 @@ export const powerRankingItemCatalog: Record<string, PowerRankingItemCatalogEntr
   "blue-campus-badge": {
     code: "blue-campus-badge",
     name: "청량 응원 배지",
-    description: "상대 인기도를 150 올립니다. 1번 진영 보너스 드랍입니다.",
-    effectDelta: 150,
+    description: "상대 인기도를 50 올립니다. 1번 진영 보너스 드랍입니다.",
+    effectDelta: 50,
     imageUrl: "/assets/items/blue-campus-badge.svg"
   },
   "red-campus-flare": {
     code: "red-campus-flare",
     name: "적색 견제 플레어",
-    description: "상대 인기도를 150 내립니다. 2번 진영 보너스 드랍입니다.",
-    effectDelta: -150,
+    description: "상대 인기도를 50 내립니다. 2번 진영 보너스 드랍입니다.",
+    effectDelta: -50,
     imageUrl: "/assets/items/red-campus-flare.svg"
   }
 };
