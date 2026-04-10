@@ -76,7 +76,7 @@ export const useHuntingGame = () => {
   const { user } = useUserAuth();
   const autoTimerRef = useRef<number | null>(null);
   const autoAttackEnabledRef = useRef(false);
-  const attackRef = useRef<() => Promise<void>>(async () => undefined);
+  const attackRef = useRef<(options?: { auto?: boolean }) => Promise<void>>(async () => undefined);
   const notificationTimersRef = useRef<number[]>([]);
   const hasHydratedProgressRef = useRef(false);
   const [progress, setProgress] = useState<HuntingProgress>(() => createDefaultProgress());
@@ -238,15 +238,21 @@ export const useHuntingGame = () => {
     await syncZone(selectedZoneId, monsterId);
   };
 
-  const attack = async () => {
+  const attack = async (options?: { auto?: boolean }) => {
     if (!selectedZoneId || !selectedMonsterId || isAttacking) {
       return;
     }
+    const isAutoAttack = options?.auto ?? false;
     const requiredEndurance = combatState?.clickCost ?? currentZone?.clickCost ?? 1;
-    if (progress.endurance < requiredEndurance) {
+    if (isAutoAttack && progress.endurance < requiredEndurance) {
       setErrorMessage(`피로도가 부족합니다. 현재 지역은 ${requiredEndurance} 피로도를 소모합니다.`);
       if (autoAttackEnabledRef.current) {
         setAutoAttackEnabled(false);
+        pushNotification({
+          tone: "info",
+          title: "자동 사냥 종료",
+          body: "피로도를 모두 사용해서 자동 사냥이 중지되었습니다. 이제 수동 클릭만 가능합니다."
+        });
       }
       return;
     }
@@ -268,7 +274,9 @@ export const useHuntingGame = () => {
         nextLevel = combatUpdate.progress.level;
         return {
           ...combatUpdate.progress,
-          endurance: Math.max(0, current.endurance - result.state.clickCost),
+          endurance: isAutoAttack
+            ? Math.max(0, current.endurance - result.state.clickCost)
+            : current.endurance,
           cardPopularity: current.selectedCardTargetId
             ? {
                 ...current.cardPopularity,
@@ -416,7 +424,7 @@ export const useHuntingGame = () => {
     }
 
     const runAutoAttack = async () => {
-      await attackRef.current();
+      await attackRef.current({ auto: true });
       if (!autoAttackEnabledRef.current) {
         return;
       }
