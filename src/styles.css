@@ -7806,6 +7806,17 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   border: 1px solid #d3e1f0;
 }
 
+.powerRankingPageMaple .powerRankingScoreChartAxisLine {
+  stroke: #9fb8d5;
+  stroke-width: 1;
+}
+
+.powerRankingPageMaple .powerRankingScoreChartAxisText {
+  fill: #58708d;
+  font-size: 4px;
+  font-weight: 700;
+}
+
 .powerRankingPageMaple .powerRankingScoreChartGridLine {
   stroke: #d7e4f1;
   stroke-width: 1;
@@ -7817,11 +7828,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingScoreChartLine {
-  stroke-width: 1.35;
+  stroke-width: 1.15;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  opacity: 0.88;
+  opacity: 0.95;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartLine.isPositive {
@@ -7833,7 +7844,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 }
 
 .powerRankingPageMaple .powerRankingScoreChartWick {
-  stroke-width: 1;
+  stroke-width: 0.9;
   vector-effect: non-scaling-stroke;
   opacity: 0.92;
 }
@@ -7848,7 +7859,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
 .powerRankingPageMaple .powerRankingScoreChartCandle {
   vector-effect: non-scaling-stroke;
-  stroke-width: 0.8;
+  stroke-width: 0.7;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartCandle.isPositive {
@@ -7859,13 +7870,6 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 .powerRankingPageMaple .powerRankingScoreChartCandle.isNegative {
   fill: #255fe5;
   stroke: #1f4fa9;
-}
-
-.powerRankingPageMaple .powerRankingScoreChartDot {
-  fill: #1f4fa9;
-  stroke: #ffffff;
-  stroke-width: 0.8;
-  vector-effect: non-scaling-stroke;
 }
 
 .powerRankingPageMaple .powerRankingScoreChartLabels {
