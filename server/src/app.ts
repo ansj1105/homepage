@@ -766,13 +766,16 @@ export const createApp = () => {
           item.itemType === "misc" || item.nightSnackTicketCost
             ? {
                 ...progress.miscItems,
-                ...(item.itemType === "misc"
+                "night-snack-ticket":
+                  item.code === "night-snack-ticket"
+                    ? progress.miscItems["night-snack-ticket"] + 1 - (item.nightSnackTicketCost ?? 0)
+                    : Math.max(
+                        0,
+                        progress.miscItems["night-snack-ticket"] - (item.nightSnackTicketCost ?? 0)
+                      ),
+                ...(item.itemType === "misc" && item.code !== "night-snack-ticket"
                   ? { [item.code]: progress.miscItems[item.code as keyof typeof progress.miscItems] + 1 }
-                  : {}),
-                "night-snack-ticket": Math.max(
-                  0,
-                  progress.miscItems["night-snack-ticket"] - (item.nightSnackTicketCost ?? 0)
-                )
+                  : {})
               }
             : progress.miscItems,
         consumables:
