@@ -78,6 +78,7 @@ export const useHuntingGame = () => {
   const autoAttackEnabledRef = useRef(false);
   const attackRef = useRef<() => Promise<void>>(async () => undefined);
   const notificationTimersRef = useRef<number[]>([]);
+  const hasHydratedProgressRef = useRef(false);
   const [progress, setProgress] = useState<HuntingProgress>(() => createDefaultProgress());
   const [profile, setProfile] = useState<HuntingProfile | null>(null);
   const [zones, setZones] = useState<HuntingZoneSummary[]>([]);
@@ -93,23 +94,30 @@ export const useHuntingGame = () => {
 
   useEffect(() => {
     if (!user || !storageKey) {
+      hasHydratedProgressRef.current = false;
       setProgress(createDefaultProgress());
       return;
     }
+    hasHydratedProgressRef.current = false;
     const localProgress = loadHuntingProgress(storageKey);
     setProgress(localProgress);
     void apiClient
       .getHuntingProgress()
       .then((serverProgress) => {
         setProgress(serverProgress);
+        hasHydratedProgressRef.current = true;
       })
       .catch(() => {
         // Keep local fallback until all pages fully migrate.
+        hasHydratedProgressRef.current = true;
       });
   }, [storageKey, user]);
 
   useEffect(() => {
     if (!user || !storageKey) {
+      return;
+    }
+    if (!hasHydratedProgressRef.current) {
       return;
     }
     saveHuntingProgress(storageKey, progress);
