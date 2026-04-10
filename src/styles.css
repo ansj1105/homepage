@@ -6156,6 +6156,11 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   font-size: 14px;
 }
 
+.powerRankingPageMaple .equipmentSlotSubNav {
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
 .powerRankingPageMaple .powerRankingHeroMaple {
   align-items: stretch;
   gap: 28px;

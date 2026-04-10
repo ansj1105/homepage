@@ -22,6 +22,7 @@ import type {
 
 const slotOrder: PowerRankingEquipmentSlot[] = ["head", "weapon", "top", "gloves", "bottom", "shoes"];
 type EquipmentInventoryTab = "equipment" | "consumables" | "other";
+type EquipmentSlotFilter = "all" | PowerRankingEquipmentSlot;
 
 const slotLayout: Record<
   PowerRankingEquipmentSlot,
@@ -72,6 +73,7 @@ const EquipmentPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [activeTab, setActiveTab] = useState<EquipmentInventoryTab>("equipment");
+  const [activeEquipmentSlot, setActiveEquipmentSlot] = useState<EquipmentSlotFilter>("all");
   const [equipmentInventory, setEquipmentInventory] = useState<PowerRankingEquipmentInventoryItem[]>([]);
   const [itemInventory, setItemInventory] = useState<PowerRankingInventoryItem[]>([]);
   const [rankingPeople, setRankingPeople] = useState<PowerRankingPerson[]>([]);
@@ -297,6 +299,22 @@ const EquipmentPage = () => {
     [equippedItems]
   );
 
+  const filteredEquipmentInventory = useMemo(
+    () =>
+      activeEquipmentSlot === "all"
+        ? equipmentInventory
+        : equipmentInventory.filter((item) => item.slot === activeEquipmentSlot),
+    [activeEquipmentSlot, equipmentInventory]
+  );
+
+  const filteredEquippedCardItems = useMemo(
+    () =>
+      activeEquipmentSlot === "all"
+        ? equippedCardItems
+        : equippedCardItems.filter((item) => item.slot === activeEquipmentSlot),
+    [activeEquipmentSlot, equippedCardItems]
+  );
+
   return (
     <div className="powerRankingPage powerRankingPageMaple">
       <div className="powerRankingShell">
@@ -458,6 +476,26 @@ const EquipmentPage = () => {
 
           {activeTab === "equipment" ? (
             <>
+              <div className="huntingSubNav equipmentSlotSubNav">
+                <button
+                  type="button"
+                  className={`huntingSubNavLink ${activeEquipmentSlot === "all" ? "isActive" : ""}`}
+                  onClick={() => setActiveEquipmentSlot("all")}
+                >
+                  전체
+                </button>
+                {slotOrder.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    className={`huntingSubNavLink ${activeEquipmentSlot === slot ? "isActive" : ""}`}
+                    onClick={() => setActiveEquipmentSlot(slot)}
+                  >
+                    {powerRankingEquipmentSlotLabels[slot]}
+                  </button>
+                ))}
+              </div>
+
               <div className="powerRankingInventoryEquippedStrip">
                 {(Object.keys(powerRankingEquipmentSlotLabels) as PowerRankingEquipmentSlot[]).map((slot) => {
                   const equipped = equippedItems[slot];
@@ -479,10 +517,10 @@ const EquipmentPage = () => {
               </div>
 
               <div className="powerRankingInventoryGrid">
-                {equippedCardItems.length === 0 ? (
+                {filteredEquippedCardItems.length === 0 ? (
                   <article className="powerRankingInventoryEmpty">현재 장착 중인 장비가 없습니다.</article>
                 ) : (
-                  equippedCardItems.map((item) => (
+                  filteredEquippedCardItems.map((item) => (
                     <PowerRankingEquipmentCard
                       key={`equipped-${item.code}`}
                       item={{ ...item, quantity: 1, createdAt: item.equippedAt }}
@@ -493,10 +531,10 @@ const EquipmentPage = () => {
               </div>
 
               <div className="powerRankingInventoryGrid">
-                {equipmentInventory.length === 0 ? (
+                {filteredEquipmentInventory.length === 0 ? (
                   <article className="powerRankingInventoryEmpty">보유 장비가 없습니다.</article>
                 ) : (
-                  equipmentInventory.map((item) => (
+                  filteredEquipmentInventory.map((item) => (
                     <PowerRankingEquipmentCard
                       key={item.code}
                       item={item}
