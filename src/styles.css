@@ -5728,6 +5728,206 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.powerRankingPageMaple .equipmentPageOverviewGrid {
+  display: grid;
+  grid-template-columns: minmax(360px, 480px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarPanel,
+.powerRankingPageMaple .equipmentPageEffectPanel {
+  padding: 20px;
+  border: 1px solid #cfe0f4;
+  background: #f6faff;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarBoard {
+  position: relative;
+  min-height: 760px;
+  border: 1px solid #d7e6f7;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(227, 239, 251, 0.7)),
+    #edf5ff;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarFigure {
+  position: absolute;
+  inset: 0;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarHead,
+.powerRankingPageMaple .equipmentPageAvatarTorso,
+.powerRankingPageMaple .equipmentPageAvatarArm,
+.powerRankingPageMaple .equipmentPageAvatarLeg {
+  position: absolute;
+  background: linear-gradient(180deg, #dbe7f4, #c8d8ea);
+  border: 1px solid #b8cade;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarHead {
+  top: 48px;
+  left: 50%;
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+}
+
+.powerRankingPageMaple .equipmentPageAvatarTorso {
+  top: 158px;
+  left: 50%;
+  width: 136px;
+  height: 198px;
+  transform: translateX(-50%);
+}
+
+.powerRankingPageMaple .equipmentPageAvatarArm {
+  top: 182px;
+  width: 42px;
+  height: 184px;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarArm.isLeft {
+  left: calc(50% - 108px);
+}
+
+.powerRankingPageMaple .equipmentPageAvatarArm.isRight {
+  right: calc(50% - 108px);
+}
+
+.powerRankingPageMaple .equipmentPageAvatarLeg {
+  top: 374px;
+  width: 50px;
+  height: 212px;
+}
+
+.powerRankingPageMaple .equipmentPageAvatarLeg.isLeft {
+  left: calc(50% - 56px);
+}
+
+.powerRankingPageMaple .equipmentPageAvatarLeg.isRight {
+  right: calc(50% - 56px);
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard {
+  position: absolute;
+  z-index: 1;
+  width: 164px;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid #bfd5ee;
+  background: rgba(247, 251, 255, 0.96);
+  display: grid;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard > span {
+  color: #1a3f75;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isHead {
+  top: 36px;
+  left: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isWeapon {
+  top: 36px;
+  right: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isTop {
+  top: 222px;
+  left: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isGloves {
+  top: 222px;
+  right: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isBottom {
+  top: 430px;
+  left: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotCard.isShoes {
+  top: 430px;
+  right: 18px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotItem {
+  display: grid;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .equipmentPageSlotItem img {
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+  border: 1px solid #c6d9ee;
+  background: #ffffff;
+}
+
+.powerRankingPageMaple .equipmentPageSlotItem strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.powerRankingPageMaple .equipmentPageSlotItem small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.powerRankingPageMaple .equipmentPageEffectGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.powerRankingPageMaple .equipmentPageEffectSummary {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.powerRankingPageMaple .equipmentPageEffectStat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #cfe0f4;
+  background: #f9fbff;
+}
+
+.powerRankingPageMaple .equipmentPageEffectStat strong {
+  font-size: 14px;
+}
+
+.powerRankingPageMaple .equipmentPageEffectStat span {
+  color: #163a70;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.powerRankingPageMaple .equipmentPageEffectList {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 .powerRankingPageMaple .powerRankingHeroMaple {
   align-items: stretch;
   gap: 28px;
@@ -7756,6 +7956,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .huntingOverviewGrid,
   .powerRankingPageMaple .gameHomeQuickGrid,
   .powerRankingPageMaple .powerRankingDashboardGrid,
+  .powerRankingPageMaple .equipmentPageEffectGrid,
   .powerRankingPageMaple .powerRankingStats,
   .powerRankingPageMaple .powerRankingDetailActions,
   .powerRankingPageMaple .powerRankingInventoryGrid,
@@ -7805,6 +8006,28 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
 
   .powerRankingPageMaple .huntingMonsterActions {
     grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .equipmentPageOverviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .equipmentPageAvatarBoard {
+    min-height: auto;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .powerRankingPageMaple .equipmentPageAvatarFigure {
+    display: none;
+  }
+
+  .powerRankingPageMaple .equipmentPageSlotCard {
+    position: static;
+    width: 100%;
+    min-height: 0;
   }
 
   .powerRankingPageMaple .huntingMonsterDetailVisual {
@@ -7886,6 +8109,7 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingDashboardGrid,
   .powerRankingPageMaple .powerRankingInventoryGrid,
   .powerRankingPageMaple .powerRankingLogGrid,
+  .powerRankingPageMaple .equipmentPageAvatarBoard,
   .powerRankingPageMaple .huntingResourceGrid,
   .powerRankingPageMaple .huntingEnhancementGrid,
   .powerRankingPageMaple .huntingInfoGrid {

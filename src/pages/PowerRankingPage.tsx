@@ -600,7 +600,8 @@ const PowerRankingPage = () => {
       updatePerson(result.person);
       setInventory(result.inventory);
       await refreshSideData();
-      const message = `${result.usedItem.name} 사용이 반영되었습니다.`;
+      const signedDelta = result.appliedDelta > 0 ? `+${result.appliedDelta}` : `${result.appliedDelta}`;
+      const message = `${result.usedItem.name} 사용이 반영되었습니다. (${signedDelta})`;
       setRewardMessage(message);
       pushNotification({
         tone: "info",

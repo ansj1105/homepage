@@ -975,6 +975,7 @@ export const usePowerRankingItem = async (
   return {
     person,
     inventory: await listPowerRankingInventoryByUserId(userId),
+    appliedDelta: itemDelta,
     usedItem: {
       ...item,
       quantity: 1,
@@ -1284,8 +1285,7 @@ export const getHuntingProfile = async (
         effectBreakdown.push("타이탄 건틀릿 +16");
         break;
       case "silk-gloves":
-        dropRateMultiplier += 0.04;
-        effectBreakdown.push("실크 글러브 드랍 x1.04");
+        effectBreakdown.push("실크 글러브 소비 아이템 위력 +10");
         break;
       case "pulse-gloves":
         dropRateMultiplier += 0.06;

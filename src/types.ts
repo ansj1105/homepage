@@ -557,6 +557,7 @@ export interface PowerRankingItemUseResponse {
   person: PowerRankingPerson;
   inventory: PowerRankingInventoryItem[];
   usedItem: PowerRankingInventoryItem;
+  appliedDelta: number;
 }
 
 export interface PowerRankingEquipRequest {
