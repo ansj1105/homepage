@@ -9,13 +9,15 @@ type PowerRankingEquipmentCardProps = {
   onEquipEquipment?: (equipmentCode: PowerRankingEquipmentCode) => Promise<void> | void;
   equipSubmittingCode?: string | null;
   isEquipped?: boolean;
+  enhancementLevel?: number;
 };
 
 const PowerRankingEquipmentCard = ({
   item,
   onEquipEquipment,
   equipSubmittingCode = null,
-  isEquipped = false
+  isEquipped = false,
+  enhancementLevel = 0
 }: PowerRankingEquipmentCardProps) => {
   const enhancementPlan = getPowerRankingEquipmentEnhancementPlan(item.code);
 
@@ -36,6 +38,7 @@ const PowerRankingEquipmentCard = ({
         <p>{item.description}</p>
 
         <div className="powerRankingInventoryTags">
+          <span className="powerRankingInventoryPill">강화 +{enhancementLevel}</span>
           {isEquipped ? <span className="powerRankingInventoryPill isEquipped">현재 착용 장비</span> : null}
           <span className="powerRankingInventoryPill">{item.effectSummary}</span>
           <span className="powerRankingInventoryPill isMuted">보유 {item.quantity}</span>
@@ -47,6 +50,7 @@ const PowerRankingEquipmentCard = ({
             <p>
               {powerRankingEquipmentSlotLabels[item.slot]} 슬롯 장비입니다. 착용 시 <strong>{item.effectSummary}</strong> 효과가 적용됩니다.
             </p>
+            <p>현재 강화 단계는 <strong>+{enhancementLevel}</strong> 입니다.</p>
             <p>
               권장 구조는 +0에서 시작해 +5까지는 100% 성공, +6부터 실패 가능 구간으로 진입합니다. 보호 주문서를 쓰면
               고강화 구간에서도 장비 파괴 없이 진행하는 흐름을 전제로 합니다.

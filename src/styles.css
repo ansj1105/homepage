@@ -6070,6 +6070,20 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 8px;
 }
 
+.powerRankingPageMaple .equipmentPageEnhancementBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid #9ebce0;
+  background: #e9f2ff;
+  color: #163a70;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .powerRankingPageMaple .equipmentPageSlotItem img {
   width: 62px;
   height: 62px;

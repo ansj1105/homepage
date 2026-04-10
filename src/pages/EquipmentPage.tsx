@@ -368,8 +368,15 @@ const EquipmentPage = () => {
                       {equipped ? (
                         <div className="equipmentPageSlotItem">
                           <img src={equipped.imageUrl} alt={equipped.name} />
+                          <span className="equipmentPageEnhancementBadge">
+                            +{progress?.enhancementLevels[equipped.code] ?? 0}
+                          </span>
                           <strong>{equipped.name}</strong>
                           <small>{equipped.effectSummary}</small>
+                          <small>현재 강화 +{progress?.enhancementLevels[equipped.code] ?? 0}</small>
+                          <Link to="/dongyeon-equipment-enhancement" className="powerRankingItemButton isPositive">
+                            강화
+                          </Link>
                           <button
                             type="button"
                             className="powerRankingItemButton"
@@ -525,6 +532,7 @@ const EquipmentPage = () => {
                       key={`equipped-${item.code}`}
                       item={{ ...item, quantity: 1, createdAt: item.equippedAt }}
                       isEquipped
+                      enhancementLevel={progress?.enhancementLevels[item.code] ?? 0}
                     />
                   ))
                 )}
@@ -541,6 +549,7 @@ const EquipmentPage = () => {
                       onEquipEquipment={handleEquip}
                       equipSubmittingCode={submittingCode}
                       isEquipped={equippedCodes.has(item.code)}
+                      enhancementLevel={progress?.enhancementLevels[item.code] ?? 0}
                     />
                   ))
                 )}
