@@ -1,15 +1,21 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CommunityTopBar from "../components/CommunityTopBar";
 import { useHuntingGame } from "../features/hunting/useHuntingGame";
 
 const HuntingZoneSelectPage = () => {
+  const navigate = useNavigate();
   const { user, progress, zones, zoneDetail, profile, isLoading, errorMessage, selectedZoneId, selectedMonsterId, selectZone, focusMonster } =
     useHuntingGame();
 
   useEffect(() => {
     document.title = "사냥터 선택";
   }, []);
+
+  const handleEnterCombat = async (monsterId: string) => {
+    await focusMonster(monsterId);
+    navigate("/dongyeon-hunting-combat");
+  };
 
   return (
     <div className="powerRankingPage powerRankingPageMaple">
@@ -122,9 +128,13 @@ const HuntingZoneSelectPage = () => {
                         <button type="button" className="powerRankingItemButton" onClick={() => void focusMonster(monster.id)}>
                           대상 지정
                         </button>
-                        <Link to="/dongyeon-hunting-combat" className="powerRankingItemButton isPositive">
+                        <button
+                          type="button"
+                          className="powerRankingItemButton isPositive"
+                          onClick={() => void handleEnterCombat(monster.id)}
+                        >
                           전투 이동
-                        </Link>
+                        </button>
                       </div>
                     </article>
                   ))}

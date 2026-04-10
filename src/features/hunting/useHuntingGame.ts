@@ -205,16 +205,24 @@ export const useHuntingGame = () => {
       await loadZoneBundle(zoneId, monsterId, progress.selectedCardTargetId, selectedCardLevel);
       const nextMonsterId =
         monsterId ?? getHuntingZone(zoneId)?.monsters[0]?.id ?? progress.selectedMonsterId;
+      const nextProgress = {
+        ...progress,
+        selectedStageId: zoneId,
+        selectedMonsterId: nextMonsterId
+      };
+      if (storageKey) {
+        saveHuntingProgress(storageKey, nextProgress);
+      }
+      void apiClient.saveHuntingProgress(nextProgress).catch(() => {
+        // Keep local state even if immediate sync fails.
+      });
       setProgress((current) => {
-        const nextProgress = {
+        const updatedProgress = {
           ...current,
           selectedStageId: zoneId,
           selectedMonsterId: nextMonsterId
         };
-        if (storageKey) {
-          saveHuntingProgress(storageKey, nextProgress);
-        }
-        return nextProgress;
+        return updatedProgress;
       });
       setErrorMessage("");
     } catch (error) {
