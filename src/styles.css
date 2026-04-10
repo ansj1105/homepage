@@ -6070,6 +6070,12 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   gap: 8px;
 }
 
+.powerRankingPageMaple .equipmentPageSlotActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .powerRankingPageMaple .equipmentPageEnhancementBadge {
   display: inline-flex;
   align-items: center;
@@ -9010,6 +9016,74 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   align-items: start;
 }
 
+.powerRankingPageMaple .powerRankingResultModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 16, 29, 0.58);
+}
+
+.powerRankingPageMaple .powerRankingResultModal {
+  width: min(680px, 100%);
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid #cfe0f4;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.powerRankingPageMaple .powerRankingResultModal.isSuccess {
+  box-shadow: 0 24px 48px rgba(24, 63, 118, 0.18);
+}
+
+.powerRankingPageMaple .powerRankingResultModal.isFailure {
+  box-shadow: 0 24px 48px rgba(105, 32, 44, 0.2);
+}
+
+.powerRankingPageMaple .powerRankingResultModalVisual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-right: 1px solid #cfe0f4;
+  background: #f3f8ff;
+}
+
+.powerRankingPageMaple .powerRankingResultModal.isFailure .powerRankingResultModalVisual {
+  background: #fff3f4;
+}
+
+.powerRankingPageMaple .powerRankingResultModalNpcImage {
+  display: block;
+  width: 100%;
+  max-width: 156px;
+  height: auto;
+}
+
+.powerRankingPageMaple .powerRankingResultModalBody {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: 28px;
+}
+
+.powerRankingPageMaple .powerRankingResultModalBody h2 {
+  margin: 0;
+  color: #10233f;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.powerRankingPageMaple .powerRankingResultModalBody p:last-of-type {
+  margin: 0;
+  color: #49627f;
+  line-height: 1.7;
+}
+
 .powerRankingPageMaple .powerRankingMemoList {
   gap: 12px;
 }
@@ -9176,6 +9250,16 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   .powerRankingPageMaple .powerRankingLiveVisitorEmpty {
     align-items: start;
     flex-direction: column;
+  }
+
+  .powerRankingPageMaple .equipmentPageSlotActions,
+  .powerRankingPageMaple .powerRankingResultModal {
+    grid-template-columns: 1fr;
+  }
+
+  .powerRankingPageMaple .powerRankingResultModalVisual {
+    border-right: 0;
+    border-bottom: 1px solid #cfe0f4;
   }
 
   .powerRankingPageMaple .powerRankingShopHero {

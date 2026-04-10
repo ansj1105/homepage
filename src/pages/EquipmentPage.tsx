@@ -374,17 +374,19 @@ const EquipmentPage = () => {
                           <strong>{equipped.name}</strong>
                           <small>{equipped.effectSummary}</small>
                           <small>현재 강화 +{progress?.enhancementLevels[equipped.code] ?? 0}</small>
-                          <Link to="/dongyeon-equipment-enhancement" className="powerRankingItemButton isPositive">
-                            강화
-                          </Link>
-                          <button
-                            type="button"
-                            className="powerRankingItemButton"
-                            disabled={submittingSlot === slot}
-                            onClick={() => void handleUnequip(slot)}
-                          >
-                            {submittingSlot === slot ? "해제 중..." : "해제"}
-                          </button>
+                          <div className="equipmentPageSlotActions">
+                            <Link to="/dongyeon-equipment-enhancement" className="powerRankingItemButton isPositive">
+                              강화
+                            </Link>
+                            <button
+                              type="button"
+                              className="powerRankingItemButton"
+                              disabled={submittingSlot === slot}
+                              onClick={() => void handleUnequip(slot)}
+                            >
+                              {submittingSlot === slot ? "해제 중..." : "해제"}
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <p>미착용</p>

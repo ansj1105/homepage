@@ -7,12 +7,33 @@ import { useUserAuth } from "../auth/UserAuthContext";
 import { useSyncedHuntingProgress } from "../features/hunting/useSyncedHuntingProgress";
 import type { EquipmentEnhancePreview, PowerRankingEquippedItem, PowerRankingEquipmentSlot } from "../types";
 
+type EnhancementResultModal = {
+  tone: "success" | "failure";
+  title: string;
+  body: string;
+};
+
+const successLines = [
+  "좋아요. 이 정도면 오늘 운세가 제법 괜찮네요.",
+  "강화 불꽃이 제대로 붙었습니다. 계속 밀어도 되겠어요.",
+  "성공입니다. 장비가 이제 좀 사람 구실을 하겠네요."
+];
+
+const failureLines = [
+  "어이쿠, 그 확률을 믿고 눌렀군요. 결과는 보시는 대로입니다.",
+  "강화석만 날렸네요. 다음엔 제 말 좀 듣고 보호 주문서도 챙기시죠.",
+  "이런 날도 있죠. 장비는 멀쩡하니 다시 재료부터 모아오세요."
+];
+
+const getRandomLine = (lines: string[]): string => lines[Math.floor(Math.random() * lines.length)] ?? lines[0];
+
 const EquipmentEnhancementPage = () => {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [equippedItems, setEquippedItems] = useState<Partial<Record<PowerRankingEquipmentSlot, PowerRankingEquippedItem>>>({});
   const [previewByCode, setPreviewByCode] = useState<Record<string, EquipmentEnhancePreview | null>>({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [resultModal, setResultModal] = useState<EnhancementResultModal | null>(null);
   const { progress, setProgress, isHydrated } = useSyncedHuntingProgress(user?.id);
 
   useEffect(() => {
@@ -121,7 +142,13 @@ const EquipmentEnhancementPage = () => {
         setPreviewByCode((current) => ({ ...current, [item.code]: null }));
       }
 
-      setErrorMessage(result.success ? `${item.name} 강화 성공` : `${item.name} 강화 실패`);
+      const resultTitle = result.success ? `${item.name} 강화 성공` : `${item.name} 강화 실패`;
+      setErrorMessage(resultTitle);
+      setResultModal({
+        tone: result.success ? "success" : "failure",
+        title: resultTitle,
+        body: result.success ? getRandomLine(successLines) : getRandomLine(failureLines)
+      });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "강화에 실패했습니다.");
     }
@@ -193,6 +220,30 @@ const EquipmentEnhancementPage = () => {
             )}
           </div>
         </section>
+
+        {resultModal ? (
+          <div className="powerRankingResultModalBackdrop" role="presentation" onClick={() => setResultModal(null)}>
+            <div
+              className={`powerRankingResultModal ${resultModal.tone === "success" ? "isSuccess" : "isFailure"}`.trim()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="강화 결과"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="powerRankingResultModalVisual">
+                <img src="/assets/shops/campus-shopkeeper.svg" alt="강화 NPC" className="powerRankingResultModalNpcImage" />
+              </div>
+              <div className="powerRankingResultModalBody">
+                <p className="powerRankingSectionEyebrow">Enhancement Result</p>
+                <h2>{resultModal.title}</h2>
+                <p>{resultModal.body}</p>
+                <button type="button" className="powerRankingItemButton isPositive" onClick={() => setResultModal(null)}>
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
