@@ -1,5 +1,6 @@
 import { Pool, type PoolClient } from "pg";
 import {
+  getPowerRankingEnhancementEffectScale,
   getPowerRankingEquipmentSetCounts,
   powerRankingEquipmentCatalog,
   powerRankingEquipmentCodes,
@@ -584,6 +585,12 @@ export const grantPowerRankingInventoryItem = async (
   itemCode: PowerRankingItemCode
 ): Promise<PowerRankingInventoryItem> => grantPowerRankingItem(userId, itemCode);
 
+const getEnhancedFlatValue = (baseValue: number, level: number): number =>
+  Math.round(baseValue * getPowerRankingEnhancementEffectScale(level));
+
+const getEnhancedRateValue = (baseValue: number, level: number): number =>
+  baseValue * getPowerRankingEnhancementEffectScale(level);
+
 const getPowerRankingActionModifier = async (
   userId: string | null | undefined,
   delta: number
@@ -596,6 +603,8 @@ const getPowerRankingActionModifier = async (
     return { finalDelta, consumableDropRate, equipmentDropRate };
   }
 
+  const progress = await getUserHuntingProgress(userId);
+  const getEnhanceLevel = (code: PowerRankingEquipmentCode) => progress.enhancementLevels[code] ?? 0;
   const equipped = await listPowerRankingEquippedByUserId(userId);
   const equippedItems = Object.values(equipped);
   if (equippedItems.length === 0) {
@@ -606,98 +615,108 @@ const getPowerRankingActionModifier = async (
   const setCounts = getPowerRankingEquipmentSetCounts(
     equippedItems.map((item) => item.code as PowerRankingEquipmentCode)
   );
-  const hasCheerCrown = equippedItems.some((item) => item.code === "crown-of-cheers");
-  const hasMidnightSlacks = equippedItems.some((item) => item.code === "midnight-slacks");
-  if ((isPositive && hasCheerCrown) || (!isPositive && hasMidnightSlacks)) {
-    finalDelta *= 2;
+  const cheerCrown = equippedItems.find((item) => item.code === "crown-of-cheers");
+  const midnightSlacks = equippedItems.find((item) => item.code === "midnight-slacks");
+  if (isPositive && cheerCrown) {
+    finalDelta = Math.round(finalDelta * getEnhancedRateValue(2, getEnhanceLevel("crown-of-cheers")));
+  }
+  if (!isPositive && midnightSlacks) {
+    finalDelta = Math.round(finalDelta * getEnhancedRateValue(2, getEnhanceLevel("midnight-slacks")));
   }
 
   if (isPositive && equippedItems.some((item) => item.code === "commander-jacket")) {
-    finalDelta += 1;
+    finalDelta += getEnhancedFlatValue(1, getEnhanceLevel("commander-jacket"));
   }
   if (!isPositive && equippedItems.some((item) => item.code === "wave-denim")) {
-    finalDelta -= 1;
+    finalDelta -= getEnhancedFlatValue(1, getEnhanceLevel("wave-denim"));
   }
   if (equippedItems.some((item) => item.code === "titan-gauntlet")) {
-    finalDelta += isPositive ? 1 : -1;
+    const amount = getEnhancedFlatValue(1, getEnhanceLevel("titan-gauntlet"));
+    finalDelta += isPositive ? amount : -amount;
   }
   if (equippedItems.some((item) => item.code === "archive-circlet")) {
-    finalDelta += isPositive ? 1 : 0;
+    finalDelta += isPositive ? getEnhancedFlatValue(1, getEnhanceLevel("archive-circlet")) : 0;
   }
   if (equippedItems.some((item) => item.code === "campus-emblem-cap")) {
-    consumableDropRate += 0.012;
+    consumableDropRate += getEnhancedRateValue(0.012, getEnhanceLevel("campus-emblem-cap"));
   }
   if (equippedItems.some((item) => item.code === "route-cap")) {
-    finalDelta += isPositive ? 1 : -1;
+    const amount = getEnhancedFlatValue(1, getEnhanceLevel("route-cap"));
+    finalDelta += isPositive ? amount : -amount;
   }
   if (equippedItems.some((item) => item.code === "library-hood")) {
-    finalDelta += isPositive ? 1 : 0;
-    consumableDropRate += 0.01;
+    finalDelta += isPositive ? getEnhancedFlatValue(1, getEnhanceLevel("library-hood")) : 0;
+    consumableDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("library-hood"));
   }
   if (equippedItems.some((item) => item.code === "heritage-coat")) {
-    finalDelta += isPositive ? 2 : 0;
+    finalDelta += isPositive ? getEnhancedFlatValue(2, getEnhanceLevel("heritage-coat")) : 0;
   }
   if (equippedItems.some((item) => item.code === "spotlight-blazer")) {
-    consumableDropRate += 0.02;
+    consumableDropRate += getEnhancedRateValue(0.02, getEnhanceLevel("spotlight-blazer"));
   }
   if (equippedItems.some((item) => item.code === "bastion-greaves")) {
-    finalDelta += isPositive ? 1 : -1;
+    const amount = getEnhancedFlatValue(1, getEnhanceLevel("bastion-greaves"));
+    finalDelta += isPositive ? amount : -amount;
   }
   if (equippedItems.some((item) => item.code === "stage-pleats")) {
-    finalDelta += isPositive ? 10 : 0;
+    finalDelta += isPositive ? getEnhancedFlatValue(10, getEnhanceLevel("stage-pleats")) : 0;
   }
   if (equippedItems.some((item) => item.code === "syllabus-trousers")) {
-    finalDelta += isPositive ? 0 : -1;
+    finalDelta += isPositive ? 0 : -getEnhancedFlatValue(1, getEnhanceLevel("syllabus-trousers"));
   }
   if (equippedItems.some((item) => item.code === "honor-sabatons")) {
-    finalDelta += isPositive ? 1 : 0;
+    finalDelta += isPositive ? getEnhancedFlatValue(1, getEnhanceLevel("honor-sabatons")) : 0;
   }
   if (equippedItems.some((item) => item.code === "trail-runners")) {
-    consumableDropRate += 0.008;
+    consumableDropRate += getEnhancedRateValue(0.008, getEnhanceLevel("trail-runners"));
   }
   if (equippedItems.some((item) => item.code === "encore-sneakers")) {
-    consumableDropRate += 0.01;
+    consumableDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("encore-sneakers"));
   }
   if (equippedItems.some((item) => item.code === "briefing-gloves")) {
-    finalDelta += isPositive ? 1 : 0;
-    equipmentDropRate += 0.012;
+    finalDelta += isPositive ? getEnhancedFlatValue(1, getEnhanceLevel("briefing-gloves")) : 0;
+    equipmentDropRate += getEnhancedRateValue(0.012, getEnhanceLevel("briefing-gloves"));
   }
   if (equippedItems.some((item) => item.code === "oath-gauntlets")) {
-    finalDelta += isPositive ? 2 : -1;
+    finalDelta += isPositive
+      ? getEnhancedFlatValue(2, getEnhanceLevel("oath-gauntlets"))
+      : -getEnhancedFlatValue(1, getEnhanceLevel("oath-gauntlets"));
   }
   if (equippedItems.some((item) => item.code === "rhythm-gloves")) {
-    consumableDropRate += 0.02;
+    consumableDropRate += getEnhancedRateValue(0.02, getEnhanceLevel("rhythm-gloves"));
   }
 
   if (equippedItems.some((item) => item.code === "mint-beret")) {
-    consumableDropRate += 0.015;
+    consumableDropRate += getEnhancedRateValue(0.015, getEnhanceLevel("mint-beret"));
   }
   if (equippedItems.some((item) => item.code === "ribbon-cardigan")) {
-    consumableDropRate += 0.01;
-    equipmentDropRate += 0.01;
+    consumableDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("ribbon-cardigan"));
+    equipmentDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("ribbon-cardigan"));
   }
   if (equippedItems.some((item) => item.code === "aurora-skirt")) {
-    equipmentDropRate += 0.015;
+    equipmentDropRate += getEnhancedRateValue(0.015, getEnhanceLevel("aurora-skirt"));
   }
   if (equippedItems.some((item) => item.code === "crystal-sneakers")) {
-    consumableDropRate += 0.01;
+    consumableDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("crystal-sneakers"));
   }
   if (equippedItems.some((item) => item.code === "ember-heels")) {
-    equipmentDropRate += 0.01;
+    equipmentDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("ember-heels"));
   }
   if (equippedItems.some((item) => item.code === "pulse-gloves")) {
-    consumableDropRate += 0.008;
-    equipmentDropRate += 0.008;
+    consumableDropRate += getEnhancedRateValue(0.008, getEnhanceLevel("pulse-gloves"));
+    equipmentDropRate += getEnhancedRateValue(0.008, getEnhanceLevel("pulse-gloves"));
   }
   if (equippedItems.some((item) => item.code === "festival-crown")) {
-    consumableDropRate += 0.02;
+    consumableDropRate += getEnhancedRateValue(0.02, getEnhanceLevel("festival-crown"));
   }
   if (equippedItems.some((item) => item.code === "harvest-sickle")) {
-    equipmentDropRate += 0.02;
+    equipmentDropRate += getEnhancedRateValue(0.02, getEnhanceLevel("harvest-sickle"));
   }
   if (equippedItems.some((item) => item.code === "heritage-halberd")) {
-    finalDelta += isPositive ? 2 : -1;
-    equipmentDropRate += 0.01;
+    finalDelta += isPositive
+      ? getEnhancedFlatValue(2, getEnhanceLevel("heritage-halberd"))
+      : -getEnhancedFlatValue(1, getEnhanceLevel("heritage-halberd"));
+    equipmentDropRate += getEnhancedRateValue(0.01, getEnhanceLevel("heritage-halberd"));
   }
 
   const firstActionBonusCandidates = new Set(["star-visor", "thunder-boots"]);
@@ -1655,13 +1674,17 @@ export const usePowerRankingItem = async (
       [inventoryRow.id]
     );
 
+    const progress = await getUserHuntingProgressWithRunner(client, userId);
+    const getEnhanceLevel = (code: PowerRankingEquipmentCode) => progress.enhancementLevels[code] ?? 0;
     const equipped = await listPowerRankingEquippedByUserIdWithRunner(client, userId);
     itemDelta = item.effectDelta;
     if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
-      itemDelta += item.effectDelta > 0 ? 20 : -20;
+      const amount = getEnhancedFlatValue(20, getEnhanceLevel("golden-harness"));
+      itemDelta += item.effectDelta > 0 ? amount : -amount;
     }
     if (Object.values(equipped).some((equipment) => equipment.code === "silk-gloves")) {
-      itemDelta += item.effectDelta > 0 ? 10 : -10;
+      const amount = getEnhancedFlatValue(10, getEnhanceLevel("silk-gloves"));
+      itemDelta += item.effectDelta > 0 ? amount : -amount;
     }
 
     await client.query<PowerRankingVoteRow>(
@@ -1901,6 +1924,7 @@ export const getHuntingProfile = async (
   selectedCardLevel = 1
 ): Promise<HuntingProfile> => {
   const progress = await getUserHuntingProgress(userId);
+  const getEnhanceLevel = (code: PowerRankingEquipmentCode) => progress.enhancementLevels[code] ?? 0;
   const equipmentState = await listPowerRankingEquipmentState(userId);
   const equippedItems = Object.values(equipmentState.equipped);
   const recommendationCountResult = await pool.query<{ count: string }>(
@@ -1954,165 +1978,166 @@ export const getHuntingProfile = async (
   const levelBenefits = getHuntingLevelBenefits(progress.level);
 
   for (const item of equippedItems) {
+    const enhancementLevel = getEnhanceLevel(item.code as PowerRankingEquipmentCode);
     switch (item.code) {
       case "crown-of-cheers":
-        cardGrowthMultiplier += 0.08;
-        effectBreakdown.push("환호의 왕관 카드 성장 x1.08");
+        cardGrowthMultiplier += getEnhancedRateValue(0.08, enhancementLevel);
+        effectBreakdown.push(`환호의 왕관 카드 성장 x${(1 + getEnhancedRateValue(0.08, enhancementLevel)).toFixed(2)}`);
         break;
       case "star-visor":
-        cardGrowthMultiplier += 0.06;
-        effectBreakdown.push("별빛 바이저 카드 성장 x1.06");
+        cardGrowthMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        effectBreakdown.push(`별빛 바이저 카드 성장 x${(1 + getEnhancedRateValue(0.06, enhancementLevel)).toFixed(2)}`);
         break;
       case "mint-beret":
-        dropRateMultiplier += 0.05;
-        effectBreakdown.push("민트 베레모 드랍 x1.05");
+        dropRateMultiplier += getEnhancedRateValue(0.05, enhancementLevel);
+        effectBreakdown.push(`민트 베레모 드랍 x${(1 + getEnhancedRateValue(0.05, enhancementLevel)).toFixed(2)}`);
         break;
       case "campus-emblem-cap":
-        dropRateMultiplier += 0.06;
-        effectBreakdown.push("연세 상징 캡 드랍 x1.06");
+        dropRateMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        effectBreakdown.push(`연세 상징 캡 드랍 x${(1 + getEnhancedRateValue(0.06, enhancementLevel)).toFixed(2)}`);
         break;
       case "archive-circlet":
-        weaponAttack += 12;
-        effectBreakdown.push("아카이브 서클릿 무기 공격력 +12");
+        weaponAttack += getEnhancedFlatValue(12, enhancementLevel);
+        effectBreakdown.push(`아카이브 서클릿 무기 공격력 +${getEnhancedFlatValue(12, enhancementLevel)}`);
         break;
       case "route-cap":
-        autoGrowthMultiplier += 0.05;
-        dailyClickLimit += 10;
-        effectBreakdown.push("질풍 루트 캡 자동 성장 x1.05 / 클릭 +10");
+        autoGrowthMultiplier += getEnhancedRateValue(0.05, enhancementLevel);
+        dailyClickLimit += getEnhancedFlatValue(10, enhancementLevel);
+        effectBreakdown.push(`질풍 루트 캡 자동 성장 x${(1 + getEnhancedRateValue(0.05, enhancementLevel)).toFixed(2)} / 클릭 +${getEnhancedFlatValue(10, enhancementLevel)}`);
         break;
       case "commander-jacket":
-        apparelPercentBonus += 0.18;
-        effectBreakdown.push("사령관 재킷 의상 피해 +18%");
+        apparelPercentBonus += getEnhancedRateValue(0.18, enhancementLevel);
+        effectBreakdown.push(`사령관 재킷 의상 피해 +${Math.round(getEnhancedRateValue(0.18, enhancementLevel) * 100)}%`);
         break;
       case "library-hood":
-        apparelPercentBonus += 0.1;
-        dropRateMultiplier += 0.03;
-        effectBreakdown.push("학술정보원 후드 의상 피해 +10% / 드랍 x1.03");
+        apparelPercentBonus += getEnhancedRateValue(0.1, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.03, enhancementLevel);
+        effectBreakdown.push(`학술정보원 후드 의상 피해 +${Math.round(getEnhancedRateValue(0.1, enhancementLevel) * 100)}% / 드랍 x${(1 + getEnhancedRateValue(0.03, enhancementLevel)).toFixed(2)}`);
         break;
       case "ribbon-cardigan":
-        apparelPercentBonus += 0.08;
-        dropRateMultiplier += 0.03;
-        effectBreakdown.push("리본 가디건 의상 피해 +8%");
+        apparelPercentBonus += getEnhancedRateValue(0.08, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.03, enhancementLevel);
+        effectBreakdown.push(`리본 가디건 의상 피해 +${Math.round(getEnhancedRateValue(0.08, enhancementLevel) * 100)}%`);
         break;
       case "golden-harness":
-        flatBonus += 20;
-        effectBreakdown.push("골든 하네스 +20");
+        flatBonus += getEnhancedFlatValue(20, enhancementLevel);
+        effectBreakdown.push(`골든 하네스 +${getEnhancedFlatValue(20, enhancementLevel)}`);
         break;
       case "heritage-coat":
-        apparelPercentBonus += 0.16;
-        weaponAttack += 8;
-        effectBreakdown.push("명예 기사 코트 의상 피해 +16%");
+        apparelPercentBonus += getEnhancedRateValue(0.16, enhancementLevel);
+        weaponAttack += getEnhancedFlatValue(8, enhancementLevel);
+        effectBreakdown.push(`명예 기사 코트 의상 피해 +${Math.round(getEnhancedRateValue(0.16, enhancementLevel) * 100)}%`);
         break;
       case "spotlight-blazer":
-        cardGrowthMultiplier += 0.08;
-        dropRateMultiplier += 0.02;
-        effectBreakdown.push("스포트라이트 블레이저 카드 성장 x1.08");
+        cardGrowthMultiplier += getEnhancedRateValue(0.08, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.02, enhancementLevel);
+        effectBreakdown.push(`스포트라이트 블레이저 카드 성장 x${(1 + getEnhancedRateValue(0.08, enhancementLevel)).toFixed(2)}`);
         break;
       case "midnight-slacks":
-        apparelPercentBonus += 0.22;
-        effectBreakdown.push("미드나잇 슬랙스 의상 피해 +22%");
+        apparelPercentBonus += getEnhancedRateValue(0.22, enhancementLevel);
+        effectBreakdown.push(`미드나잇 슬랙스 의상 피해 +${Math.round(getEnhancedRateValue(0.22, enhancementLevel) * 100)}%`);
         break;
       case "wave-denim":
-        flatBonus += 12;
-        effectBreakdown.push("웨이브 데님 +12");
+        flatBonus += getEnhancedFlatValue(12, enhancementLevel);
+        effectBreakdown.push(`웨이브 데님 +${getEnhancedFlatValue(12, enhancementLevel)}`);
         break;
       case "syllabus-trousers":
-        apparelPercentBonus += 0.12;
-        dailyClickLimit += 15;
-        effectBreakdown.push("강의계획서 트라우저 의상 피해 +12% / 클릭 +15");
+        apparelPercentBonus += getEnhancedRateValue(0.12, enhancementLevel);
+        dailyClickLimit += getEnhancedFlatValue(15, enhancementLevel);
+        effectBreakdown.push(`강의계획서 트라우저 의상 피해 +${Math.round(getEnhancedRateValue(0.12, enhancementLevel) * 100)}% / 클릭 +${getEnhancedFlatValue(15, enhancementLevel)}`);
         break;
       case "aurora-skirt":
-        apparelPercentBonus += 0.09;
-        effectBreakdown.push("오로라 스커트 의상 피해 +9%");
+        apparelPercentBonus += getEnhancedRateValue(0.09, enhancementLevel);
+        effectBreakdown.push(`오로라 스커트 의상 피해 +${Math.round(getEnhancedRateValue(0.09, enhancementLevel) * 100)}%`);
         break;
       case "bastion-greaves":
-        apparelPercentBonus += 0.14;
-        flatBonus += 10;
-        effectBreakdown.push("바스티온 그리브 의상 피해 +14%");
+        apparelPercentBonus += getEnhancedRateValue(0.14, enhancementLevel);
+        flatBonus += getEnhancedFlatValue(10, enhancementLevel);
+        effectBreakdown.push(`바스티온 그리브 의상 피해 +${Math.round(getEnhancedRateValue(0.14, enhancementLevel) * 100)}%`);
         break;
       case "stage-pleats":
-        cardGrowthMultiplier += 0.06;
-        flatBonus += 10;
-        effectBreakdown.push("별빛 플리츠 카드 성장 x1.06");
+        cardGrowthMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        flatBonus += getEnhancedFlatValue(10, enhancementLevel);
+        effectBreakdown.push(`별빛 플리츠 카드 성장 x${(1 + getEnhancedRateValue(0.06, enhancementLevel)).toFixed(2)}`);
         break;
       case "thunder-boots":
-        autoGrowthMultiplier += 0.08;
-        flatBonus += 2;
-        effectBreakdown.push("썬더 부츠 자동 성장 x1.08");
+        autoGrowthMultiplier += getEnhancedRateValue(0.08, enhancementLevel);
+        flatBonus += getEnhancedFlatValue(2, enhancementLevel);
+        effectBreakdown.push(`썬더 부츠 자동 성장 x${(1 + getEnhancedRateValue(0.08, enhancementLevel)).toFixed(2)}`);
         break;
       case "crystal-sneakers":
-        autoGrowthMultiplier += 0.06;
-        effectBreakdown.push("크리스털 스니커즈 자동 성장 x1.06");
+        autoGrowthMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        effectBreakdown.push(`크리스털 스니커즈 자동 성장 x${(1 + getEnhancedRateValue(0.06, enhancementLevel)).toFixed(2)}`);
         break;
       case "trail-runners":
-        autoGrowthMultiplier += 0.04;
-        dropRateMultiplier += 0.02;
-        effectBreakdown.push("백양로 러너즈 자동 성장 x1.04 / 드랍 x1.02");
+        autoGrowthMultiplier += getEnhancedRateValue(0.04, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.02, enhancementLevel);
+        effectBreakdown.push(`백양로 러너즈 자동 성장 x${(1 + getEnhancedRateValue(0.04, enhancementLevel)).toFixed(2)} / 드랍 x${(1 + getEnhancedRateValue(0.02, enhancementLevel)).toFixed(2)}`);
         break;
       case "ember-heels":
-        autoGrowthMultiplier += 0.05;
-        flatBonus += 2;
-        effectBreakdown.push("엠버 힐 자동 성장 x1.05");
+        autoGrowthMultiplier += getEnhancedRateValue(0.05, enhancementLevel);
+        flatBonus += getEnhancedFlatValue(2, enhancementLevel);
+        effectBreakdown.push(`엠버 힐 자동 성장 x${(1 + getEnhancedRateValue(0.05, enhancementLevel)).toFixed(2)}`);
         break;
       case "honor-sabatons":
-        autoGrowthMultiplier += 0.04;
-        weaponAttack += 10;
-        effectBreakdown.push("명예 기사 사바톤 무기 공격력 +10");
+        autoGrowthMultiplier += getEnhancedRateValue(0.04, enhancementLevel);
+        weaponAttack += getEnhancedFlatValue(10, enhancementLevel);
+        effectBreakdown.push(`명예 기사 사바톤 무기 공격력 +${getEnhancedFlatValue(10, enhancementLevel)}`);
         break;
       case "encore-sneakers":
-        dailyClickLimit += 12;
-        cardGrowthMultiplier += 0.04;
-        effectBreakdown.push("앙코르 스니커즈 클릭 +12");
+        dailyClickLimit += getEnhancedFlatValue(12, enhancementLevel);
+        cardGrowthMultiplier += getEnhancedRateValue(0.04, enhancementLevel);
+        effectBreakdown.push(`앙코르 스니커즈 클릭 +${getEnhancedFlatValue(12, enhancementLevel)}`);
         break;
       case "titan-gauntlet":
-        flatBonus += 16;
-        effectBreakdown.push("타이탄 건틀릿 +16");
+        flatBonus += getEnhancedFlatValue(16, enhancementLevel);
+        effectBreakdown.push(`타이탄 건틀릿 +${getEnhancedFlatValue(16, enhancementLevel)}`);
         break;
       case "silk-gloves":
-        flatBonus += 10;
-        effectBreakdown.push("실크 글러브 소비 아이템 위력 +10");
+        flatBonus += getEnhancedFlatValue(10, enhancementLevel);
+        effectBreakdown.push(`실크 글러브 소비 아이템 위력 +${getEnhancedFlatValue(10, enhancementLevel)}`);
         break;
       case "briefing-gloves":
-        flatBonus += 8;
-        dropRateMultiplier += 0.04;
-        effectBreakdown.push("집행부 브리핑 글러브 +8 / 드랍 x1.04");
+        flatBonus += getEnhancedFlatValue(8, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.04, enhancementLevel);
+        effectBreakdown.push(`집행부 브리핑 글러브 +${getEnhancedFlatValue(8, enhancementLevel)} / 드랍 x${(1 + getEnhancedRateValue(0.04, enhancementLevel)).toFixed(2)}`);
         break;
       case "pulse-gloves":
-        dropRateMultiplier += 0.06;
-        bossBonusRollRate += 0.08;
-        effectBreakdown.push("펄스 글러브 보스 추가 롤 +8%");
+        dropRateMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        bossBonusRollRate += getEnhancedRateValue(0.08, enhancementLevel);
+        effectBreakdown.push(`펄스 글러브 보스 추가 롤 +${Math.round(getEnhancedRateValue(0.08, enhancementLevel) * 100)}%`);
         break;
       case "oath-gauntlets":
-        flatBonus += 18;
-        effectBreakdown.push("기사단 서약 건틀릿 +18");
+        flatBonus += getEnhancedFlatValue(18, enhancementLevel);
+        effectBreakdown.push(`기사단 서약 건틀릿 +${getEnhancedFlatValue(18, enhancementLevel)}`);
         break;
       case "rhythm-gloves":
-        cardGrowthMultiplier += 0.06;
-        dropRateMultiplier += 0.02;
-        effectBreakdown.push("리듬 메이커 글러브 카드 성장 x1.06");
+        cardGrowthMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.02, enhancementLevel);
+        effectBreakdown.push(`리듬 메이커 글러브 카드 성장 x${(1 + getEnhancedRateValue(0.06, enhancementLevel)).toFixed(2)}`);
         break;
       case "heritage-spear":
-        weaponAttack += 58;
-        effectBreakdown.push("연세 헤리티지 랜스 무기 공격력 +58");
+        weaponAttack += getEnhancedFlatValue(58, enhancementLevel);
+        effectBreakdown.push(`연세 헤리티지 랜스 무기 공격력 +${getEnhancedFlatValue(58, enhancementLevel)}`);
         break;
       case "harvest-sickle":
-        weaponAttack += 52;
-        dropRateMultiplier += 0.03;
-        effectBreakdown.push("황금 수확 낫 무기 공격력 +52 / 드랍 x1.03");
+        weaponAttack += getEnhancedFlatValue(52, enhancementLevel);
+        dropRateMultiplier += getEnhancedRateValue(0.03, enhancementLevel);
+        effectBreakdown.push(`황금 수확 낫 무기 공격력 +${getEnhancedFlatValue(52, enhancementLevel)} / 드랍 x${(1 + getEnhancedRateValue(0.03, enhancementLevel)).toFixed(2)}`);
         break;
       case "heritage-halberd":
-        weaponAttack += 96;
-        effectMultiplier += 0.06;
-        effectBreakdown.push("연세 헤리티지 할버드 무기 공격력 +96");
+        weaponAttack += getEnhancedFlatValue(96, enhancementLevel);
+        effectMultiplier += getEnhancedRateValue(0.06, enhancementLevel);
+        effectBreakdown.push(`연세 헤리티지 할버드 무기 공격력 +${getEnhancedFlatValue(96, enhancementLevel)}`);
         break;
       case "spotlight-mic":
-        weaponAttack += 46;
-        cardGrowthMultiplier += 0.04;
-        effectBreakdown.push("스포트라이트 마이크 무기 공격력 +46");
+        weaponAttack += getEnhancedFlatValue(46, enhancementLevel);
+        cardGrowthMultiplier += getEnhancedRateValue(0.04, enhancementLevel);
+        effectBreakdown.push(`스포트라이트 마이크 무기 공격력 +${getEnhancedFlatValue(46, enhancementLevel)}`);
         break;
       case "festival-crown":
-        cardGrowthMultiplier += 0.12;
-        effectBreakdown.push("축제 총학생회 티아라 카드 성장 x1.12");
+        cardGrowthMultiplier += getEnhancedRateValue(0.12, enhancementLevel);
+        effectBreakdown.push(`축제 총학생회 티아라 카드 성장 x${(1 + getEnhancedRateValue(0.12, enhancementLevel)).toFixed(2)}`);
         break;
       default:
         break;

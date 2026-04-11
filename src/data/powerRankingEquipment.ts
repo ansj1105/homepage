@@ -14,6 +14,9 @@ export interface PowerRankingEquipmentEnhancementTier {
   failurePenalty: string;
 }
 
+export const getPowerRankingEnhancementEffectScale = (level: number): number =>
+  1 + Math.max(0, level) * 0.05;
+
 export const powerRankingEquipmentSlotLabels: Record<PowerRankingEquipmentSlot, string> = {
   weapon: "무기",
   head: "머리",
@@ -587,6 +590,7 @@ export const getPowerRankingEquipmentEnhancePreview = (
   }
 
   const nextBattleBonus = nextTier.level * 8 + (nextTier.level >= 8 ? 10 : 0);
+  const nextEffectScale = getPowerRankingEnhancementEffectScale(nextTier.level);
 
   return {
     equipmentCode,
@@ -596,6 +600,6 @@ export const getPowerRankingEquipmentEnhancePreview = (
     stoneCost: nextTier.stoneCost,
     goldCost: nextTier.stoneCost * 120 + nextTier.level * 40,
     failurePenalty: nextTier.failurePenalty,
-    nextEffectSummary: `사냥 전투력 보정 +${nextBattleBonus}`
+    nextEffectSummary: `효과 강화 x${nextEffectScale.toFixed(2)} / 사냥 전투력 보정 +${nextBattleBonus}`
   };
 };
