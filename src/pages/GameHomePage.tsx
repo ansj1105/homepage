@@ -10,6 +10,7 @@ import { powerRankingEquipmentSlotLabels } from "../data/powerRankingEquipment";
 import {
   getHuntingStorageKey,
   loadHuntingProgress,
+  saveHuntingProgress,
   materialMeta,
   MAX_ENDURANCE,
   type HuntingProgress
@@ -22,6 +23,7 @@ import {
   getWeeklyMissions,
   type MissionEntry
 } from "../features/missions";
+import { showBrowserAlert } from "../features/alertPreference";
 import type { GameHomeResponse, PowerRankingEquipmentSlot } from "../types";
 import { useTodayVisitors } from "../visitor/VisitorContext";
 
@@ -34,6 +36,7 @@ const GameHomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLevelGuideOpen, setIsLevelGuideOpen] = useState(false);
+  const [claimedMissionResult, setClaimedMissionResult] = useState<{ label: string; rewardText: string } | null>(null);
 
   useEffect(() => {
     document.title = "내 정보";
@@ -123,8 +126,18 @@ const GameHomePage = () => {
       return;
     }
     const next = applyMissionRewards(progress, mission);
+    const rewardText = getMissionRewardText(mission);
     setProgress(next);
-    setErrorMessage(`${mission.label} 보상 수령 완료 · ${getMissionRewardText(mission)}`);
+    setClaimedMissionResult({ label: mission.label, rewardText });
+    setErrorMessage(`${mission.label} 보상 수령 완료 · ${rewardText}`);
+    if (user) {
+      const storageKey = getHuntingStorageKey(user.id);
+      saveHuntingProgress(storageKey, next);
+      void apiClient.saveHuntingProgress(next).catch(() => {
+        setErrorMessage("보상은 반영됐지만 서버 저장에 실패했습니다. 잠시 후 다시 확인해주세요.");
+      });
+    }
+    showBrowserAlert(`${mission.label} 보상 수령 완료\n획득 보상: ${rewardText}`);
   };
 
   const quickLinks = [
@@ -186,6 +199,11 @@ const GameHomePage = () => {
         </header>
 
         {errorMessage ? <div className="powerRankingAlert">{errorMessage}</div> : null}
+        {claimedMissionResult ? (
+          <div className="powerRankingAlert">
+            {claimedMissionResult.label} 수령 완료 · 획득 보상: {claimedMissionResult.rewardText}
+          </div>
+        ) : null}
         {isLoading ? <div className="powerRankingLoading">내 정보를 불러오는 중입니다.</div> : null}
 
         {!isLoading && home && progress ? (
@@ -329,6 +347,13 @@ const GameHomePage = () => {
                       <span>{mission.label}</span>
                       <strong>{mission.current} / {mission.target}</strong>
                       <p>진행률 {ratio}% · 보상 {mission.rewardSummary}</p>
+                      <div className="gameHomeRewardList">
+                        {mission.rewards.map((reward) => (
+                          <span key={`${mission.id}-${reward.label}`} className="gameHomeRewardChip">
+                            {reward.label}
+                          </span>
+                        ))}
+                      </div>
                       <button
                         type="button"
                         className="powerRankingItemButton isPositive"
@@ -358,7 +383,14 @@ const GameHomePage = () => {
                     <article key={mission.label} className="powerRankingDashboardCard">
                       <span>{mission.label}</span>
                       <strong>{mission.current} / {mission.target}</strong>
-                      <p>진행률 {ratio}%</p>
+                      <p>진행률 {ratio}% · 보상 {mission.rewardSummary}</p>
+                      <div className="gameHomeRewardList">
+                        {mission.rewards.map((reward) => (
+                          <span key={`${mission.id}-${reward.label}`} className="gameHomeRewardChip">
+                            {reward.label}
+                          </span>
+                        ))}
+                      </div>
                       <button
                         type="button"
                         className="powerRankingItemButton isPositive"
@@ -388,7 +420,14 @@ const GameHomePage = () => {
                     <article key={achievement.label} className="powerRankingDashboardCard">
                       <span>{achievement.label}</span>
                       <strong>{achievement.current} / {achievement.target}</strong>
-                      <p>달성도 {ratio}%</p>
+                      <p>달성도 {ratio}% · 보상 {achievement.rewardSummary}</p>
+                      <div className="gameHomeRewardList">
+                        {achievement.rewards.map((reward) => (
+                          <span key={`${achievement.id}-${reward.label}`} className="gameHomeRewardChip">
+                            {reward.label}
+                          </span>
+                        ))}
+                      </div>
                       <button
                         type="button"
                         className="powerRankingItemButton isPositive"

@@ -6670,6 +6670,24 @@ html[data-has-route-sub-banner="1"] .solution-shell-hero {
   text-decoration: none;
 }
 
+.powerRankingPageMaple .gameHomeRewardList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.powerRankingPageMaple .gameHomeRewardChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid #bfd2ef;
+  background: #edf4ff;
+  color: #16355d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .powerRankingPageMaple .powerRankingDashboardCard {
   display: grid;
   gap: 10px;
