@@ -178,15 +178,29 @@ const getWeekDateKey = (): string => {
 };
 
 const connectionString = process.env.DATABASE_URL;
+const pgPoolMax = parsePort(process.env.PGPOOL_MAX, 20);
+const pgPoolIdleTimeoutMillis = parsePort(process.env.PGPOOL_IDLE_TIMEOUT_MS, 10000);
+const pgPoolConnectionTimeoutMillis = parsePort(process.env.PGPOOL_CONNECTION_TIMEOUT_MS, 3000);
+const pgPoolMaxUses = parsePort(process.env.PGPOOL_MAX_USES, 7500);
 
 const pool = connectionString
-  ? new Pool({ connectionString })
+  ? new Pool({
+      connectionString,
+      max: pgPoolMax,
+      idleTimeoutMillis: pgPoolIdleTimeoutMillis,
+      connectionTimeoutMillis: pgPoolConnectionTimeoutMillis,
+      maxUses: pgPoolMaxUses
+    })
   : new Pool({
       host: process.env.POSTGRES_HOST ?? "localhost",
       port: parsePort(process.env.POSTGRES_PORT, 5432),
       database: process.env.POSTGRES_DB ?? "sh_homepage",
       user: process.env.POSTGRES_USER ?? "sh_user",
-      password: process.env.POSTGRES_PASSWORD ?? "sh_password"
+      password: process.env.POSTGRES_PASSWORD ?? "sh_password",
+      max: pgPoolMax,
+      idleTimeoutMillis: pgPoolIdleTimeoutMillis,
+      connectionTimeoutMillis: pgPoolConnectionTimeoutMillis,
+      maxUses: pgPoolMaxUses
     });
 
 const mapNoticeRow = (row: NoticeRow): NoticeItem => ({
