@@ -530,7 +530,14 @@ const listPowerRankingEquipmentInventoryByUserId = async (
 const listPowerRankingEquippedByUserId = async (
   userId: string
 ): Promise<PowerRankingEquipmentState["equipped"]> => {
-  const result = await pool.query<PowerRankingEquippedRow>(
+  return listPowerRankingEquippedByUserIdWithRunner(pool, userId);
+};
+
+const listPowerRankingEquippedByUserIdWithRunner = async (
+  runner: Pool | PoolClient,
+  userId: string
+): Promise<PowerRankingEquipmentState["equipped"]> => {
+  const result = await runner.query<PowerRankingEquippedRow>(
     `SELECT user_id, slot_code, equipment_code, equipped_at, updated_at
      FROM power_ranking_user_equipped
      WHERE user_id = $1
@@ -1192,8 +1199,15 @@ export const listPowerRankingEquipmentState = async (
 });
 
 export const getUserHuntingProgress = async (userId: string): Promise<HuntingProgress> => {
+  return getUserHuntingProgressWithRunner(pool, userId);
+};
+
+const getUserHuntingProgressWithRunner = async (
+  runner: Pool | PoolClient,
+  userId: string
+): Promise<HuntingProgress> => {
   const defaults = createDefaultServerHuntingProgress();
-  const result = await pool.query<UserHuntingProgressRow>(
+  const result = await runner.query<UserHuntingProgressRow>(
     `INSERT INTO user_hunting_progress (
        user_id,
        level,
@@ -1504,7 +1518,7 @@ export const purchaseShopItemForUser = async (
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const progress = await getUserHuntingProgress(userId);
+    const progress = await getUserHuntingProgressWithRunner(client, userId);
 
     if (progress.materials["club-coin"] < item.priceAmount) {
       throw new Error("동연 코인이 부족합니다.");
@@ -1627,7 +1641,7 @@ export const usePowerRankingItem = async (
       [inventoryRow.id]
     );
 
-    const equipped = await listPowerRankingEquippedByUserId(userId);
+    const equipped = await listPowerRankingEquippedByUserIdWithRunner(client, userId);
     itemDelta = item.effectDelta;
     if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
       itemDelta += item.effectDelta > 0 ? 20 : -20;
