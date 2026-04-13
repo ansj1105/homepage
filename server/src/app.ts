@@ -40,6 +40,7 @@ import {
   getPublicSiteSettings,
   getContent,
   changePowerRankingScore,
+  ensureWeeklyPowerRankingMomentumGrant,
   grantPowerRankingInventoryItem,
   equipPowerRankingEquipment,
   getHuntingProfile,
@@ -508,6 +509,7 @@ export const createApp = () => {
 
   app.get("/api/power-ranking", async (req, res, next) => {
     try {
+      await ensureWeeklyPowerRankingMomentumGrant();
       const people = await listPowerRankingPeople(getPowerRankingPeriod(req.query.period));
       res.json(people);
     } catch (error) {
@@ -517,6 +519,7 @@ export const createApp = () => {
 
   app.get("/api/power-ranking/inventory", async (req, res, next) => {
     try {
+      await ensureWeeklyPowerRankingMomentumGrant();
       const user = await resolveAuthenticatedUser(req);
       if (!user) {
         res.status(401).json({ message: "회원가입 이후 이용가능합니다." });
@@ -531,6 +534,7 @@ export const createApp = () => {
 
   app.get("/api/power-ranking/equipment", async (req, res, next) => {
     try {
+      await ensureWeeklyPowerRankingMomentumGrant();
       const user = await resolveAuthenticatedUser(req);
       if (!user) {
         res.status(401).json({ message: "회원가입 이후 이용가능합니다." });

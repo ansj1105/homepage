@@ -780,6 +780,7 @@ const EquipmentPage = () => {
                       item.code === "byeokbangjun-blanket" ||
                       item.code === "seoeuntaek-love" ||
                       item.code === "kimdaseul-blessing" ||
+                      item.code === "cheongeonho-momentum" ||
                       item.code === "blue-campus-badge" ||
                       item.code === "red-campus-flare";
 

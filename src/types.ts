@@ -209,6 +209,7 @@ export type PowerRankingItemCode =
   | "byeokbangjun-blanket"
   | "seoeuntaek-love"
   | "kimdaseul-blessing"
+  | "cheongeonho-momentum"
   | "blue-campus-badge"
   | "red-campus-flare"
   | "ranking-up-ticket"
@@ -282,6 +283,8 @@ export interface PowerRankingItemCatalogEntry {
   name: string;
   description: string;
   effectDelta: number;
+  effectLabel?: string;
+  effectMode?: "delta" | "reset-to-zero";
   imageUrl: string;
 }
 

@@ -361,6 +361,10 @@ const getItemUseConfirmMessage = (
     return `${personName}에게 김다슬의 축복을 쓰시겠습니까? 인기도가 1000 내려갑니다.`;
   }
 
+  if (itemCode === "cheongeonho-momentum") {
+    return `${personName}에게 천건호의 기세를 쓰시겠습니까? 현재 인기도를 0으로 초기화합니다.`;
+  }
+
   if (itemCode === "blue-campus-badge") {
     return `${personName}에게 청량 응원 배지를 쓰시겠습니까? 인기도가 50 올라갑니다.`;
   }
@@ -376,6 +380,7 @@ const isPowerRankingUsableItem = (itemCode: PowerRankingItemCode): boolean =>
   itemCode === "byeokbangjun-blanket" ||
   itemCode === "seoeuntaek-love" ||
   itemCode === "kimdaseul-blessing" ||
+  itemCode === "cheongeonho-momentum" ||
   itemCode === "blue-campus-badge" ||
   itemCode === "red-campus-flare";
 
@@ -387,6 +392,9 @@ const getFactionDropItemCode = (faction: PowerRankingFaction): PowerRankingItemC
 
 const getPowerRankingItemEffectLabel = (itemCode: PowerRankingItemCode): string => {
   const item = powerRankingItemCatalog[itemCode];
+  if (item?.effectLabel) {
+    return item.effectLabel;
+  }
   const effectDelta = item?.effectDelta ?? 0;
   return effectDelta > 0 ? `+${effectDelta}` : `${effectDelta}`;
 };
@@ -1121,7 +1129,12 @@ const PowerRankingPage = () => {
       updatePerson(result.person);
       setInventory(result.inventory);
       await refreshSideData();
-      const signedDelta = result.appliedDelta > 0 ? `+${result.appliedDelta}` : `${result.appliedDelta}`;
+      const signedDelta =
+        result.usedItem.effectMode === "reset-to-zero"
+          ? "인기도 0 초기화"
+          : result.appliedDelta > 0
+            ? `+${result.appliedDelta}`
+            : `${result.appliedDelta}`;
       const message = `${result.usedItem.name} 사용이 반영되었습니다. (${signedDelta})`;
       setRewardMessage(message);
       pushNotification({
@@ -1518,7 +1531,9 @@ const PowerRankingPage = () => {
                               <summary>상세보기</summary>
                               <div className="powerRankingEquipmentDetailsBody">
                                 <p>
-                                  {item.name}은 {item.effectDelta < 0 ? "상대 인기도를 낮추는" : "상대 인기도를 올리는"} 소비 아이템입니다.
+                                  {item.effectMode === "reset-to-zero"
+                                    ? `${item.name}은 선택한 대상의 현재 인기도를 0으로 초기화하는 특수 소비 아이템입니다.`
+                                    : `${item.name}은 ${item.effectDelta < 0 ? "상대 인기도를 낮추는" : "상대 인기도를 올리는"} 소비 아이템입니다.`}
                                 </p>
                                 <div className="powerRankingInventoryTags">
                                   <span className="powerRankingInventoryPill">

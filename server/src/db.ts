@@ -382,8 +382,9 @@ const mapUserHuntingProgressRow = (row: UserHuntingProgressRow): HuntingProgress
 
 const passwordMismatchError = () => new Error("Invalid password");
 const powerRankingDailyActionLimit = 1000;
-const powerRankingDropRate = 0.01;
-const powerRankingEquipmentDropRate = 0.01;
+const powerRankingDropRate = 0.001;
+const powerRankingEquipmentDropRate = 0.001;
+const weeklyPowerRankingItemGrantLockId = 12004131;
 
 const getPowerRankingPeriodMeta = (period: "all" | "weekly" | "daily"): PowerRankingPeriodMeta => {
   if (period === "daily") {
@@ -490,6 +491,66 @@ const drawRandomPowerRankingItemCode = (): PowerRankingItemCode => {
 
 const getBonusVoteTicketCode = (delta: 1 | -1): PowerRankingItemCode =>
   delta > 0 ? "ranking-up-ticket" : "ranking-down-ticket";
+
+export const ensureWeeklyPowerRankingMomentumGrant = async (): Promise<void> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock($1)", [weeklyPowerRankingItemGrantLockId]);
+
+    const scheduleResult = await client.query<{
+      award_key: string;
+      eligible: boolean;
+      cutoff_utc: string;
+    }>(
+      `SELECT
+         to_char(date_trunc('week', NOW() AT TIME ZONE 'Asia/Seoul'), 'YYYY-MM-DD') AS award_key,
+         (NOW() AT TIME ZONE 'Asia/Seoul') >= (date_trunc('week', NOW() AT TIME ZONE 'Asia/Seoul') + INTERVAL '10 hour') AS eligible,
+         ((date_trunc('week', NOW() AT TIME ZONE 'Asia/Seoul') + INTERVAL '10 hour') AT TIME ZONE 'Asia/Seoul')::text AS cutoff_utc`
+    );
+    const schedule = scheduleResult.rows[0];
+    if (!schedule?.eligible) {
+      await client.query("COMMIT");
+      return;
+    }
+
+    const existingResult = await client.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count
+       FROM power_ranking_weekly_item_grants
+       WHERE award_key = $1`,
+      [schedule.award_key]
+    );
+    if (Number(existingResult.rows[0]?.count ?? "0") > 0) {
+      await client.query("COMMIT");
+      return;
+    }
+
+    const winnersResult = await client.query<{ id: string }>(
+      `SELECT id
+       FROM app_users
+       WHERE created_at <= $1::timestamptz
+       ORDER BY random()
+       LIMIT 2`,
+      [schedule.cutoff_utc]
+    );
+
+    for (const winner of winnersResult.rows) {
+      await grantPowerRankingItem(winner.id, "cheongeonho-momentum", client);
+      await client.query(
+        `INSERT INTO power_ranking_weekly_item_grants (award_key, user_id, item_code)
+         VALUES ($1, $2, $3)`,
+        [schedule.award_key, winner.id, "cheongeonho-momentum"]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
 
 const consumePowerRankingItem = async (
   client: PoolClient,
@@ -1677,14 +1738,23 @@ export const usePowerRankingItem = async (
     const progress = await getUserHuntingProgressWithRunner(client, userId);
     const getEnhanceLevel = (code: PowerRankingEquipmentCode) => progress.enhancementLevels[code] ?? 0;
     const equipped = await listPowerRankingEquippedByUserIdWithRunner(client, userId);
-    itemDelta = item.effectDelta;
-    if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
-      const amount = getEnhancedFlatValue(20, getEnhanceLevel("golden-harness"));
-      itemDelta += item.effectDelta > 0 ? amount : -amount;
-    }
-    if (Object.values(equipped).some((equipment) => equipment.code === "silk-gloves")) {
-      const amount = getEnhancedFlatValue(10, getEnhanceLevel("silk-gloves"));
-      itemDelta += item.effectDelta > 0 ? amount : -amount;
+    if (item.effectMode === "reset-to-zero") {
+      const personForReset =
+        (await loadPowerRankingPersonByPeriod(personId, period)) ?? (await loadPowerRankingPersonByPeriod(personId, "all"));
+      itemDelta = -(personForReset?.score ?? 0);
+      if (itemDelta === 0) {
+        throw new Error("이미 인기도가 0입니다.");
+      }
+    } else {
+      itemDelta = item.effectDelta;
+      if (Object.values(equipped).some((equipment) => equipment.code === "golden-harness")) {
+        const amount = getEnhancedFlatValue(20, getEnhanceLevel("golden-harness"));
+        itemDelta += item.effectDelta > 0 ? amount : -amount;
+      }
+      if (Object.values(equipped).some((equipment) => equipment.code === "silk-gloves")) {
+        const amount = getEnhancedFlatValue(10, getEnhanceLevel("silk-gloves"));
+        itemDelta += item.effectDelta > 0 ? amount : -amount;
+      }
     }
 
     await client.query<PowerRankingVoteRow>(

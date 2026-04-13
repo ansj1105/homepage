@@ -36,6 +36,15 @@ export const powerRankingItemCatalog: Record<string, PowerRankingItemCatalogEntr
     effectDelta: -1000,
     imageUrl: "/assets/items/kimdaseul-blessing.svg"
   },
+  "cheongeonho-momentum": {
+    code: "cheongeonho-momentum",
+    name: "천건호의 기세",
+    description: "선택한 파워랭킹 대상의 현재 인기도를 0으로 만듭니다. 매주 월요일 오전 10시 기준 가입 유저 중 랜덤 2명에게 지급됩니다.",
+    effectDelta: 0,
+    effectLabel: "인기도 0으로 초기화",
+    effectMode: "reset-to-zero",
+    imageUrl: "/assets/items/cheongeonho-momentum.svg"
+  },
   "blue-campus-badge": {
     code: "blue-campus-badge",
     name: "청량 응원 배지",

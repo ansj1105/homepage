@@ -185,6 +185,7 @@ const powerRankingItemUseSchema = z.object({
     "byeokbangjun-blanket",
     "seoeuntaek-love",
     "kimdaseul-blessing",
+    "cheongeonho-momentum",
     "blue-campus-badge",
     "red-campus-flare"
   ]),
